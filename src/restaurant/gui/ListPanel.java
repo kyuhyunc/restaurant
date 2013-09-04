@@ -4,6 +4,7 @@ import restaurant.CustomerAgent;
 import restaurant.HostAgent;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
@@ -20,11 +21,17 @@ public class ListPanel extends JPanel implements ActionListener {
                     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     private JPanel view = new JPanel();
     private List<JButton> list = new ArrayList<JButton>();
+    
+    // this is for saving the name of customers 
+    public List<String> list_str = new ArrayList<String>();
+    
     private JButton addPersonB = new JButton("Add");
 
     private RestaurantPanel restPanel;
     private String type;
-
+    
+    private JTextField CustName = new JTextField();
+     
     /**
      * Constructor for ListPanel.  Sets up all the gui
      *
@@ -34,17 +41,23 @@ public class ListPanel extends JPanel implements ActionListener {
     public ListPanel(RestaurantPanel rp, String type) {
         restPanel = rp;
         this.type = type;
-
-        setLayout(new BoxLayout((Container) this, BoxLayout.Y_AXIS));
+       
+        //setLayout(new BoxLayout((Container) this, BoxLayout.Y_AXIS));
+        setLayout(new GridLayout(7,1));
         add(new JLabel("<html><pre> <u>" + type + "</u><br></pre></html>"));
-
+  
+        
+        CustName.setFont(new Font("Courier", Font.PLAIN, 20));		
+        add(CustName);
+        
         addPersonB.addActionListener(this);
         add(addPersonB);
 
-        view.setLayout(new BoxLayout((Container) view, BoxLayout.Y_AXIS));
+        /**view.setLayout(new BoxLayout((Container) view, BoxLayout.Y_AXIS));
         pane.setViewportView(view);
-        add(pane);
-    }
+        add(pane);*/
+        
+     }
 
     /**
      * Method from the ActionListener interface.
@@ -53,8 +66,12 @@ public class ListPanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == addPersonB) {
         	// Chapter 2.19 describes showInputDialog()
-            addPerson(JOptionPane.showInputDialog("Please enter a name:"));
+            //addPerson(JOptionPane.showInputDialog("Please enter a name:"));
+        	if(!CustName.getText().equals("")) {
+        		addPerson(CustName.getText());  		
+           	}
         }
+               
         else {
         	// Isn't the second for loop more beautiful?
             /*for (int i = 0; i < list.size(); i++) {
@@ -75,6 +92,9 @@ public class ListPanel extends JPanel implements ActionListener {
      */
     public void addPerson(String name) {
         if (name != null) {
+        	
+        	list_str.add(name);
+        	
             JButton button = new JButton(name);
             button.setBackground(Color.white);
 

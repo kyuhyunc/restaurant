@@ -17,6 +17,12 @@ public class AnimationPanel extends JPanel implements ActionListener {
 
     private List<Gui> guis = new ArrayList<Gui>();
 
+    //static variables to replace magic numbers
+    private static int TableLocationX = 200;
+    private static int TableLocationY = 250;
+    private static int TableSizeX = 50;
+    private static int TableSizeY = 50;
+    
     public AnimationPanel() {
     	setSize(WINDOWX, WINDOWY);
         setVisible(true);
@@ -40,7 +46,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
 
         //Here is the table
         g2.setColor(Color.ORANGE);
-        g2.fillRect(200, 250, 50, 50);//200 and 250 need to be table params
+        g2.fillRect(TableLocationX, TableLocationY, TableSizeX, TableSizeY);//200 and 250 need to be table params
 
 
         for(Gui gui : guis) {
