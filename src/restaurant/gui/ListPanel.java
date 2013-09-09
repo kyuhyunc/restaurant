@@ -16,14 +16,11 @@ import java.util.ArrayList;
  */
 public class ListPanel extends JPanel implements ActionListener {
 
-    public JScrollPane pane =
+    /**public JScrollPane pane =
             new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);*/
     private JPanel view = new JPanel();
     private List<JButton> list = new ArrayList<JButton>();
-    
-    // this is for saving the name of customers 
-    public List<String> list_str = new ArrayList<String>();
     
     private JButton addPersonB = new JButton("Add");
 
@@ -52,6 +49,8 @@ public class ListPanel extends JPanel implements ActionListener {
         
         addPersonB.addActionListener(this);
         add(addPersonB);
+        
+        add(new JLabel("Click add to add customers"));
 
         /**view.setLayout(new BoxLayout((Container) view, BoxLayout.Y_AXIS));
         pane.setViewportView(view);
@@ -93,8 +92,7 @@ public class ListPanel extends JPanel implements ActionListener {
     public void addPerson(String name) {
         if (name != null) {
         	
-        	list_str.add(name);
-        	
+        	/*
             JButton button = new JButton(name);
             button.setBackground(Color.white);
 
@@ -106,7 +104,7 @@ public class ListPanel extends JPanel implements ActionListener {
             button.setMaximumSize(buttonSize);
             button.addActionListener(this);
             list.add(button);
-            view.add(button);
+            view.add(button);*/
             restPanel.addPerson(type, name);//puts customer on list
             restPanel.showInfo(type, name);//puts hungry button on panel
             validate();

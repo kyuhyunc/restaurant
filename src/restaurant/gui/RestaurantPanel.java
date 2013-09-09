@@ -99,5 +99,9 @@ public class RestaurantPanel extends JPanel {
     		c.startThread();
     	}
     }
+    
+    public CustomerAgent getCustomerAgent(int index) {
+    	return customers.get(index);
+    }
 
 }
