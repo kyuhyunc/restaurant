@@ -28,6 +28,8 @@ public class ListPanel extends JPanel implements ActionListener {
     private String type;
     
     private JTextField CustName = new JTextField();
+    
+    
      
     /**
      * Constructor for ListPanel.  Sets up all the gui

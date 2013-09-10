@@ -27,7 +27,7 @@ public abstract class Agent {
      * current state.  Will be called whenever a state change has occurred,
      * and will be called repeated as long as it returns true.
      *
-     * @return true iff some action was executed that might have changed the
+     * @return true if some action was executed that might have changed the
      *         state.
      */
     protected abstract boolean pickAndExecuteAnAction();
@@ -90,6 +90,8 @@ public abstract class Agent {
         if (agentThread != null) {
             agentThread.stopAgent();
             agentThread = null;
+            
+            //this.Do("stopThread");  
         }
     }
 
@@ -119,6 +121,8 @@ public abstract class Agent {
                     while (pickAndExecuteAnAction()) ;
                 } catch (InterruptedException e) {
                     // no action - expected when stopping or when deadline changed
+                	Do("Pause!~~~");
+                	//Thread.sleep(long);
                 } catch (Exception e) {
                     print("Unexpected exception caught in Agent thread:", e);
                 }

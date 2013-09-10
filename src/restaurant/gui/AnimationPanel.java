@@ -23,18 +23,24 @@ public class AnimationPanel extends JPanel implements ActionListener {
     private static int TableSizeX = 50;
     private static int TableSizeY = 50;
     
+    private Timer timer;
+    
+    public static boolean pauseFlag = true;
+    
     public AnimationPanel() {
     	setSize(WINDOWX, WINDOWY);
         setVisible(true);
         
         bufferSize = this.getSize();
  
-    	Timer timer = new Timer(20, this );
+    	timer = new Timer(20, this );
     	timer.start();
     }
 
 	public void actionPerformed(ActionEvent e) {
-		repaint();  //Will have paintComponent called
+		if(pauseFlag == true) {
+			repaint();  //Will have paintComponent called
+		}
 	}
 
     public void paintComponent(Graphics g) {
@@ -58,6 +64,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
         for(Gui gui : guis) {
             if (gui.isPresent()) {
                 gui.draw(g2);
+            	//gui.drawImg();
             }
         }
     }
@@ -69,4 +76,5 @@ public class AnimationPanel extends JPanel implements ActionListener {
     public void addGui(HostGui gui) {
         guis.add(gui);
     }
+    
 }

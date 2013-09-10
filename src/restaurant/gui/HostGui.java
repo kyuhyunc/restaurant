@@ -6,6 +6,10 @@ import restaurant.HostAgent;
 
 import java.awt.*;
 
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+
+
 public class HostGui implements Gui {
 
     private HostAgent agent = null;
@@ -16,6 +20,9 @@ public class HostGui implements Gui {
     public static final int xTable = 200;
     public static final int yTable = 250;
 
+    private ImageIcon hostImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/H for host.jpg");
+    private Image image = hostImage.getImage();
+    
     public HostGui(HostAgent agent) {
         this.agent = agent;
     }
@@ -37,10 +44,18 @@ public class HostGui implements Gui {
         }
     }
 
+    
     public void draw(Graphics2D g) {
-        g.setColor(Color.MAGENTA);
-        g.fillRect(xPos, yPos, 20, 20);
+        //g.setColor(Color.MAGENTA);
+        //g.fillRect(xPos, yPos, 20, 20);
+    	g.drawImage(image, xPos, yPos, 20, 20, null);
+    	
     }
+    /**
+	public void draw(JLabel g){
+		g.setIcon(hostImage);
+		g.setLocation(xPos, yPos);
+	}*/
 
     public boolean isPresent() {
         return true;

@@ -5,6 +5,9 @@ import restaurant.HostAgent;
 
 import java.awt.*;
 
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+
 public class CustomerGui implements Gui{
 
 	private CustomerAgent agent = null;
@@ -21,6 +24,9 @@ public class CustomerGui implements Gui{
 
 	public static final int xTable = 200;
 	public static final int yTable = 250;
+	
+	private ImageIcon custImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/C for customer.jpg");
+	private Image image = custImage.getImage();
 
 	public CustomerGui(CustomerAgent c, RestaurantGui gui){ //HostAgent m) {
 		agent = c;
@@ -56,9 +62,15 @@ public class CustomerGui implements Gui{
 	}
 
 	public void draw(Graphics2D g) {
-		g.setColor(Color.GREEN);
-		g.fillRect(xPos, yPos, 20, 20);
+		//g.setColor(Color.GREEN);
+		//g.fillRect(xPos, yPos, 20, 20);
+		g.drawImage(image, xPos, yPos, 20, 20, null);
 	}
+	/**
+	public void draw(JLabel g){
+		g.setIcon(custImage);
+		g.setLocation(xPos, yPos);
+	}*/
 
 	public boolean isPresent() {
 		return isPresent;
