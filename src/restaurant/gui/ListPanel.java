@@ -112,4 +112,12 @@ public class ListPanel extends JPanel implements ActionListener {
             validate();
         }
     }
+    
+    public void disableButtons() {
+    	addPersonB.setEnabled(false);
+    }
+    
+    public void enableButtons() {
+    	addPersonB.setEnabled(true);
+    }
 }

@@ -140,7 +140,7 @@ public class HostAgent extends Agent {
 			// make some method to wait until HostGui returns the message that host is ready to serve
 			// just do nothing
 			// return true;
-			return false; // this is for making the host wait; sleep until status changes to waiting
+			return false; // this is for making the host to be waiting; sleep until status changes
 		}
 			
 		return false;
@@ -170,7 +170,7 @@ public class HostAgent extends Agent {
 		DoSeatCustomer(customer, table);
 		//table.setOccupant(customer); <-- should have current seat parameter
 		try {
-			atTable.acquire();
+			atTable.acquire(); // QQQ two semaphores? in Agent and HostAgent?
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

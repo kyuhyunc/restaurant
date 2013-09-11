@@ -25,7 +25,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
     private static int TableSizeX = 50;
     private static int TableSizeY = 50;
     
-    private Timer timer;
+    protected Timer timer;
     private final int timerSpeed = 5;
     
     public static boolean pauseFlag = true;

@@ -2,6 +2,7 @@ package restaurant.gui;
 
 import restaurant.CustomerAgent;
 import restaurant.*;
+import agent.*;
 
 import javax.swing.*;
 
@@ -221,10 +222,14 @@ public class RestaurantGui extends JFrame implements ActionListener {
    		//QQQQ: what is object and who is currentPerson? 
    		//CustomerAgent cust = (CustomerAgent) currentPerson;
 		for(int i = 0; i < stateCBs.size() ; i++) {
-			if(c.getName().equals(nameList.get(i))) {
+			if(restPanel.getCustomerAgent(i) == c) {
 				stateCBs.get(i).setEnabled(true);
 				stateCBs.get(i).setSelected(false);
 			}
+			/**if(c.getName().equals(nameList.get(i))) {
+				stateCBs.get(i).setEnabled(true);
+				stateCBs.get(i).setSelected(false);
+			}*/
     	}	
     	
     	// original code
@@ -250,10 +255,34 @@ public class RestaurantGui extends JFrame implements ActionListener {
     			if(AnimationPanel.pauseFlag == true){
     				AnimationPanel.pauseFlag = false;
     				System.out.println("Pause");
+    				
+    				for(int i = 0; i < stateCBs.size() ; i++) {
+    					stateCBs.get(i).setEnabled(false);
+    		    	}	
+    				
+    				addTable.setEnabled(false);
+    				restPanel.customerPanel.disableButtons();
+    				
+    				/**for(int i = 0; i < customerList.size(); i++) {
+    					//restPanel.getCustomerAgent(i).timer.
+    				}*/
+    				
     			}
     			else {
     				AnimationPanel.pauseFlag = true;
     				System.out.println("Resume");
+    				
+    				for(int i = 0; i < stateCBs.size() ; i++) {
+    					if(!stateCBs.get(i).isSelected()) {
+    						stateCBs.get(i).setEnabled(true);	
+    					}
+    		    	}    				
+    				
+    				addTable.setEnabled(true);
+    				restPanel.customerPanel.enableButtons();
+    				
+    				//pane.setEnabled(true);
+    				//animationPanel.timer.start();
     			}    				
     		}
     	}
