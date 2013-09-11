@@ -28,11 +28,14 @@ public class HostAgent extends Agent {
 
 	public HostGui hostGui = null;
 	
-	public int CurrntTableNumber = 0;
+	public int CurrentTableNumber = 0;
+	public int CurrentSeatNumber = 0;
 	
 	// made agent status enum for distinguishing whether host is ready or not
 	public enum agentStatus { serving, waiting };
 	agentStatus hostStatus = agentStatus.waiting; 
+	
+	public int tableSize = 2;
 
 	public HostAgent(String name) {
 		super();
@@ -73,16 +76,31 @@ public class HostAgent extends Agent {
 		hostStatus = agentStatus.waiting;
 		stateChanged();
 	}
-	// maybe I need to make want more step which is for letting customer know host is ready to serve
 
 	public void msgLeavingTable(CustomerAgent cust) {
 		for (Table table : tables) {
+			//if(cust.getTableNumber() == table.tableNumber) {
+				for(int z=0 ; z < tableSize ; z++) {
+					if(table.getOccupant(z) == cust) {
+						print(cust + " leaving " + table);
+						//print("[msgLeavingTable]seat number :" + z);
+						table.setUnoccupied(z);
+						stateChanged();
+						break;
+					}
+					
+				}
+			//}
+		}
+			
+		
+		/**for (Table table : tables) {
 			if (table.getOccupant() == cust) {
 				print(cust + " leaving " + table);
 				table.setUnoccupied();
 				stateChanged();
 			}
-		}
+		}*/
 	}
 
 	public void msgAtTable() {//from animation
@@ -139,10 +157,18 @@ public class HostAgent extends Agent {
 			print("in the while");
 		}*/
 				
-		CurrntTableNumber = table.tableNumber;
+		CurrentTableNumber = table.tableNumber;
+		
+		for(int i=0;i<tableSize;i++) {
+			if( table.getOccupant(i) == null ) {
+				CurrentSeatNumber = i;
+				break;
+			}
+		}		
 	
 		customer.msgSitAtTable();
 		DoSeatCustomer(customer, table);
+		//table.setOccupant(customer); <-- should have current seat parameter
 		try {
 			atTable.acquire();
 		} catch (InterruptedException e) {
@@ -160,7 +186,7 @@ public class HostAgent extends Agent {
 	private void DoSeatCustomer(CustomerAgent customer, Table table) {
 		//Notice how we print "customer" directly. It's toString method will do it.
 		//Same with "table"
-		print("Seating " + customer + " at " + table);
+		print("Seating " + customer + " at the seat #" + (CurrentSeatNumber+1) + " of " + table);
 		hostGui.DoBringToTable(customer, table.tableNumber); 
 	}
 
@@ -179,29 +205,73 @@ public class HostAgent extends Agent {
 	}
 	
 
-	public static class Table {
-		CustomerAgent occupiedBy;
+	public class Table {
+		private CustomerAgent[] occupiedBy = new CustomerAgent[tableSize];
+		//List<CustomerAgent> occupiedBy = new ArrayList<CustomerAgent>();
+		//CustomerAgent occupiedBy;
 		int tableNumber;
-		int tableSize = 2;
-
+				
 		Table(int tableNumber) {
 			this.tableNumber = tableNumber;
+			for(int q=0;q<tableSize;q++) {
+				occupiedBy[q] = null;
+				//occupiedBy[i].equals(null);
+			}
 		}
 
 		void setOccupant(CustomerAgent cust) {
-			occupiedBy = cust;
+			//occupiedBy = cust;
+			//occupiedBy.add(cust);
+			/**for(int p=0;p<tableSize;p++) {
+				//if(occupiedBy[i].equals(null)) {
+				if(occupiedBy[p] == null) {
+					occupiedBy[p] = cust;
+					break;
+				}
+			}*/
+			occupiedBy[CurrentSeatNumber] = cust;
+			//print("[table.setOccupant]table number: " + tableNumber + " & by " + cust);
 		}
 
-		void setUnoccupied() {
-			occupiedBy = null;
+		void setUnoccupied(int index) {
+			//occupiedBy = null;
+			occupiedBy[index] = null;
+						
+			if(occupiedBy[index] == null) {
+				//print("[table.setUnoccupied]table number: " + tableNumber +" & seat number: " + index);
+			}			
 		}
 
-		CustomerAgent getOccupant() {
-			return occupiedBy;
+		//List<CustomerAgent> getOccupant() {
+		CustomerAgent getOccupant(int index) {
+			//print("[table.getOccupant]table number: " + tableNumber +" & seat number: " + index);
+			
+			return occupiedBy[index];
 		}
-
+		
+		int occupantsNumber() {
+			int OccupantsNumber = 0;			
+			
+			for(int i=0;i<tableSize;i++) {
+				if( occupiedBy[i] != null ) {
+				//if( !occupiedBy[i].equals(null) ) {
+					OccupantsNumber++;
+				}
+			}
+			
+			//print("[occupantsNumber]occupants' number: " + OccupantsNumber);
+			return OccupantsNumber;
+		}
+		
 		boolean isOccupied() {
-			return occupiedBy != null;
+			//return occupiedBy != null;
+			if(occupantsNumber() == tableSize) {
+				//print("[occupantsNumber]occupants' number: " + occupantsNumber());
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 
 		public String toString() {

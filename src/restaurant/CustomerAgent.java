@@ -1,8 +1,10 @@
 package restaurant;
 
+import restaurant.HostAgent;
 import restaurant.HostAgent.Table;
 import restaurant.gui.CustomerGui;
 import restaurant.gui.RestaurantGui;
+import restaurant.gui.*;
 import agent.Agent;
 
 import java.util.Timer;
@@ -37,12 +39,21 @@ public class CustomerAgent extends Agent {
 	 */
 	public CustomerAgent(String name){
 		super();
+		//tableNumber = 0;
 		this.name = name;
 	}
 
 	/**
 	 * hack to establish connection to Host agent.
 	 */
+	/**public void setTableNumber(int tableNumber) {
+		this.tableNumber = tableNumber;
+	}
+	
+	public int getTableNumber() {
+		return tableNumber;
+	}*/
+	
 	public void setHost(HostAgent host) {
 		this.host = host;
 	}
@@ -119,11 +130,28 @@ public class CustomerAgent extends Agent {
 
 	private void SitDown() {
 		Do("Being seated. Going to table");
+		/**int SeatNumber = 0;
+
+		for(Table table: host.tables){
+			if(table.tableNumber == host.CurrentTableNumber) {
+				for(int j=0 ; j < host.tableSize ; j++) {
+					//print("Seat number #" + j + " at table #" + table + " is ocuuped by : " + table.getOccupant(j));
+					if(table.getOccupant(j) == null) {
+						SeatNumber = j;
+						//print("[SitDown] seatNumber : " + SeatNumber + " & by " + this);
+						
+						// !!!!! this should be done in not Customer agent, since this is not a step that customer is in charge of
+						// maybe, table should have seatnumber instance??? including above for loop
+						// !!!!! identifying which seat at which table should be done by host
+						table.setOccupant(this);
+						break;
+					}
+				}				
+			}
+		}*/
 		
-		customerGui.DoGoToSeat(host.CurrntTableNumber);
+		customerGui.DoGoToSeat(host.CurrentTableNumber, host.CurrentSeatNumber);
 		
-		// here is where code needs to be modified..?
-				
 		//customerGui.DoGoToSeat(1);//hack; only one table
 	}
 
@@ -146,7 +174,7 @@ public class CustomerAgent extends Agent {
 				stateChanged();
 			}
 		},
-		18000);//getHungerLevel() * 1000);//how long to wait before running task
+		30000);//getHungerLevel() * 1000);//how long to wait before running task
 	}
 
 	private void leaveTable() {

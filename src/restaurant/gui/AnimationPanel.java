@@ -26,6 +26,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
     private static int TableSizeY = 50;
     
     private Timer timer;
+    private final int timerSpeed = 5;
     
     public static boolean pauseFlag = true;
     
@@ -35,7 +36,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
         
         bufferSize = this.getSize();
  
-    	timer = new Timer(10, this );
+    	timer = new Timer(timerSpeed, this );
     	timer.start();
     }
 
