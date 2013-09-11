@@ -94,7 +94,7 @@ public abstract class Agent {
             //this.Do("stopThread");  
         }
     }
-
+    
     /**
      * Agent scheduler thread, calls respondToStateChange() whenever a state
      * change has been signalled.
@@ -118,11 +118,9 @@ public abstract class Agent {
                     //When the agent wakes up it will call respondToStateChange()
                     //repeatedly until it returns FALSE.
                     //You will see that pickAndExecuteAnAction() is the agent scheduler.
-                    while (pickAndExecuteAnAction()) ;
+                    while (pickAndExecuteAnAction()) ; 
                 } catch (InterruptedException e) {
                     // no action - expected when stopping or when deadline changed
-                	Do("Pause!~~~");
-                	//Thread.sleep(long);
                 } catch (Exception e) {
                     print("Unexpected exception caught in Agent thread:", e);
                 }

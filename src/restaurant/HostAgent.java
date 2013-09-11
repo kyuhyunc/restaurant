@@ -14,7 +14,7 @@ import java.util.concurrent.Semaphore;
 //the HostAgent. A Host is the manager of a restaurant who sees that all
 //is proceeded as he wishes.
 public class HostAgent extends Agent {
-	static public int NTABLES = 1;//a global for the number of tables.
+	static public int NTABLES = 3;//a global for the number of tables.
 	//Notice that we implement waitingCustomers using ArrayList, but type it
 	//with List semantics.
 	public List<CustomerAgent> waitingCustomers
@@ -27,6 +27,12 @@ public class HostAgent extends Agent {
 	private Semaphore atTable = new Semaphore(0,true);
 
 	public HostGui hostGui = null;
+	
+	public int CurrntTableNumber = 0;
+	
+	// made agent status enum for distinguishing whether host is ready or not
+	public enum agentStatus { serving, waiting };
+	agentStatus hostStatus = agentStatus.waiting; 
 
 	public HostAgent(String name) {
 		super();
@@ -57,9 +63,17 @@ public class HostAgent extends Agent {
 	// Messages
 
 	public void msgIWantFood(CustomerAgent cust) {
+		// here is where host status changes to serving
 		waitingCustomers.add(cust);
 		stateChanged();
 	}
+	
+	public void msgReadyToServe() {
+		// here is where host status changes to waiting
+		hostStatus = agentStatus.waiting;
+		stateChanged();
+	}
+	// maybe I need to make want more step which is for letting customer know host is ready to serve
 
 	public void msgLeavingTable(CustomerAgent cust) {
 		for (Table table : tables) {
@@ -86,15 +100,29 @@ public class HostAgent extends Agent {
             so that table is unoccupied and customer is waiting.
             If so seat him at the table.
 		 */
-		for (Table table : tables) {
-			if (!table.isOccupied()) {
-				if (!waitingCustomers.isEmpty()) {
-					seatCustomer(waitingCustomers.get(0), table);//the action
-					return true;//return true to the abstract agent to reinvoke the scheduler.
+		
+		// seatCustomer will not be executed unless host status is waiting
+		// if another customer comes into the restaurant, this will not be executed
+		// and when host status changes to waiting by message from animation, 
+		// this will be executed since stateChanged() has been run, which will in turn 
+		// call this method. At this moment, host will get a customer from the list.
+		if( hostStatus == agentStatus.waiting ) {
+			for (Table table : tables) {
+				if (!table.isOccupied()) {
+					if (!waitingCustomers.isEmpty()) {
+						hostStatus = agentStatus.serving; // change host's status to serving
+						seatCustomer(waitingCustomers.get(0), table);//the action
+						return true;//return true to the abstract agent to reinvoke the scheduler.
+					}
 				}
 			}
 		}
-
+		else if ( hostStatus == agentStatus.serving ) { 
+			// make some method to wait until HostGui returns the message that host is ready to serve
+			// just do nothing
+			// return true;
+		}
+			
 		return false;
 		//we have tried all our rules and found
 		//nothing to do. So return false to main loop of abstract agent
@@ -104,6 +132,13 @@ public class HostAgent extends Agent {
 	// Actions
 
 	private void seatCustomer(CustomerAgent customer, Table table) {
+		
+		/**while(!(hostGui.getXPos() == -20 && hostGui.getYPos() == -20)) {
+			print("in the while");
+		}*/
+				
+		CurrntTableNumber = table.tableNumber;
+	
 		customer.msgSitAtTable();
 		DoSeatCustomer(customer, table);
 		try {
@@ -116,14 +151,15 @@ public class HostAgent extends Agent {
 		waitingCustomers.remove(customer);
 		hostGui.DoLeaveCustomer();
 	}
+	
+	
 
 	// The animation DoXYZ() routines
 	private void DoSeatCustomer(CustomerAgent customer, Table table) {
 		//Notice how we print "customer" directly. It's toString method will do it.
 		//Same with "table"
 		print("Seating " + customer + " at " + table);
-		hostGui.DoBringToTable(customer); 
-
+		hostGui.DoBringToTable(customer, table.tableNumber); 
 	}
 
 	//utilities
@@ -135,8 +171,13 @@ public class HostAgent extends Agent {
 	public HostGui getGui() {
 		return hostGui;
 	}
+	
+	public void addTableByGui() {
+		tables.add(new Table(NTABLES));//how you add to a collections
+	}
+	
 
-	private class Table {
+	public static class Table {
 		CustomerAgent occupiedBy;
 		int tableNumber;
 

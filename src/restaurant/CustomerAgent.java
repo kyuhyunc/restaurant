@@ -1,5 +1,6 @@
 package restaurant;
 
+import restaurant.HostAgent.Table;
 import restaurant.gui.CustomerGui;
 import restaurant.gui.RestaurantGui;
 import agent.Agent;
@@ -83,7 +84,7 @@ public class CustomerAgent extends Agent {
 		if (state == AgentState.DoingNothing && event == AgentEvent.gotHungry ){
 			state = AgentState.WaitingInRestaurant;
 			goToRestaurant();
-			return true;
+			return true; // Q: is this necessary if false will be returned right after this?
 		}
 		if (state == AgentState.WaitingInRestaurant && event == AgentEvent.followHost ){
 			state = AgentState.BeingSeated;
@@ -118,7 +119,12 @@ public class CustomerAgent extends Agent {
 
 	private void SitDown() {
 		Do("Being seated. Going to table");
-		customerGui.DoGoToSeat(1);//hack; only one table
+		
+		customerGui.DoGoToSeat(host.CurrntTableNumber);
+		
+		// here is where code needs to be modified..?
+				
+		//customerGui.DoGoToSeat(1);//hack; only one table
 	}
 
 	private void EatFood() {
@@ -140,7 +146,7 @@ public class CustomerAgent extends Agent {
 				stateChanged();
 			}
 		},
-		5000);//getHungerLevel() * 1000);//how long to wait before running task
+		18000);//getHungerLevel() * 1000);//how long to wait before running task
 	}
 
 	private void leaveTable() {

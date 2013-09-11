@@ -22,8 +22,8 @@ public class CustomerGui implements Gui{
 	private enum Command {noCommand, GoToSeat, LeaveRestaurant};
 	private Command command=Command.noCommand;
 
-	public static final int xTable = 200;
-	public static final int yTable = 250;
+	//public static final int xTable = 50;
+	//public static final int yTable = 250;
 	
 	private ImageIcon custImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/C for customer.jpg");
 	private Image image = custImage.getImage();
@@ -88,9 +88,9 @@ public class CustomerGui implements Gui{
 		isPresent = p;
 	}
 
-	public void DoGoToSeat(int seatnumber) {//later you will map seatnumber to table coordinates.
-		xDestination = xTable;
-		yDestination = yTable;
+	public void DoGoToSeat(int tableNumber) {//later you will map seatnumber to table coordinates.
+		xDestination = AnimationPanel.TableLocationX + 70*(tableNumber-1);
+		yDestination = AnimationPanel.TableLocationY;
 		command = Command.GoToSeat;
 	}
 

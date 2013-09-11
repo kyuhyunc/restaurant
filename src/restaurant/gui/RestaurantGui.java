@@ -246,6 +246,7 @@ public class RestaurantGui extends JFrame implements ActionListener {
     				restPanel.getCustomerAgent(i).stopThread();
     			}
     			restPanel.getHostAgent().stopThread();*/
+    			
     			if(AnimationPanel.pauseFlag == true){
     				AnimationPanel.pauseFlag = false;
     				System.out.println("Pause");
@@ -262,8 +263,15 @@ public class RestaurantGui extends JFrame implements ActionListener {
     class addTableListener implements ActionListener {
     	public void actionPerformed(ActionEvent e) {
     		if(e.getSource() == addTable){
-    			HostAgent.NTABLES ++;
-    			System.out.println("Adding one more table: " + HostAgent.NTABLES);
+    			if(HostAgent.NTABLES < 5) {
+	    			HostAgent.NTABLES ++;
+	    			restPanel.getHostAgent().addTableByGui();
+	    			System.out.println("Adding one more table: " + HostAgent.NTABLES);
+    			}
+    			else {
+    				System.out.println("Cannot add more table!! (maximum is 5)");
+    			}
+    				
     		}
     	}
     }

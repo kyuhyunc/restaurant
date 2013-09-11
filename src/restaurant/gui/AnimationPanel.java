@@ -2,6 +2,8 @@ package restaurant.gui;
 
 import javax.swing.*;
 
+import restaurant.HostAgent;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,8 +20,8 @@ public class AnimationPanel extends JPanel implements ActionListener {
     private List<Gui> guis = new ArrayList<Gui>();
 
     //static variables to replace magic numbers
-    private static int TableLocationX = 200;
-    private static int TableLocationY = 250;
+    protected static int TableLocationX = 50;
+    protected static int TableLocationY = 250;
     private static int TableSizeX = 50;
     private static int TableSizeY = 50;
     
@@ -33,7 +35,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
         
         bufferSize = this.getSize();
  
-    	timer = new Timer(20, this );
+    	timer = new Timer(10, this );
     	timer.start();
     }
 
@@ -51,12 +53,14 @@ public class AnimationPanel extends JPanel implements ActionListener {
         g2.fillRect(0, 0, WINDOWX, WINDOWY );
 
         //Here is the table
-        g2.setColor(Color.ORANGE);
-        g2.fillRect(TableLocationX, TableLocationY, TableSizeX, TableSizeY);//200 and 250 need to be table params
-
+        for(int i=0 ; i < HostAgent.NTABLES ; i++) {
+	        g2.setColor(Color.ORANGE);
+	        g2.fillRect(TableLocationX + (70*i), TableLocationY, TableSizeX, TableSizeY);//200 and 250 need to be table params
+        }
 
         for(Gui gui : guis) {
             if (gui.isPresent()) {
+            	
                 gui.updatePosition();
             }
         }
