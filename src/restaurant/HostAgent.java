@@ -117,10 +117,12 @@ public class HostAgent extends Agent {
 				}
 			}
 		}
+		
 		else if ( hostStatus == agentStatus.serving ) { 
 			// make some method to wait until HostGui returns the message that host is ready to serve
 			// just do nothing
 			// return true;
+			return false; // this is for making the host wait; sleep until status changes to waiting
 		}
 			
 		return false;
@@ -180,6 +182,7 @@ public class HostAgent extends Agent {
 	public static class Table {
 		CustomerAgent occupiedBy;
 		int tableNumber;
+		int tableSize = 2;
 
 		Table(int tableNumber) {
 			this.tableNumber = tableNumber;
