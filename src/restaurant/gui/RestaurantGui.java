@@ -287,7 +287,7 @@ public class RestaurantGui extends JFrame implements ActionListener {
     		}
     	}
     }
-        
+     
     // action listener for add table button 
     class addTableListener implements ActionListener {
     	public void actionPerformed(ActionEvent e) {
