@@ -174,22 +174,26 @@ public class WaiterAgent extends Agent {
 		// set up the initial position to the host
 		waiterGui.DoGoBackToHost();
 		try {
+			print("1");
 			atHost.acquire(); // 
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		
+		}	
+		print("2");
 		
 		customer.c.msgFollowMe(menu);
 		DoSeatCustomer(customer);
 		//customer.t.setOccupant(customer.c);
 		try {
+			print("3");
 			atTable.acquire(); // 
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		customer.state = MyCustomer.CustState.seated;
+		print("4");
 		
 		waiterGui.DoGoBackToHost();
 		state = AgentState.Waiting;

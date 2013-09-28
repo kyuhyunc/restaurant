@@ -82,7 +82,7 @@ public class WaiterGui implements Gui {
     public void DoGoBackToHost() {
         xDestination = -20;
         yDestination = -20;
-        
+                
         command = Command.GoToHost;
     }
 

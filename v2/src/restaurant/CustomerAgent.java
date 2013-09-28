@@ -140,6 +140,11 @@ public class CustomerAgent extends Agent {
 			leaveTable();
 			return true;					
 		}
+		else if (state == AgentState.Leaving && event == AgentEvent.doneLeaving){
+			state = AgentState.DoingNothing;
+			return false;					
+		}
+		
 		return false;
 	}
 

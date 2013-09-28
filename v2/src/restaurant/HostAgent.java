@@ -41,7 +41,7 @@ public class HostAgent extends Agent {
 		}		
 		
 		for (int i=0;i<NWAITERS;i++) {
-			WaiterAgent w = new WaiterAgent("waiter #"+(i+1));
+			WaiterAgent w = new WaiterAgent("waiter #"+i);
 			w.setHost(this);
 			w.setCook(cook);
 			
@@ -112,15 +112,15 @@ public class HostAgent extends Agent {
 	// Actions
 	private void tellWaiter(CustomerAgent customer, Table table) {
 		int waiterNumber = 0;
-		int customerNumber = 0;
+		int customerSize= 0;
 		
 		if(waiters.size() > 0){
-			customerNumber = waiters.get(waiterNumber).getMyCustomers().size();
+			customerSize = waiters.get(waiterNumber).getMyCustomers().size();
 			
 			// choosing a waiter that has the least number of customers in the list
 			for(int i=0;i<waiters.size();i++) {
 				if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
-					if(customerNumber >= waiters.get(i).getMyCustomers().size()) {
+					if(customerSize > waiters.get(i).getMyCustomers().size()) {
 						waiterNumber = i;
 					}
 				}
@@ -140,14 +140,15 @@ public class HostAgent extends Agent {
 	}
 	
 	public void addWaiterByGui() {
-		WaiterAgent w = new WaiterAgent("waiter #"+ NWAITERS);
+		WaiterAgent w = new WaiterAgent("waiter #"+ (NWAITERS-1));
 		w.setHost(this);
 		w.setCook(cook);
 				
 		WaiterGui g = new WaiterGui(w);
 		w.setGui(g);
-		
+				
 		waiters.add(w);
+		
 		w.startThread();
 	}
 	
