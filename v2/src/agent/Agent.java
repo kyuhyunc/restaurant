@@ -8,7 +8,8 @@ import java.util.concurrent.*;
  * Base class for simple agents
  */
 public abstract class Agent {
-    Semaphore stateChange = new Semaphore(1, true);//binary semaphore, fair
+	// initial permit was initially 1, but it should work with 0 as initial  valeue as well
+    Semaphore stateChange = new Semaphore(0, true);//binary semaphore, fair
     Semaphore pause = new Semaphore(1, true);//binary semaphore, fair
     private AgentThread agentThread;
 

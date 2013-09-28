@@ -252,6 +252,7 @@ public class RestaurantGui extends JFrame implements ActionListener {
     				HostAgent.NWAITERS ++;
     				restPanel.getHostAgent().addWaiterByGui();
     				System.out.println("Adding one more waiter: " + HostAgent.NWAITERS);
+    				animationPanel.addGui(restPanel.getHostAgent().waiters.get(HostAgent.NWAITERS-1).getGui()); // adding newly created waiter to animation panel
     			}
     			else {
     				System.out.println("Cannot add more waiter!! (maximum is 5)");

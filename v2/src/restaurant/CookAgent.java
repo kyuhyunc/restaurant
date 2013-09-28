@@ -1,11 +1,13 @@
 package restaurant;
 
 import agent.Agent;
-import restaurant.WaiterAgent.Order;
+import restaurant.WaiterAgent.Food;
+
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Restaurant customer agent.
@@ -35,9 +37,9 @@ public class CookAgent extends Agent {
 	 */
 	
 	// Messages
-	public void msgHereIsAnOrder(Order order) {
+	public void msgHereIsAnOrder(WaiterAgent waiter, CustomerAgent customer, String choice) {
 		print("received an order");
-		orders.add(order);
+		orders.add(new Order(waiter, customer, choice));
 		stateChanged();
 	}
 	
@@ -81,6 +83,34 @@ public class CookAgent extends Agent {
 
 	public String toString() {
 		return "cook " + getName();
+	}
+	
+	public static class Order {
+		WaiterAgent waiter;
+		CustomerAgent customer;
+		Food choice;
+		Timer timer = new Timer();
+		
+		Order (WaiterAgent waiter, CustomerAgent customer, String choice) {
+			this.waiter = waiter;
+			this.customer = customer;
+			this.choice = new Food(choice);
+		}
+		
+		public enum OrderState
+		{Pending, Cooking, Cooked};
+		OrderState state = OrderState.Pending;
+		
+		void DoCooking() {
+			timer.schedule(new TimerTask() {
+				public void run() {
+					System.out.println("Done cooking, " + choice);
+					state = Order.OrderState.Cooked;
+				}
+			},
+			choice.cookingTime);//getHungerLevel() * 1000);//how long to wait before running task
+		}
+		
 	}
 	
 	/**

@@ -34,6 +34,7 @@ public class HostAgent extends Agent {
 		super();
 
 		this.name = name;
+		
 		// make some tables
 		tables = new ArrayList<Table>(NTABLES);
 		for (int ix = 1; ix <= NTABLES; ix++) {
@@ -130,7 +131,10 @@ public class HostAgent extends Agent {
 			waiters.get(waiterNumber).msgSitAtTable(customer, table);
 			customer.setWaiter(waiters.get(waiterNumber));
 			waitingCustomers.remove(customer);		
-		} 
+		}
+		else {
+			Do("There is no waiter!");
+		}
 	}
 	
 	//utilities
@@ -149,7 +153,7 @@ public class HostAgent extends Agent {
 				
 		waiters.add(w);
 		
-		w.startThread();
+		w.startThread();		
 	}
 	
 

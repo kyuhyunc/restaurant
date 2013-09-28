@@ -3,14 +3,14 @@ package restaurant;
 import restaurant.HostAgent.Table;
 import restaurant.gui.WaiterGui;
 import agent.Agent;
+import restaurant.CookAgent.Order;
 import restaurant.HostAgent;
 import restaurant.CookAgent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+
 import java.util.concurrent.Semaphore;
 
 /**
@@ -226,7 +226,7 @@ public class WaiterAgent extends Agent {
 		}
 		
 		Do("Here is an order " + customer.choice + " from customer " + customer.c);
-		cook.msgHereIsAnOrder(new Order(waiter, customer.c, customer.choice));
+		cook.msgHereIsAnOrder(waiter, customer.c, customer.choice);
 		
 		customer.state = MyCustomer.CustState.waitingFood2;
 		
@@ -312,6 +312,7 @@ public class WaiterAgent extends Agent {
 		}
 	}
 	
+	/**
 	public static class Order {
 		WaiterAgent waiter;
 		CustomerAgent customer;
@@ -338,7 +339,7 @@ public class WaiterAgent extends Agent {
 			choice.cookingTime);//getHungerLevel() * 1000);//how long to wait before running task
 		}
 		
-	}
+	}*/
 	
 	public static class Food {
 		String name;
