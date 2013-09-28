@@ -1,10 +1,9 @@
 package restaurant.gui;
 
 import restaurant.CustomerAgent;
+import restaurant.HostAgent;
 
 import java.awt.*;
-
-import javax.swing.ImageIcon;
 
 public class CustomerGui implements Gui{
 
@@ -20,11 +19,8 @@ public class CustomerGui implements Gui{
 	private enum Command {noCommand, GoToSeat, LeaveRestaurant};
 	private Command command=Command.noCommand;
 
-	//public static final int xTable = 200;
-	//public static final int yTable = 250;
-	
-	private ImageIcon custImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/C for customer.jpg");
-	private Image image = custImage.getImage();
+	public static final int xTable = 200;
+	public static final int yTable = 250;
 
 	public CustomerGui(CustomerAgent c, RestaurantGui gui){ //HostAgent m) {
 		agent = c;
@@ -60,9 +56,8 @@ public class CustomerGui implements Gui{
 	}
 
 	public void draw(Graphics2D g) {
-		//g.setColor(Color.GREEN);
-		//g.fillRect(xPos, yPos, 20, 20);
-		g.drawImage(image, xPos, yPos, 20, 20, null);
+		g.setColor(Color.GREEN);
+		g.fillRect(xPos, yPos, 20, 20);
 	}
 
 	public boolean isPresent() {
@@ -81,11 +76,9 @@ public class CustomerGui implements Gui{
 		isPresent = p;
 	}
 
-	public void DoGoToSeat(int tableNumber) {//later you will map seat number to table coordinates.
-		
-		xDestination = AnimationPanel.TableLocationX + 70*(tableNumber-1);
-		
-		yDestination = AnimationPanel.TableLocationY;
+	public void DoGoToSeat(int seatnumber) {//later you will map seatnumber to table coordinates.
+		xDestination = xTable;
+		yDestination = yTable;
 		command = Command.GoToSeat;
 	}
 

@@ -1,10 +1,10 @@
 package restaurant;
 
 import agent.Agent;
-import restaurant.gui.WaiterGui;
-import restaurant.WaiterAgent;
+import restaurant.gui.HostGui;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 /**
  * Restaurant Host Agent
@@ -14,8 +14,8 @@ import java.util.*;
 //the HostAgent. A Host is the manager of a restaurant who sees that all
 //is proceeded as he wishes.
 public class HostAgent extends Agent {
-	static public int NTABLES = 1;//a global for the number of tables.
-	static public int NWAITERS = 1;
+	static final int NTABLES = 1;//a global for the number of tables.
+	static final int NWAITERS = 5;
 	//Notice that we implement waitingCustomers using ArrayList, but type it
 	//with List semantics.
 	public List<CustomerAgent> waitingCustomers
@@ -23,12 +23,15 @@ public class HostAgent extends Agent {
 	public Collection<Table> tables;
 	//note that tables is typed with Collection semantics.
 	//Later we will see how it is implemented
-	public List<WaiterAgent> waiters = new ArrayList<WaiterAgent>();
 	
 	private CookAgent cook = new CookAgent("Cook");
 	
+	public List<WaiterAgent> waiters = new ArrayList<WaiterAgent>();
+
 	private String name;
-	//private Semaphore atTable = new Semaphore(0,true);
+	private Semaphore atTable = new Semaphore(0,true);
+
+	public HostGui hostGui = null;
 
 	public HostAgent(String name) {
 		super();
@@ -38,16 +41,12 @@ public class HostAgent extends Agent {
 		tables = new ArrayList<Table>(NTABLES);
 		for (int ix = 1; ix <= NTABLES; ix++) {
 			tables.add(new Table(ix));//how you add to a collections
-		}		
+		}
 		
 		for (int i=0;i<NWAITERS;i++) {
-			WaiterAgent w = new WaiterAgent("waiter #"+(i+1));
+			WaiterAgent w = new WaiterAgent("waiter #"+i);
 			w.setHost(this);
 			w.setCook(cook);
-			
-			WaiterGui g = new WaiterGui(w);
-			w.setGui(g);
-			
 			waiters.add(w);
 			w.startThread();
 		}
@@ -55,10 +54,21 @@ public class HostAgent extends Agent {
 		cook.startThread();
 	}
 
+	public String getMaitreDName() {
+		return name;
+	}
+
 	public String getName() {
 		return name;
 	}
 
+	public List getWaitingCustomers() {
+		return waitingCustomers;
+	}
+
+	public Collection getTables() {
+		return tables;
+	}
 	// Messages
 
 	public void msgIWantFood(CustomerAgent cust) {
@@ -76,11 +86,16 @@ public class HostAgent extends Agent {
 			}
 		}
 	}
+
+	public void msgAtTable() {//from animation
+		//print("msgAtTable() called");
+		atTable.release();// = true;
+		stateChanged();
+	}
 	
 	public void msgTableIsCleared(Table table) {
 		print("table #" + table.tableNumber + " is cleared");
 		table.setUnoccupied();
-		stateChanged(); // so that when a customer leaves, host will check availability of tables again
 	}
 
 	/**
@@ -95,7 +110,6 @@ public class HostAgent extends Agent {
 		for (Table table : tables) {
 			if (!table.isOccupied()) {
 				if (!waitingCustomers.isEmpty()) {
-					table.setOccupant(waitingCustomers.get(0));
 					tellWaiter(waitingCustomers.get(0), table);
 					//seatCustomer(waitingCustomers.get(0), table);//the action
 					return true;//return true to the abstract agent to reinvoke the scheduler.
@@ -111,46 +125,49 @@ public class HostAgent extends Agent {
 
 	// Actions
 	private void tellWaiter(CustomerAgent customer, Table table) {
-		int waiterNumber = 0;
-		int customerNumber = 0;
-		
-		if(waiters.size() > 0){
-			customerNumber = waiters.get(waiterNumber).getMyCustomers().size();
-			
-			// choosing a waiter that has the least number of customers in the list
-			for(int i=0;i<waiters.size();i++) {
-				if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
-					if(customerNumber >= waiters.get(i).getMyCustomers().size()) {
-						waiterNumber = i;
-					}
-				}
+		for (WaiterAgent waiter : waiters) {
+			if(waiter.state == WaiterAgent.AgentState.Waiting) {
+				// 2: SitAtTable(cust, table)
+				waiter.msgSitAtTable(customer, table);
+				customer.setWaiter(waiter);
+				waitingCustomers.remove(customer);
+				break;
 			}
+		}
+	}
+	/**
+	private void seatCustomer(CustomerAgent customer, Table table) {
+		customer.msgSitAtTable();
+		DoSeatCustomer(customer, table);
+		try {
+			atTable.acquire();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		table.setOccupant(customer);
+		waitingCustomers.remove(customer);
+		hostGui.DoLeaveCustomer();
+	}*/
 
-			// 2: SitAtTable(cust, table)
-			waiters.get(waiterNumber).msgSitAtTable(customer, table);
-			customer.setWaiter(waiters.get(waiterNumber));
-			waitingCustomers.remove(customer);		
-		} 
+	// The animation DoXYZ() routines
+	private void DoSeatCustomer(CustomerAgent customer, Table table) {
+		//Notice how we print "customer" directly. It's toString method will do it.
+		//Same with "table"
+		print("Seating " + customer + " at " + table);
+		hostGui.DoBringToTable(customer); 
+
 	}
-	
+
 	//utilities
-	
-	public void addTableByGui() {
-		tables.add(new Table(NTABLES));//how you add to a collections
+
+	public void setGui(HostGui gui) {
+		hostGui = gui;
 	}
-	
-	public void addWaiterByGui() {
-		WaiterAgent w = new WaiterAgent("waiter #"+ NWAITERS);
-		w.setHost(this);
-		w.setCook(cook);
-				
-		WaiterGui g = new WaiterGui(w);
-		w.setGui(g);
-		
-		waiters.add(w);
-		w.startThread();
+
+	public HostGui getGui() {
+		return hostGui;
 	}
-	
 
 	public class Table {
 		CustomerAgent occupiedBy;

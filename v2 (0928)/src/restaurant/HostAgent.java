@@ -41,9 +41,10 @@ public class HostAgent extends Agent {
 		}		
 		
 		for (int i=0;i<NWAITERS;i++) {
-			WaiterAgent w = new WaiterAgent("waiter #"+(i+1));
+			WaiterAgent w = new WaiterAgent("waiter #"+i);
 			w.setHost(this);
 			w.setCook(cook);
+			
 			
 			WaiterGui g = new WaiterGui(w);
 			w.setGui(g);
@@ -53,6 +54,10 @@ public class HostAgent extends Agent {
 		}
 		
 		cook.startThread();
+	}
+
+	public String getMaitreDName() {
+		return name;
 	}
 
 	public String getName() {
@@ -137,18 +142,6 @@ public class HostAgent extends Agent {
 	
 	public void addTableByGui() {
 		tables.add(new Table(NTABLES));//how you add to a collections
-	}
-	
-	public void addWaiterByGui() {
-		WaiterAgent w = new WaiterAgent("waiter #"+ NWAITERS);
-		w.setHost(this);
-		w.setCook(cook);
-				
-		WaiterGui g = new WaiterGui(w);
-		w.setGui(g);
-		
-		waiters.add(w);
-		w.startThread();
 	}
 	
 

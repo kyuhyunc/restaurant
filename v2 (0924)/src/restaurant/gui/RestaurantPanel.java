@@ -2,11 +2,10 @@ package restaurant.gui;
 
 import restaurant.CustomerAgent;
 import restaurant.HostAgent;
-import restaurant.WaiterAgent;
 
 import javax.swing.*;
-
 import java.awt.*;
+import java.awt.event.*;
 import java.util.Vector;
 
 /**
@@ -17,24 +16,23 @@ public class RestaurantPanel extends JPanel {
 
     //Host, cook, waiters and customers
     private HostAgent host = new HostAgent("Sarah");
- 
+    private HostGui hostGui = new HostGui(host);
+
     private Vector<CustomerAgent> customers = new Vector<CustomerAgent>();
 
     private JPanel restLabel = new JPanel();
-    protected ListPanel customerPanel = new ListPanel(this, "Customers");
+    private ListPanel customerPanel = new ListPanel(this, "Customers");
     private JPanel group = new JPanel();
 
     private RestaurantGui gui; //reference to main gui
 
     public RestaurantPanel(RestaurantGui gui) {
         this.gui = gui;
+        host.setGui(hostGui);
 
+        gui.animationPanel.addGui(hostGui);
         host.startThread();
-        
-        for(WaiterAgent w : host.waiters) {
-        	gui.animationPanel.addGui(w.getGui());// dw
-        }
-        
+
         setLayout(new GridLayout(1, 2, 20, 20));
         group.setLayout(new GridLayout(1, 2, 10, 10));
 
@@ -50,15 +48,12 @@ public class RestaurantPanel extends JPanel {
      * and host and cook information
      */
     private void initRestLabel() {
-    	JLabel label = new JLabel();
+        JLabel label = new JLabel();
         //restLabel.setLayout(new BoxLayout((Container)restLabel, BoxLayout.Y_AXIS));
         restLabel.setLayout(new BorderLayout());
-               
         label.setText(
                 "<html><h3><u>Tonight's Staff</u></h3><table><tr><td>host:</td><td>" + host.getName() + "</td></tr></table><h3><u> Menu</u></h3><table><tr><td>Steak</td><td>$15.99</td></tr><tr><td>Chicken</td><td>$10.99</td></tr><tr><td>Salad</td><td>$5.99</td></tr><tr><td>Pizza</td><td>$8.99</td></tr></table><br></html>");
-        
-        label.setFont(new Font("Arial", Font.PLAIN, 10));
-        
+
         restLabel.setBorder(BorderFactory.createRaisedBevelBorder());
         restLabel.add(label, BorderLayout.CENTER);
         restLabel.add(new JLabel("               "), BorderLayout.EAST);
@@ -76,6 +71,7 @@ public class RestaurantPanel extends JPanel {
     public void showInfo(String type, String name) {
 
         if (type.equals("Customers")) {
+
             for (int i = 0; i < customers.size(); i++) {
                 CustomerAgent temp = customers.get(i);
                 if (temp.getName() == name)
@@ -98,17 +94,10 @@ public class RestaurantPanel extends JPanel {
 
     		gui.animationPanel.addGui(g);// dw
     		c.setHost(host);
-    		c.setGui(g);
+    		//c.setGui(g);
     		customers.add(c);
     		c.startThread();
     	}
     }
-    
-    public CustomerAgent getCustomerAgent(int index) {
-    	return customers.get(index);
-    }
 
-    public HostAgent getHostAgent() {
-    	return host;
-    }
 }

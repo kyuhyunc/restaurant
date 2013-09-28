@@ -106,7 +106,7 @@ public class HostAgent extends Agent {
 	public void msgAtTable() {//from animation
 		//print("msgAtTable() called");
 		atTable.release();// = true;
-		stateChanged();
+		//stateChanged();
 	}
 
 	/**

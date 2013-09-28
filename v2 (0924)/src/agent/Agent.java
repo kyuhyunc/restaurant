@@ -9,7 +9,6 @@ import java.util.concurrent.*;
  */
 public abstract class Agent {
     Semaphore stateChange = new Semaphore(1, true);//binary semaphore, fair
-    Semaphore pause = new Semaphore(1, true);//binary semaphore, fair
     private AgentThread agentThread;
 
     protected Agent() {
@@ -130,11 +129,6 @@ public abstract class Agent {
             goOn = false;
             this.interrupt();
         }
-    }
-    
-   
-    void msgPauseAgent() {
-    	
     }
 }
 

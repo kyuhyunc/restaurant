@@ -157,8 +157,7 @@ public class CustomerAgent extends Agent {
 		//event = AgentEvent.seated;
 		for(WaiterAgent.MyCustomer myC : wait.getMyCustomers()) {
 			if(myC.c == this) {
-				customerGui.DoGoToSeat(myC.t.tableNumber);	
-				break;
+				customerGui.DoGoToSeat(myC.t.tableNumber);		
 			}		
 		}	
 	}

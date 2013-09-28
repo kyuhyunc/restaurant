@@ -14,8 +14,8 @@ public class AnimationPanel extends JPanel implements ActionListener {
 
     private final int WINDOWX = 450;
     private final int WINDOWY = 350;
-    //private Image bufferImage;
-    //private Dimension bufferSize;
+    private Image bufferImage;
+    private Dimension bufferSize;
 
     private List<Gui> guis = new ArrayList<Gui>();
     
@@ -29,7 +29,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
     protected static int CookLocationY = 50;
     
     protected Timer timer;
-    private final int timerSpeed = 15;
+    private final int timerSpeed = 10;
     
     public static boolean pauseFlag = true;
 
@@ -40,7 +40,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
     	setSize(WINDOWX, WINDOWY);
         setVisible(true);
         
-        //bufferSize = this.getSize();
+        bufferSize = this.getSize();
  
     	timer = new Timer(timerSpeed, this );
     	timer.start();

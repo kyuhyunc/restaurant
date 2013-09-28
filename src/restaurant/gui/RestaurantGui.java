@@ -183,7 +183,7 @@ public class RestaurantGui extends JFrame implements ActionListener {
     		
     		infoPanel.add(customerList.lastElement());
     		
-    			}
+    	}
     	//infoPanel.validate();
     
     	pane.validate();

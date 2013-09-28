@@ -47,8 +47,6 @@ public class RestaurantGui extends JFrame implements ActionListener {
     
     private JButton pause = new JButton("Pause");
     private JButton addTable = new JButton("Add Table");
-    private JButton addWaiter = new JButton("Add Waiter");
-    private JPanel addButtons = new JPanel();
     
     /**
      * Constructor for RestaurantGui class.
@@ -68,22 +66,17 @@ public class RestaurantGui extends JFrame implements ActionListener {
         animationPanel.setBorder(BorderFactory.createTitledBorder("Animation Panel"));
         add(animationPanel);
         
-        Dimension restDim = new Dimension(WINDOWX, (int) (WINDOWY * .33));
+        Dimension restDim = new Dimension(WINDOWX, (int) (WINDOWY * .27));
         restPanel.setPreferredSize(restDim);
         restPanel.setMinimumSize(restDim);
         restPanel.setMaximumSize(restDim);
         
-        addButtons.add(addTable);
-        addButtons.add(addWaiter);
-        restPanel.customerPanel.add(addButtons);
-        
-        restPanel.customerPanel.add(new JLabel("=============================="));
+        restPanel.customerPanel.add(addTable);
         
         restPanel.customerPanel.add(pause);
         restPanel.customerPanel.add(new JLabel("Click to pause or resume the program"));
         
-        addTable.addActionListener(new addButtonListener());
-        addWaiter.addActionListener(new addButtonListener());
+        addTable.addActionListener(new addTableListener());
         pause.addActionListener(new PauseListener());
         
         add(restPanel);
@@ -198,10 +191,15 @@ public class RestaurantGui extends JFrame implements ActionListener {
     // action listener for pause button 
     class PauseListener implements ActionListener {
     	public void actionPerformed(ActionEvent e) {
-    		if(e.getSource() == pause){ 			
+    		if(e.getSource() == pause){
+    			/**
+    			for(int i = 0; i < customerList.size(); i++){
+    				restPanel.getCustomerAgent(i).stopThread();
+    			}
+    			restPanel.getHostAgent().stopThread();*/
+    			
     			if(AnimationPanel.pauseFlag == true){
     				AnimationPanel.pauseFlag = false;
-    	
     				System.out.println("Pause");
     				
     				for(int i = 0; i < stateCBs.size() ; i++) {
@@ -209,8 +207,12 @@ public class RestaurantGui extends JFrame implements ActionListener {
     		    	}	
     				
     				addTable.setEnabled(false);
-    				addWaiter.setEnabled(false);
-    				restPanel.customerPanel.disableButtons();  				
+    				restPanel.customerPanel.disableButtons();
+    				
+    				/**for(int i = 0; i < customerList.size(); i++) {
+    					//restPanel.getCustomerAgent(i).timer.
+    				}*/
+    				
     			}
     			else {
     				AnimationPanel.pauseFlag = true;
@@ -223,7 +225,6 @@ public class RestaurantGui extends JFrame implements ActionListener {
     		    	}    				
     				
     				addTable.setEnabled(true);
-    				addWaiter.setEnabled(true);
     				restPanel.customerPanel.enableButtons();
     				
     				//pane.setEnabled(true);
@@ -234,7 +235,7 @@ public class RestaurantGui extends JFrame implements ActionListener {
     }
     
     // action listener for add table button 
-    class addButtonListener implements ActionListener {
+    class addTableListener implements ActionListener {
     	public void actionPerformed(ActionEvent e) {
     		if(e.getSource() == addTable){
     			if(HostAgent.NTABLES < 5) {
@@ -247,19 +248,9 @@ public class RestaurantGui extends JFrame implements ActionListener {
     			}
     				
     		}
-    		else if(e.getSource() == addWaiter){
-    			if(HostAgent.NWAITERS < 5){
-    				HostAgent.NWAITERS ++;
-    				restPanel.getHostAgent().addWaiterByGui();
-    				System.out.println("Adding one more waiter: " + HostAgent.NWAITERS);
-    			}
-    			else {
-    				System.out.println("Cannot add more waiter!! (maximum is 5)");
-    			}
-    		}
     	}
     }
-       
+    
     /**
      * Main routine to get gui started
      */

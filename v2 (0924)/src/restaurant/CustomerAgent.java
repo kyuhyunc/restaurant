@@ -1,6 +1,7 @@
 package restaurant;
 
 import restaurant.gui.CustomerGui;
+import restaurant.gui.RestaurantGui;
 import agent.Agent;
 import restaurant.WaiterAgent;
 import restaurant.WaiterAgent.Food;
@@ -16,7 +17,7 @@ public class CustomerAgent extends Agent {
 	private String name;
 	private int hungerLevel = 5;        // determines length of meal
 	Timer timer = new Timer();
-	private CustomerGui customerGui;
+	//private CustomerGui customerGui;
 	private boolean isHungry = false;
 
 	// agent correspondents
@@ -61,6 +62,7 @@ public class CustomerAgent extends Agent {
 	// 0: IamHungry
 	public void gotHungry() { //from animation
 		print("I'm hungry");
+		isHungry = true;
 		event = AgentEvent.gotHungry;
 		stateChanged();
 	}
@@ -83,19 +85,8 @@ public class CustomerAgent extends Agent {
 	}
 	
 	public void msgHereIsYourOrder() {
+		print("Here is your order [from waiter to customer]");
 		event = AgentEvent.getFood;
-		stateChanged();
-	}
-	
-	// messages from gui
-	public void msgAnimationFinishedGoToSeat() {
-		//from animation
-		event = AgentEvent.seated;
-		stateChanged();
-	}
-	public void msgAnimationFinishedLeaveRestaurant() {
-		//from animation
-		event = AgentEvent.doneLeaving;
 		stateChanged();
 	}
 	
@@ -122,12 +113,12 @@ public class CustomerAgent extends Agent {
 		}
 		else if (state == AgentState.Seated && event == AgentEvent.callWaiterToOrder){
 			state = AgentState.ReadyToOrder;
-			ReadyToOrder();
+			ReadyToOrder(this);
 			return true;
 		}
 		else if (state == AgentState.ReadyToOrder && event == AgentEvent.makeOrder){
 			state = AgentState.WaitingFood;
-			HereIsMyChoice(choice);
+			HereIsMyChoice(this, choice);
 			return true;
 		}
 		else if (state == AgentState.WaitingFood && event == AgentEvent.getFood){
@@ -149,18 +140,14 @@ public class CustomerAgent extends Agent {
 		Do("Going to restaurant");
 		host.msgIWantFood(this);//send our instance, so he can respond to us
 		//ADDED
-		//stateChanged();
+		stateChanged();
 	}
 
 	private void SitDown() {
 		Do("Being seated. Going to table");
-		//event = AgentEvent.seated;
-		for(WaiterAgent.MyCustomer myC : wait.getMyCustomers()) {
-			if(myC.c == this) {
-				customerGui.DoGoToSeat(myC.t.tableNumber);	
-				break;
-			}		
-		}	
+		event = AgentEvent.seated;
+		stateChanged();
+		//customerGui.DoGoToSeat(1);//hack; only one table
 	}
 	
 	private void ChooseMenu() {
@@ -171,14 +158,14 @@ public class CustomerAgent extends Agent {
 		stateChanged();
 	}
 	
-	private void ReadyToOrder() {
+	private void ReadyToOrder(CustomerAgent customer) {
 		Do("Ready To Order");
 		wait.msgReadyToOrder(this);
 	}
 	
-	private void HereIsMyChoice(String choice) {
+	private void HereIsMyChoice(CustomerAgent customer, String choice) {
 		Do("Here Is My Choice");
-		wait.msgHereIsMyChoice(this, choice);
+		wait.msgHereIsMyChoice(customer, choice);
 	}
 
 	private void EatFood() {
@@ -205,7 +192,7 @@ public class CustomerAgent extends Agent {
 		Do("Leaving.");
 		wait.msgLeavingTable(this);
 		isHungry = false;
-		customerGui.DoExitRestaurant();
+		//customerGui.DoExitRestaurant();
 	}
 
 	// Accessors, etc.
@@ -232,13 +219,13 @@ public class CustomerAgent extends Agent {
 		return isHungry;
 	}
 	
-	
+	/**
 	public void setGui(CustomerGui g) {
 		customerGui = g;
 	}
 
 	public CustomerGui getGui() {
 		return customerGui;
-	}
+	}*/
 }
 

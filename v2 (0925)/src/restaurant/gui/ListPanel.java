@@ -15,7 +15,7 @@ public class ListPanel extends JPanel implements ActionListener {
 	
     private List<JButton> list = new ArrayList<JButton>();
     
-    private JButton addPersonB = new JButton("Add Customer");
+    private JButton addPersonB = new JButton("Add");
 
     private RestaurantPanel restPanel;
     private String type;
@@ -43,7 +43,7 @@ public class ListPanel extends JPanel implements ActionListener {
          addPersonB.addActionListener(this);
          add(addPersonB);
          
-         //add(new JLabel("Click add to add customers"));
+         add(new JLabel("Click add to add customers"));
     }
 
     /**
