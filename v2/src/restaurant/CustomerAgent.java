@@ -201,6 +201,9 @@ public class CustomerAgent extends Agent {
 		if(menu.contains(choice)) {
 			fChoice = new Food(choice);
 		}
+		else {
+			Do("failed to choose menu");
+		}
 			
 		event = AgentEvent.callWaiterToOrder;
 		stateChanged();
@@ -213,14 +216,15 @@ public class CustomerAgent extends Agent {
 	
 	private void HereIsMyChoice(String choice) {
 		Do("Here Is My Choice : " + choice);
-		wait.msgHereIsMyChoice(this, choice);
-		
+			
 		for(WaiterAgent.MyCustomer myC : wait.getMyCustomers()) {
 			if(myC.c == this) {
 				foodGui = new FoodGui(myC.t.tableNumber, fChoice);			
 				break;
 			}		
-		}	
+		}
+		
+		wait.msgHereIsMyChoice(this, choice);
 		
 		host.gui.animationPanel.addGui(foodGui);
 		foodGui.state = FoodGui.State.waiting;

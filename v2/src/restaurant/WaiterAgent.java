@@ -52,7 +52,7 @@ public class WaiterAgent extends Agent {
 		super();
 		this.name = name;
 		
-		menu.addAll(Arrays.asList("Stake","Chicke","Salad","Pizza"));
+		menu.addAll(Arrays.asList("Stake","Chicken","Salad","Pizza"));
 	}
 
 	/**
@@ -71,7 +71,7 @@ public class WaiterAgent extends Agent {
 	// 2:
 	public void msgSitAtTable(CustomerAgent customer, Table table) {
 		//state = AgentState.Serving;
-		state = AgentState.Waiting;
+		//state = AgentState.Waiting;
 		print("Received msgSitAtTable from the host");
 		MyCustomers.add(new MyCustomer(customer, table));
 		stateChanged();
@@ -84,11 +84,6 @@ public class WaiterAgent extends Agent {
 	public void msgAtHost() {
 		atHost.release();
 	}
-	/**
-	public void msgReadyToServe() {
-		state = AgentState.Waiting;
-		stateChanged();
-	}*/
 	
 	public void msgReadyToOrder(CustomerAgent customer) {
 		for(int i=0; i < MyCustomers.size() ; i++) {
@@ -166,7 +161,6 @@ public class WaiterAgent extends Agent {
 					return true;
 				}
 				else if (customer.state == MyCustomer.CustState.doneEating) {
-					state = AgentState.Serving;
 					TableIsCleared(customer);
 					return true;
 				}
@@ -197,8 +191,9 @@ public class WaiterAgent extends Agent {
 		}
 		customer.state = MyCustomer.CustState.seated;
 		
-		waiterGui.DoGoBackToHost();
 		state = AgentState.Waiting;
+		waiterGui.DoGoBackToHost2();
+		stateChanged();
 	}
 	
 	void DoSeatCustomer(MyCustomer customer) {
@@ -232,9 +227,9 @@ public class WaiterAgent extends Agent {
 		
 		customer.state = MyCustomer.CustState.waitingFood2;
 		
-		waiterGui.DoGoBackToHost();
 		state = AgentState.Waiting;
-		
+		waiterGui.DoGoBackToHost2();
+		stateChanged();		
 	}
 	
 	void DoGoToCook() {
@@ -268,8 +263,9 @@ public class WaiterAgent extends Agent {
 		
 		//customer.c.getFoodGui().state = FoodGui.State.delivered;
 
-		waiterGui.DoGoBackToHost();
 		state = AgentState.Waiting;
+		waiterGui.DoGoBackToHost2();
+		stateChanged();
 	}
 
 	void TableIsCleared(MyCustomer customer) {
@@ -292,6 +288,10 @@ public class WaiterAgent extends Agent {
 
 	public WaiterGui getGui() {
 		return waiterGui;
+	}
+	
+	public CookAgent getCook() {
+		return cook;
 	}
 	
 	public String getName() {
@@ -323,8 +323,8 @@ public class WaiterAgent extends Agent {
 		String name;
 		
 		int time; // for setting timer differently
-		double cookingTimeMultiplier = 2;
-		double eatingTimeMultiplier = 2.5;
+		double cookingTimeMultiplier = 1.5;
+		double eatingTimeMultiplier = 3.5;
 		
 		private ImageIcon foodImage;
 		

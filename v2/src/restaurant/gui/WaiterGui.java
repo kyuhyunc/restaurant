@@ -14,7 +14,7 @@ public class WaiterGui implements Gui {
 
     private int xPos = -20, yPos = -20;//default waiter position
     private int xDestination = -20, yDestination = -20;//default start position
-    private enum Command {noCommand, GoToTable, GoToCook, GoToHost};
+    private enum Command {noCommand, GoToTable, GoToCook, GoToHost, GoToHost2};
 	private Command command=Command.noCommand;
 	
     //public static final int xTable = 200;
@@ -84,6 +84,13 @@ public class WaiterGui implements Gui {
         yDestination = -20;
                 
         command = Command.GoToHost;
+    }
+    
+    public void DoGoBackToHost2() {
+        xDestination = -20;
+        yDestination = -20;
+                
+        command = Command.GoToHost2;
     }
 
     public int getXPos() {

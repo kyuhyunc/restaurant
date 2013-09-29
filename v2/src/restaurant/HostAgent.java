@@ -99,7 +99,7 @@ public class HostAgent extends Agent {
 		for (Table table : tables) {
 			if (!table.isOccupied()) {
 				if (!waitingCustomers.isEmpty()) {
-					table.setOccupant(waitingCustomers.get(0));
+					//table.setOccupant(waitingCustomers.get(0));
 					tellWaiter(waitingCustomers.get(0), table);
 					//seatCustomer(waitingCustomers.get(0), table);//the action
 					return true;//return true to the abstract agent to reinvoke the scheduler.
@@ -131,6 +131,7 @@ public class HostAgent extends Agent {
 			}
 
 			// 2: SitAtTable(cust, table)
+			table.setOccupant(customer);
 			waiters.get(waiterNumber).msgSitAtTable(customer, table);
 			customer.setWaiter(waiters.get(waiterNumber));
 			waitingCustomers.remove(customer);		

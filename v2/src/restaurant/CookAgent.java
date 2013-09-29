@@ -4,7 +4,9 @@ import agent.Agent;
 import restaurant.WaiterAgent.Food;
 
 
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -18,7 +20,8 @@ public class CookAgent extends Agent {
 	// agent correspondents
 	
 	//    private boolean isHungry = false; //hack for gui
-	private List<Order> orders = new ArrayList<Order>();
+	//private List<Order> orders = new ArrayList<Order>();
+	private List<Order> orders = Collections.synchronizedList(new ArrayList<Order>());
 
 	
 	/**
@@ -48,20 +51,22 @@ public class CookAgent extends Agent {
 	 */
 	protected boolean pickAndExecuteAnAction() {
 		if (!orders.isEmpty()) {
-			for(int i=0;i<orders.size();i++){
-				if(orders.get(i).state == Order.OrderState.Pending) {
-					orders.get(i).state = Order.OrderState.Cooking;
-					CookOrder(orders.get(i));
-					return true;
+			synchronized (orders) {
+				for(int i=0;i<orders.size();i++){
+					if(orders.get(i).state == Order.OrderState.Pending) {
+						orders.get(i).state = Order.OrderState.Cooking;
+						CookOrder(orders.get(i));
+						return true;
+					}
+					else if(orders.get(i).state == Order.OrderState.Cooked) {
+						orders.get(i).waiter.msgOrderIsReady(orders.get(i));
+						Do("Order for customer " + orders.get(i).customer + " is ready : " + orders.get(i).choice.name);
+						orders.remove(i);
+						return true;
+					}
 				}
-				else if(orders.get(i).state == Order.OrderState.Cooked) {
-					orders.get(i).waiter.msgOrderIsReady(orders.get(i));
-					Do("Order for customer " + orders.get(i).customer + " is ready : " + orders.get(i).choice.name);
-					orders.remove(i);
-					return true;
-				}
+				return true; // return true when state is cooking, so that cook can wait
 			}
-			return true;
 		}
 		return false;
 	}
@@ -71,7 +76,7 @@ public class CookAgent extends Agent {
 	void CookOrder(Order order) {
 		print("Start cooking");
 		order.DoCooking();
-		stateChanged();
+		//stateChanged();
 	}
 	
 	// Accessors, etc.
@@ -105,6 +110,7 @@ public class CookAgent extends Agent {
 				public void run() {
 					System.out.println("Cook: Done cooking, " + choice.name + " for " + customer.getName());
 					state = Order.OrderState.Cooked;
+					waiter.getCook().stateChanged();
 				}
 			},
 			(int) (choice.time * choice.cookingTimeMultiplier));//getHungerLevel() * 1000);//how long to wait before running task
