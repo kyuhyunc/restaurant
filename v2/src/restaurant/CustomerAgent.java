@@ -1,6 +1,7 @@
 package restaurant;
 
 import restaurant.gui.CustomerGui;
+import restaurant.gui.FoodGui;
 import agent.Agent;
 import restaurant.WaiterAgent;
 import restaurant.WaiterAgent.Food;
@@ -18,10 +19,12 @@ public class CustomerAgent extends Agent {
 	private int hungerLevel = 5;        // determines length of meal
 	Timer timer = new Timer();
 	private CustomerGui customerGui;
+	private FoodGui foodGui;
 
 	// agent correspondents
 	private HostAgent host;
 	private WaiterAgent wait;
+	
 	Set<String> menu;
 	String choice;
 	Food fChoice;
@@ -190,7 +193,7 @@ public class CustomerAgent extends Agent {
 			choice = "Pizza";
 			break;
 		default:
-			print("defaul");
+			print("default");
 			choice = "Stake";
 			break;
 		}
@@ -198,7 +201,7 @@ public class CustomerAgent extends Agent {
 		if(menu.contains(choice)) {
 			fChoice = new Food(choice);
 		}
-		
+			
 		event = AgentEvent.callWaiterToOrder;
 		stateChanged();
 	}
@@ -211,6 +214,16 @@ public class CustomerAgent extends Agent {
 	private void HereIsMyChoice(String choice) {
 		Do("Here Is My Choice : " + choice);
 		wait.msgHereIsMyChoice(this, choice);
+		
+		for(WaiterAgent.MyCustomer myC : wait.getMyCustomers()) {
+			if(myC.c == this) {
+				foodGui = new FoodGui(myC.t.tableNumber, fChoice);			
+				break;
+			}		
+		}	
+		
+		host.gui.animationPanel.addGui(foodGui);
+		foodGui.state = FoodGui.State.waiting;
 	}
 
 	private void EatFood() {
@@ -227,6 +240,7 @@ public class CustomerAgent extends Agent {
 			public void run() {
 				print("Done eating, " + choice);
 				event = AgentEvent.doneEating;
+				foodGui.state = FoodGui.State.doneEating;
 				stateChanged();
 			}
 		},
@@ -240,7 +254,6 @@ public class CustomerAgent extends Agent {
 	}
 
 	// Accessors, etc.
-
 	public String getName() {
 		return name;
 	}
@@ -265,6 +278,10 @@ public class CustomerAgent extends Agent {
 
 	public CustomerGui getGui() {
 		return customerGui;
+	}
+	
+	public FoodGui getFoodGui() {
+		return foodGui;
 	}
 }
 

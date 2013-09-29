@@ -1,6 +1,6 @@
 package restaurant.gui;
 
-import restaurant.CustomerAgent;
+import restaurant.WaiterAgent.Food;
 
 import java.awt.*;
 
@@ -8,90 +8,80 @@ import javax.swing.ImageIcon;
 
 public class FoodGui implements Gui{
 
-	private CustomerAgent agent = null;
-	private boolean isPresent = false;
-	private boolean isHungry = false;
-
-	//private HostAgent host;
-	RestaurantGui gui;
-
 	private int xPos, yPos;
 	private int xDestination, yDestination;
-	private enum Command {noCommand, GoToSeat, LeaveRestaurant};
-	private Command command=Command.noCommand;
+	private boolean isPresent = false;
+	
+	public static enum State {noCommand, waiting, delivering, delivered, doneEating};
+	public State state=State.noCommand;
 
 	//public static final int xTable = 200;
 	//public static final int yTable = 250;
 	
-	private ImageIcon custImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/C for customer.jpg");
-	private Image image = custImage.getImage();
-
-	public FoodGui(CustomerAgent c, RestaurantGui gui){ //HostAgent m) {
-		agent = c;
-		xPos = -40;
-		yPos = -40;
-		xDestination = -40;
-		yDestination = -40;
-		//maitreD = m;
-		this.gui = gui;
+	Food choice;
+	
+	private ImageIcon questionMark = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/question.jpg");
+	
+	private Image qImage = questionMark.getImage();
+	private Image fImage;
+	
+	int tableNumber;
+	
+	public FoodGui(int t, Food choice){ //HostAgent m) {
+	
+		xPos = AnimationPanel.CookLocationX;
+		yPos = AnimationPanel.CookLocationY;
+		
+		tableNumber = t;
+		this.choice = choice;
+		
+		fImage = choice.getImageIcon().getImage();
+		
+		setPresent(true);
 	}
 
 	public void updatePosition() {
-		if (xPos < xDestination)
-			xPos++;
-		else if (xPos > xDestination)
-			xPos--;
-
-		if (yPos < yDestination)
-			yPos++;
-		else if (yPos > yDestination)
-			yPos--;
-
-		if (xPos == xDestination && yPos == yDestination) {
-			if (command==Command.GoToSeat) agent.msgAnimationFinishedGoToSeat();
-			else if (command==Command.LeaveRestaurant) {
-				agent.msgAnimationFinishedLeaveRestaurant();
-				System.out.println("about to call gui.setCustomerEnabled(agent);");
-				isHungry = false;
-				gui.setCustomerEnabled(agent);
+		if( state == State.delivering ) {
+			if (xPos < xDestination)
+				xPos++;
+			else if (xPos > xDestination)
+				xPos--;
+	
+			if (yPos < yDestination)
+				yPos++;
+			else if (yPos > yDestination)
+				yPos--;
+	
+			if (xPos == xDestination && yPos == yDestination) {
+				state = State.delivered;
 			}
-			command=Command.noCommand;
 		}
 	}
 
 	public void draw(Graphics2D g) {
-		//g.setColor(Color.GREEN);
-		//g.fillRect(xPos, yPos, 20, 20);
-		g.drawImage(image, xPos, yPos, 20, 20, null);
+		if( state == State.waiting || state == State.delivering ) {
+			g.drawImage(qImage, AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20, AnimationPanel.TableLocationY , 20, 20, null);
+		}		
+		
+		if( state == State.delivering || state == State.delivered ) {
+			g.drawImage(fImage, xPos, yPos, 20, 20, null);
+		}
 	}
 
+	public void DoGoToTable () {//later you will map seat number to table coordinates.
+		if (state == State.delivering) {
+			xDestination = AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20;
+			yDestination = AnimationPanel.TableLocationY;
+		}
+	}
+
+	@Override
 	public boolean isPresent() {
+		// TODO Auto-generated method stub
 		return isPresent;
 	}
-	public void setHungry() {
-		isHungry = true;
-		agent.gotHungry();
-		setPresent(true);
-	}
-	public boolean isHungry() {
-		return isHungry;
-	}
-
+	
 	public void setPresent(boolean p) {
 		isPresent = p;
-	}
-
-	public void DoGoToSeat(int tableNumber) {//later you will map seat number to table coordinates.
-		
-		xDestination = AnimationPanel.TableLocationX + 70*(tableNumber-1);
-		
-		yDestination = AnimationPanel.TableLocationY;
-		command = Command.GoToSeat;
-	}
-
-	public void DoExitRestaurant() {
-		xDestination = -40;
-		yDestination = -40;
-		command = Command.LeaveRestaurant;
 	}
 }

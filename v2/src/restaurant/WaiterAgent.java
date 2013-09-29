@@ -1,6 +1,7 @@
 package restaurant;
 
 import restaurant.HostAgent.Table;
+import restaurant.gui.FoodGui;
 import restaurant.gui.WaiterGui;
 import agent.Agent;
 import restaurant.CookAgent.Order;
@@ -13,6 +14,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Semaphore;
+
+import javax.swing.ImageIcon;
 
 /**
  * Restaurant customer agent.
@@ -248,6 +251,9 @@ public class WaiterAgent extends Agent {
 			e.printStackTrace();
 		}
 		
+		customer.c.getFoodGui().state = FoodGui.State.delivering;
+		customer.c.getFoodGui().DoGoToTable();
+				
 		waiterGui.DoGoToTable(customer.c, customer.t.tableNumber);
 		try {
 			atTable.acquire();
@@ -259,6 +265,8 @@ public class WaiterAgent extends Agent {
 		Do("Here is an order for you, " + customer.c);
 		customer.c.msgHereIsYourOrder();
 		customer.state = MyCustomer.CustState.eating;
+		
+		//customer.c.getFoodGui().state = FoodGui.State.delivered;
 
 		waiterGui.DoGoBackToHost();
 		state = AgentState.Waiting;
@@ -315,23 +323,29 @@ public class WaiterAgent extends Agent {
 		String name;
 		
 		int time; // for setting timer differently
-		double cookingTimeMultiplier = 3;
+		double cookingTimeMultiplier = 2;
 		double eatingTimeMultiplier = 2.5;
+		
+		private ImageIcon foodImage;
 		
 		Food(String name) {
 			this.name = name;
 			
 			if (name == "Stake") {
 				time = (int) (1000 * cookingTimeMultiplier);
+				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/stake.jpg");
 			}
-			else if (name == "Chiken") {
+			else if (name == "Chicken") {
 				time = (int) (800 * cookingTimeMultiplier);
+				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/chicken.jpg");
 			}
 			else if (name == "Salad") {
 				time = (int) (600 * cookingTimeMultiplier);
+				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/salad.jpg");
 			}
 			else if (name == "Pizza") {
 				time = (int) (300 * cookingTimeMultiplier);
+				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/pizza.jpg");
 			}
 			else {
 				time = 0;
@@ -354,6 +368,10 @@ public class WaiterAgent extends Agent {
 			else {
 				return 0;
 			}
+		}
+		
+		public ImageIcon getImageIcon() {
+			return foodImage;
 		}
 	}
 }

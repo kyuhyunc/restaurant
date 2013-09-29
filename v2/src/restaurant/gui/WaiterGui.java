@@ -16,7 +16,7 @@ public class WaiterGui implements Gui {
     private int xDestination = -20, yDestination = -20;//default start position
     private enum Command {noCommand, GoToTable, GoToCook, GoToHost};
 	private Command command=Command.noCommand;
-
+	
     //public static final int xTable = 200;
     //public static final int yTable = 250;
 

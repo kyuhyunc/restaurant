@@ -28,6 +28,7 @@ public class RestaurantPanel extends JPanel {
 
     public RestaurantPanel(RestaurantGui gui) {
         this.gui = gui;
+        host.setRestaurantGui(gui);
 
         host.startThread();
         

@@ -29,7 +29,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
     protected static int CookLocationY = 50;
     
     protected Timer timer;
-    private final int timerSpeed = 15;
+    private final int timerSpeed = 5;
     
     public static boolean pauseFlag = false;
 
@@ -87,6 +87,10 @@ public class AnimationPanel extends JPanel implements ActionListener {
     }
 
     public void addGui(WaiterGui gui) {
+        guis.add(gui);
+    }
+    
+    public void addGui(FoodGui gui) {
         guis.add(gui);
     }
 }

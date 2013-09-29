@@ -32,7 +32,6 @@ public class CustomerGui implements Gui{
 		yPos = -40;
 		xDestination = -40;
 		yDestination = -40;
-		//maitreD = m;
 		this.gui = gui;
 	}
 

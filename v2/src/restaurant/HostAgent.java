@@ -1,6 +1,7 @@
 package restaurant;
 
 import agent.Agent;
+import restaurant.gui.RestaurantGui;
 import restaurant.gui.WaiterGui;
 import restaurant.WaiterAgent;
 
@@ -26,6 +27,8 @@ public class HostAgent extends Agent {
 	public List<WaiterAgent> waiters = new ArrayList<WaiterAgent>();
 	
 	private CookAgent cook = new CookAgent("Cook");
+	
+	public RestaurantGui gui;
 	
 	private String name;
 	//private Semaphore atTable = new Semaphore(0,true);
@@ -153,7 +156,7 @@ public class HostAgent extends Agent {
 	
 	public void addWaiterByGui() {
 		WaiterAgent w = new WaiterAgent("waiter #"+ (NWAITERS-1));
-		w.setHost(this);
+		w.setHost(this);		
 		w.setCook(cook);
 				
 		WaiterGui g = new WaiterGui(w);
@@ -162,6 +165,10 @@ public class HostAgent extends Agent {
 		waiters.add(w);
 		
 		w.startThread();		
+	}
+	
+	public void setRestaurantGui(RestaurantGui gui) {
+		this.gui = gui;
 	}
 	
 
