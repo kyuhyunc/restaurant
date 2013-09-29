@@ -16,7 +16,7 @@ import java.util.Random;
  */
 public class CustomerAgent extends Agent {
 	private String name;
-	private int hungerLevel = 5;        // determines length of meal
+	private int hungerLevel = 2;        // determines length of meal
 	Timer timer = new Timer();
 	private CustomerGui customerGui;
 	private FoodGui foodGui;
@@ -51,40 +51,38 @@ public class CustomerAgent extends Agent {
 	/**
 	 * hack to establish connection to Host agent.
 	 */
-	public void setHost(HostAgent host) {
-		this.host = host;
-	}
 
-	public void setWaiter(WaiterAgent waiter) {
-		this.wait = waiter;
-	}
 	
 	// Messages
 
-	// 0: IamHungry
+	// 0: IamHungry()
 	public void gotHungry() { //from animation
 		print("I'm hungry");
 		event = AgentEvent.gotHungry;
 		stateChanged();
 	}
 
+	// messages from gui
 	public void msgSitAtTable() {
 		print("Received msgSitAtTable");
 		event = AgentEvent.followHost;
 		stateChanged();
 	}
 	
+	// 3: FollowMe(menu)
 	public void msgFollowMe(Set<String> menu) {
 		this.menu = menu;
 		event = AgentEvent.followHost;
 		stateChanged();
 	}
 
+	// 5: WhatWouldYouLike()
 	public void msgWhatWouldYouLike() {
 		event = AgentEvent.makeOrder;
 		stateChanged();
 	}
 	
+	// 9: HereIsYourOrder() 
 	public void msgHereIsYourOrder() {
 		event = AgentEvent.getFood;
 		stateChanged();
@@ -96,6 +94,8 @@ public class CustomerAgent extends Agent {
 		event = AgentEvent.seated;
 		stateChanged();
 	}
+
+	// messages from gui
 	public void msgAnimationFinishedLeaveRestaurant() {
 		//from animation
 		event = AgentEvent.doneLeaving;
@@ -155,14 +155,11 @@ public class CustomerAgent extends Agent {
 
 	private void goToRestaurant() {
 		Do("Going to restaurant");
-		host.msgIWantFood(this);//send our instance, so he can respond to us
-		//ADDED
-		//stateChanged();
+		host.msgIWantFood(this); //send our instance, so he can respond to us
 	}
 
 	private void SitDown() {
 		Do("Being seated. Going to table");
-		//event = AgentEvent.seated;
 		for(WaiterAgent.MyCustomer myC : wait.getMyCustomers()) {
 			if(myC.c == this) {
 				customerGui.DoGoToSeat(myC.t.tableNumber);	
@@ -172,7 +169,6 @@ public class CustomerAgent extends Agent {
 	}
 	
 	private void ChooseMenu() {
-		//choice = choices.
 		Do("Choosing menu");
 		Random oRandom = new Random();
 		
@@ -248,7 +244,7 @@ public class CustomerAgent extends Agent {
 				stateChanged();
 			}
 		},
-		(int) (fChoice.time * fChoice.eatingTimeMultiplier));//getHungerLevel() * 1000);//how long to wait before running task
+		(int) (fChoice.time * fChoice.eatingTimeMultiplier) * getHungerLevel());//how long to wait before running task
 	}
 
 	private void leaveTable() {
@@ -258,6 +254,14 @@ public class CustomerAgent extends Agent {
 	}
 
 	// Accessors, etc.
+	public void setHost(HostAgent host) {
+		this.host = host;
+	}
+
+	public void setWaiter(WaiterAgent waiter) {
+		this.wait = waiter;
+	}
+	
 	public String getName() {
 		return name;
 	}

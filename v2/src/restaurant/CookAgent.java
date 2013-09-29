@@ -16,18 +16,14 @@ import javax.swing.ImageIcon;
 public class CookAgent extends Agent {
 	private String name;
 	Timer timer = new Timer();
-	// agent correspondents
-	
-	//    private boolean isHungry = false; //hack for gui
+		
 	//private List<Order> orders = new ArrayList<Order>();
 	private List<Order> orders = Collections.synchronizedList(new ArrayList<Order>());
-
 	
 	/**
-	 * Constructor for CustomerAgent class
+	 * Constructor for CookrAgent class
 	 *
 	 * @param name name of the customer
-	 * @param gui  reference to the customergui so the customer can send it messages
 	 */
 	public CookAgent(String name){
 		super();
@@ -39,9 +35,10 @@ public class CookAgent extends Agent {
 	 */
 	
 	// Messages
-	public void msgHereIsAnOrder(WaiterAgent waiter, CustomerAgent customer, String choice) {
+	// 7: HereIsAnOrder(order);
+	public void msgHereIsAnOrder(Order order) {
 		print("received an order");
-		orders.add(new Order(waiter, customer, choice));
+		orders.add(order);
 		stateChanged();
 	}
 	
@@ -121,8 +118,8 @@ public class CookAgent extends Agent {
 		String name;
 		
 		int time; // for setting timer differently
-		double cookingTimeMultiplier = 1.5;
-		double eatingTimeMultiplier = 3.5;
+		double cookingTimeMultiplier = 2.5;
+		double eatingTimeMultiplier = 4;
 		
 		private ImageIcon foodImage;
 		

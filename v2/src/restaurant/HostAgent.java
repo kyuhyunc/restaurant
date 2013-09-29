@@ -10,10 +10,6 @@ import java.util.*;
 /**
  * Restaurant Host Agent
  */
-//We only have 2 types of agents in this prototype. A customer and an agent that
-//does all the rest. Rather than calling the other agent a waiter, we called him
-//the HostAgent. A Host is the manager of a restaurant who sees that all
-//is proceeded as he wishes.
 public class HostAgent extends Agent {
 	static public int NTABLES = 3;//a global for the number of tables.
 	static public int NWAITERS = 1;
@@ -31,7 +27,6 @@ public class HostAgent extends Agent {
 	public RestaurantGui gui;
 	
 	private String name;
-	//private Semaphore atTable = new Semaphore(0,true);
 
 	public HostAgent(String name) {
 		super();
@@ -41,7 +36,7 @@ public class HostAgent extends Agent {
 		// make some tables
 		tables = new ArrayList<Table>(NTABLES);
 		for (int ix = 1; ix <= NTABLES; ix++) {
-			tables.add(new Table(ix));//how you add to a collections
+			tables.add(new Table(ix)); //how you add to a collections
 		}		
 		
 		for (int i=0;i<NWAITERS;i++) {
@@ -59,28 +54,16 @@ public class HostAgent extends Agent {
 		cook.startThread();
 	}
 
-	public String getName() {
-		return name;
-	}
-
 	// Messages
 
+	// 1: IWantFood(customer)
 	public void msgIWantFood(CustomerAgent cust) {
 		waitingCustomers.add(cust);
 		Do(cust + " is added to the waiting list");
 		stateChanged();
 	}
 
-	public void msgLeavingTable(CustomerAgent cust) {
-		for (Table table : tables) {
-			if (table.getOccupant() == cust) {
-				print(cust + " leaving " + table);
-				table.setUnoccupied();
-				stateChanged();
-			}
-		}
-	}
-	
+	// 11: TableIsCleared(table)
 	public void msgTableIsCleared(Table table) {
 		print("table #" + table.tableNumber + " is cleared");
 		table.setUnoccupied();
@@ -91,26 +74,15 @@ public class HostAgent extends Agent {
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
 	protected boolean pickAndExecuteAnAction() {
-		/* Think of this next rule as:
-            Does there exist a table and customer,
-            so that table is unoccupied and customer is waiting.
-            If so seat him at the table.
-		 */
 		for (Table table : tables) {
 			if (!table.isOccupied()) {
 				if (!waitingCustomers.isEmpty()) {
-					//table.setOccupant(waitingCustomers.get(0));
 					tellWaiter(waitingCustomers.get(0), table);
-					//seatCustomer(waitingCustomers.get(0), table);//the action
 					return true;//return true to the abstract agent to reinvoke the scheduler.
 				}
 			}
 		}
-
 		return false;
-		//we have tried all our rules and found
-		//nothing to do. So return false to main loop of abstract agent
-		//and wait.
 	}
 
 	// Actions
@@ -130,7 +102,6 @@ public class HostAgent extends Agent {
 				}
 			}
 
-			// 2: SitAtTable(cust, table)
 			table.setOccupant(customer);
 			waiters.get(waiterNumber).msgSitAtTable(customer, table);
 			customer.setWaiter(waiters.get(waiterNumber));
@@ -141,6 +112,12 @@ public class HostAgent extends Agent {
 		}
 	}
 	
+
+	//utilities
+	public void setRestaurantGui(RestaurantGui gui) {
+		this.gui = gui;
+	}
+	
 	public CookAgent getCook() {
 		return cook;
 	}
@@ -149,7 +126,9 @@ public class HostAgent extends Agent {
 		return waiters;
 	}
 	
-	//utilities
+	public String getName() {
+		return name;
+	}
 	
 	public void addTableByGui() {
 		tables.add(new Table(NTABLES));//how you add to a collections
@@ -168,11 +147,6 @@ public class HostAgent extends Agent {
 		w.startThread();		
 	}
 	
-	public void setRestaurantGui(RestaurantGui gui) {
-		this.gui = gui;
-	}
-	
-
 	public class Table {
 		CustomerAgent occupiedBy;
 		int tableNumber;

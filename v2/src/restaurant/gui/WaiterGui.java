@@ -79,6 +79,8 @@ public class WaiterGui implements Gui {
         command = Command.GoToCook;
     }
     
+    // DoGoBackToHost is to make waiter go back to Host strictly
+    // DoGoBackToHost2 is to make waiter go back to Host, but can be interrupted if the customer calls him
     public void DoGoBackToHost() {
         xDestination = -20;
         yDestination = -20;

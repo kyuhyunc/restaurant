@@ -15,8 +15,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Semaphore;
 
-import javax.swing.ImageIcon;
-
 /**
  * Restaurant customer agent.
  */
@@ -27,7 +25,6 @@ public class WaiterAgent extends Agent {
 	private HostAgent host;
 	private CookAgent cook;
 	
-	// Q: can this be replaced by Semaphore?
 	public enum AgentState
 	{Waiting, Serving};
 	public AgentState state = AgentState.Waiting;//The start state
@@ -46,7 +43,6 @@ public class WaiterAgent extends Agent {
 	 * Constructor for WaiterAgent class
 	 *
 	 * @param name name of the customer
-	 * @param gui  reference to the customergui so the customer can send it messages
 	 */
 	public WaiterAgent(String name){
 		super();
@@ -55,20 +51,8 @@ public class WaiterAgent extends Agent {
 		menu.addAll(Arrays.asList("Stake","Chicken","Salad","Pizza"));
 	}
 
-	/**
-	 * hack to establish connection to Host agent.
-	 */
-	public void setHost(HostAgent host) {
-		this.host = host;
-	}
-	
-	public void setCook(CookAgent cook) {
-		this.cook = cook;
-	}
-
 	// Messages
-
-	// 2:
+	// 2: SitAtTable(customer, table)
 	public void msgSitAtTable(CustomerAgent customer, Table table) {
 		//state = AgentState.Serving;
 		//state = AgentState.Waiting;
@@ -77,14 +61,17 @@ public class WaiterAgent extends Agent {
 		stateChanged();
 	}
 	
+	// msg from gui
 	public void msgAtTable() {
 		atTable.release();// = true;
 	}
 	
+	// msg from gui
 	public void msgAtHost() {
 		atHost.release();
 	}
 	
+	// 4: ReadyToOrder(customer); 
 	public void msgReadyToOrder(CustomerAgent customer) {
 		for(int i=0; i < MyCustomers.size() ; i++) {
 			if(MyCustomers.get(i).c == customer) {
@@ -95,6 +82,7 @@ public class WaiterAgent extends Agent {
 		}
 	}
 	
+	// 6: HereIsMyChoice(customer, choice)
 	public void msgHereIsMyChoice(CustomerAgent customer, String choice) {
 		for(int i=0; i < MyCustomers.size() ; i++) {
 			if(MyCustomers.get(i).c == customer) {
@@ -107,10 +95,12 @@ public class WaiterAgent extends Agent {
 		}
 	}
 	
+	// msg from gui
 	public void msgArrivedToCook() {
 		atCook.release();
 	}
-	
+
+	// 8: OrderIsReady(order)
 	public void msgOrderIsReady(Order order) {
 		for(MyCustomer cust : MyCustomers) {
 			if(cust.c == order.customer) {
@@ -121,6 +111,7 @@ public class WaiterAgent extends Agent {
 		}
 	}
 	
+	// 10: IAmDone(customer)
 	public void msgLeavingTable(CustomerAgent customer) {
 		for(MyCustomer cust : MyCustomers) {
 			if(cust.c == customer) {
@@ -135,10 +126,9 @@ public class WaiterAgent extends Agent {
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
 	protected boolean pickAndExecuteAnAction() {
-		//	CustomerAgent is a finite state machine
+		//	WaiterAgent is a finite state machine
 		
 		if (state == AgentState.Waiting) {
-		//if (state == AgentState.Serving) {
 			for (MyCustomer customer : MyCustomers) {
 				if (customer.state == MyCustomer.CustState.Waiting) {
 					state = AgentState.Serving;
@@ -182,7 +172,6 @@ public class WaiterAgent extends Agent {
 		
 		customer.c.msgFollowMe(menu);
 		DoSeatCustomer(customer);
-		//customer.t.setOccupant(customer.c);
 		try {
 			atTable.acquire(); // 
 		} catch (InterruptedException e) {
@@ -223,7 +212,7 @@ public class WaiterAgent extends Agent {
 		}
 		
 		Do("Here is an order " + customer.choice + " from customer " + customer.c);
-		cook.msgHereIsAnOrder(waiter, customer.c, customer.choice);
+		cook.msgHereIsAnOrder(new Order(waiter, customer.c, customer.choice));
 		
 		customer.state = MyCustomer.CustState.waitingFood2;
 		
@@ -276,12 +265,20 @@ public class WaiterAgent extends Agent {
 		//state = AgentState.Waiting;
 	}
 	
-	
 	// Accessors, etc.
-	public List<MyCustomer> getMyCustomers() {
-		return MyCustomers;
+	
+	public void setHost(HostAgent host) {
+		this.host = host;
 	}
-		
+	
+	public void setCook(CookAgent cook) {
+		this.cook = cook;
+	}
+	
+	public CookAgent getCook() {
+		return cook;
+	}
+	
 	public void setGui(WaiterGui gui) {
 		waiterGui = gui;
 	}
@@ -290,8 +287,8 @@ public class WaiterAgent extends Agent {
 		return waiterGui;
 	}
 	
-	public CookAgent getCook() {
-		return cook;
+	public List<MyCustomer> getMyCustomers() {
+		return MyCustomers;
 	}
 	
 	public String getName() {

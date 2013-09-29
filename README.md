@@ -8,7 +8,9 @@
   + Lab: W 4pm
 
 Comments for grading: "I implemented everything on the web site's requirements"
-  
+File for v2 is under the folder v2.
+(Address is "git\restaurant_kyuhyunc\v2")
+
 ###Resources
   + [Restaurant v1](http://www-scf.usc.edu/~csci201/readings/restaurant-v1.html)
   + [Agent Roadmap](http://www-scf.usc.edu/~csci201/readings/agent-roadmap.html)
