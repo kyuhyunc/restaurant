@@ -15,7 +15,7 @@ import java.util.*;
 //the HostAgent. A Host is the manager of a restaurant who sees that all
 //is proceeded as he wishes.
 public class HostAgent extends Agent {
-	static public int NTABLES = 1;//a global for the number of tables.
+	static public int NTABLES = 3;//a global for the number of tables.
 	static public int NWAITERS = 1;
 	//Notice that we implement waitingCustomers using ArrayList, but type it
 	//with List semantics.

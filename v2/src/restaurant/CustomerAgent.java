@@ -3,8 +3,8 @@ package restaurant;
 import restaurant.gui.CustomerGui;
 import restaurant.gui.FoodGui;
 import agent.Agent;
+import restaurant.CookAgent.Food;
 import restaurant.WaiterAgent;
-import restaurant.WaiterAgent.Food;
 
 import java.util.Set;
 import java.util.Timer;

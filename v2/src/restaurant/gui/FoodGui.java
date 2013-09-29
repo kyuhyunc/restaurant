@@ -1,6 +1,6 @@
 package restaurant.gui;
 
-import restaurant.WaiterAgent.Food;
+import restaurant.CookAgent.Food;
 
 import java.awt.*;
 
@@ -60,7 +60,8 @@ public class FoodGui implements Gui{
 
 	public void draw(Graphics2D g) {
 		if( state == State.waiting || state == State.delivering ) {
-			g.drawImage(qImage, AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20, AnimationPanel.TableLocationY , 20, 20, null);
+			g.drawImage(fImage, AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20, AnimationPanel.TableLocationY , 20, 20, null);
+			g.drawImage(qImage, AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20, AnimationPanel.TableLocationY + 20 , 20, 20, null);
 		}		
 		
 		if( state == State.delivering || state == State.delivered ) {

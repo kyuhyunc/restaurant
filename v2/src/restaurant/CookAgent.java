@@ -1,15 +1,14 @@
 package restaurant;
 
 import agent.Agent;
-import restaurant.WaiterAgent.Food;
-
-
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import javax.swing.ImageIcon;
 
 /**
  * Restaurant customer agent.
@@ -116,6 +115,62 @@ public class CookAgent extends Agent {
 			(int) (choice.time * choice.cookingTimeMultiplier));//getHungerLevel() * 1000);//how long to wait before running task
 		}
 		
+	}
+	
+	public static class Food {
+		String name;
+		
+		int time; // for setting timer differently
+		double cookingTimeMultiplier = 1.5;
+		double eatingTimeMultiplier = 3.5;
+		
+		private ImageIcon foodImage;
+		
+		Food(String name) {
+			this.name = name;
+			
+			if (name == "Stake") {
+				time = (int) (1000 * cookingTimeMultiplier);
+				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/stake.jpg");
+			}
+			else if (name == "Chicken") {
+				time = (int) (800 * cookingTimeMultiplier);
+				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/chicken.jpg");
+			}
+			else if (name == "Salad") {
+				time = (int) (600 * cookingTimeMultiplier);
+				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/salad.jpg");
+			}
+			else if (name == "Pizza") {
+				time = (int) (300 * cookingTimeMultiplier);
+				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/pizza.jpg");
+			}
+			else {
+				time = 0;
+			}
+		}
+		
+		public int getEatingTime(String choice) {
+			if (name == "Stake") {
+				return (int) (1000 * eatingTimeMultiplier);
+			}
+			else if (name == "Chiken") {
+				return (int) (800 * eatingTimeMultiplier);
+			}
+			else if (name == "Salad") {
+				return (int) (600 * eatingTimeMultiplier);
+			}
+			else if (name == "Pizza") {
+				return (int) (300 * eatingTimeMultiplier);
+			}
+			else {
+				return 0;
+			}
+		}
+		
+		public ImageIcon getImageIcon() {
+			return foodImage;
+		}
 	}
 }
 
