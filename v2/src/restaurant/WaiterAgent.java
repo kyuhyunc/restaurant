@@ -8,9 +8,10 @@ import restaurant.HostAgent;
 import restaurant.CookAgent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-
+import java.util.TreeSet;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -36,7 +37,8 @@ public class WaiterAgent extends Agent {
 	private Semaphore atCook = new Semaphore(0,true);
 	private Semaphore atHost = new Semaphore(0,true);
 		
-	public Set<Food> menu;
+	public Set<String> menu = new TreeSet<String>();
+	
 	/**
 	 * Constructor for WaiterAgent class
 	 *
@@ -47,6 +49,7 @@ public class WaiterAgent extends Agent {
 		super();
 		this.name = name;
 		
+		menu.addAll(Arrays.asList("Stake","Chicke","Salad","Pizza"));
 	}
 
 	/**
@@ -174,26 +177,22 @@ public class WaiterAgent extends Agent {
 		// set up the initial position to the host
 		waiterGui.DoGoBackToHost();
 		try {
-			print("1");
 			atHost.acquire(); // 
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
-		print("2");
 		
 		customer.c.msgFollowMe(menu);
 		DoSeatCustomer(customer);
 		//customer.t.setOccupant(customer.c);
 		try {
-			print("3");
 			atTable.acquire(); // 
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		customer.state = MyCustomer.CustState.seated;
-		print("4");
 		
 		waiterGui.DoGoBackToHost();
 		state = AgentState.Waiting;
@@ -311,65 +310,49 @@ public class WaiterAgent extends Agent {
 			state = CustState.Waiting;
 		}
 	}
-	
-	/**
-	public static class Order {
-		WaiterAgent waiter;
-		CustomerAgent customer;
-		Food choice;
-		Timer timer = new Timer();
 		
-		Order (WaiterAgent waiter, CustomerAgent customer, String choice) {
-			this.waiter = waiter;
-			this.customer = customer;
-			this.choice = new Food(choice);
-		}
-		
-		public enum OrderState
-		{Pending, Cooking, Cooked};
-		OrderState state = OrderState.Pending;
-		
-		void DoCooking() {
-			timer.schedule(new TimerTask() {
-				public void run() {
-					System.out.println("Done cooking, " + choice);
-					state = Order.OrderState.Cooked;
-				}
-			},
-			choice.cookingTime);//getHungerLevel() * 1000);//how long to wait before running task
-		}
-		
-	}*/
-	
 	public static class Food {
 		String name;
-		int foodNumber;		
 		
-		int cookingTime; // for setting timer differently
-		int cookingTimeMultiplier = 2;
+		int time; // for setting timer differently
+		double cookingTimeMultiplier = 3;
+		double eatingTimeMultiplier = 2.5;
 		
 		Food(String name) {
 			this.name = name;
 			
 			if (name == "Stake") {
-				foodNumber = 1;
-				cookingTime = 1000 * cookingTimeMultiplier;
+				time = (int) (1000 * cookingTimeMultiplier);
 			}
 			else if (name == "Chiken") {
-				foodNumber = 2;
-				cookingTime = 800 * cookingTimeMultiplier;
+				time = (int) (800 * cookingTimeMultiplier);
 			}
 			else if (name == "Salad") {
-				foodNumber = 3;
-				cookingTime = 600 * cookingTimeMultiplier;
+				time = (int) (600 * cookingTimeMultiplier);
 			}
 			else if (name == "Pizza") {
-				foodNumber = 4;
-				cookingTime = 300 * cookingTimeMultiplier;
+				time = (int) (300 * cookingTimeMultiplier);
 			}
 			else {
-				foodNumber = 0;
-				cookingTime = 0;
+				time = 0;
+			}
+		}
+		
+		public int getEatingTime(String choice) {
+			if (name == "Stake") {
+				return (int) (1000 * eatingTimeMultiplier);
+			}
+			else if (name == "Chiken") {
+				return (int) (800 * eatingTimeMultiplier);
+			}
+			else if (name == "Salad") {
+				return (int) (600 * eatingTimeMultiplier);
+			}
+			else if (name == "Pizza") {
+				return (int) (300 * eatingTimeMultiplier);
+			}
+			else {
+				return 0;
 			}
 		}
 	}

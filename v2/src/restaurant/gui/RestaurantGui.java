@@ -1,13 +1,11 @@
 package restaurant.gui;
 
-import restaurant.CustomerAgent;
 import restaurant.*;
 
 import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
-
 import java.util.Vector;
 
 /**
@@ -45,6 +43,8 @@ public class RestaurantGui extends JFrame implements ActionListener {
             new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     
+    private JCheckBox initialStateB = new JCheckBox();
+    
     private JButton pause = new JButton("Pause");
     private JButton addTable = new JButton("Add Table");
     private JButton addWaiter = new JButton("Add Waiter");
@@ -68,16 +68,21 @@ public class RestaurantGui extends JFrame implements ActionListener {
         animationPanel.setBorder(BorderFactory.createTitledBorder("Animation Panel"));
         add(animationPanel);
         
-        Dimension restDim = new Dimension(WINDOWX, (int) (WINDOWY * .33));
+        Dimension restDim = new Dimension(WINDOWX, (int) (WINDOWY * .4));
         restPanel.setPreferredSize(restDim);
         restPanel.setMinimumSize(restDim);
         restPanel.setMaximumSize(restDim);
+        
+        initialStateB.setText("Hungry? (initial state)");
+        initialStateB.setSize(100, 50);
+        
+        restPanel.customerPanel.add(initialStateB);
         
         addButtons.add(addTable);
         addButtons.add(addWaiter);
         restPanel.customerPanel.add(addButtons);
         
-        restPanel.customerPanel.add(new JLabel("=============================="));
+        //restPanel.customerPanel.add(new JLabel("=============================="));
         
         restPanel.customerPanel.add(pause);
         restPanel.customerPanel.add(new JLabel("Click to pause or resume the program"));
@@ -128,6 +133,11 @@ public class RestaurantGui extends JFrame implements ActionListener {
     public void updateInfoPanel(Object person) {
     	
     	if (person instanceof CustomerAgent) {
+     		// set initial state of customer 
+    		if(initialStateB.isSelected()) {
+     			restPanel.getTheLastCustomer().getGui().setHungry();
+     		}
+    		
     		CustomerAgent customer = (CustomerAgent) person;
     		
     		customerList.add(new JPanel());
@@ -198,9 +208,20 @@ public class RestaurantGui extends JFrame implements ActionListener {
     // action listener for pause button 
     class PauseListener implements ActionListener {
     	public void actionPerformed(ActionEvent e) {
-    		if(e.getSource() == pause){ 			
-    			if(AnimationPanel.pauseFlag == true){
-    				AnimationPanel.pauseFlag = false;
+    		if(e.getSource() == pause){
+    			restPanel.getHostAgent().msgPauseAgent();
+    			restPanel.getHostAgent().getCook().msgPauseAgent();
+    		
+    			for(WaiterAgent w : restPanel.getHostAgent().getWaiters()) {
+    				w.msgPauseAgent();
+    			}
+    			
+    			for(CustomerAgent c : restPanel.getCustomers()) {
+    				c.msgPauseAgent();
+    			}   		
+    			
+    			if(AnimationPanel.pauseFlag == false){
+    				AnimationPanel.pauseFlag = true;
     	
     				System.out.println("Pause");
     				
@@ -210,10 +231,11 @@ public class RestaurantGui extends JFrame implements ActionListener {
     				
     				addTable.setEnabled(false);
     				addWaiter.setEnabled(false);
-    				restPanel.customerPanel.disableButtons();  				
+    				restPanel.customerPanel.disableButtons();
     			}
+    			
     			else {
-    				AnimationPanel.pauseFlag = true;
+    				AnimationPanel.pauseFlag = false;
     				System.out.println("Resume");
     				
     				for(int i = 0; i < stateCBs.size() ; i++) {
@@ -230,6 +252,38 @@ public class RestaurantGui extends JFrame implements ActionListener {
     				//animationPanel.timer.start();
     			}    				
     		}
+    		/**if(e.getSource() == pause){ 			
+    			if(AnimationPanel.pauseFlag == false){
+    				AnimationPanel.pauseFlag = true;
+    	
+    				System.out.println("Pause");
+    				
+    				for(int i = 0; i < stateCBs.size() ; i++) {
+    					stateCBs.get(i).setEnabled(false);
+    		    	}	
+    				
+    				addTable.setEnabled(false);
+    				addWaiter.setEnabled(false);
+    				restPanel.customerPanel.disableButtons();  				
+    			}
+    			else {
+    				AnimationPanel.pauseFlag = false;
+    				System.out.println("Resume");
+    				
+    				for(int i = 0; i < stateCBs.size() ; i++) {
+    					if(!stateCBs.get(i).isSelected()) {
+    						stateCBs.get(i).setEnabled(true);	
+    					}
+    		    	}    				
+    				
+    				addTable.setEnabled(true);
+    				addWaiter.setEnabled(true);
+    				restPanel.customerPanel.enableButtons();
+    				
+    				//pane.setEnabled(true);
+    				//animationPanel.timer.start();
+    			}    				
+    		}*/
     	}
     }
     

@@ -31,7 +31,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
     protected Timer timer;
     private final int timerSpeed = 15;
     
-    public static boolean pauseFlag = true;
+    public static boolean pauseFlag = false;
 
 	private ImageIcon cookImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/Cook.jpg");
 	private Image image = cookImage.getImage();
@@ -47,7 +47,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
     }
 
 	public void actionPerformed(ActionEvent e) {
-		if(pauseFlag == true) {
+		if(!pauseFlag) {
 			repaint();  //Will have paintComponent called
 		}
 	}

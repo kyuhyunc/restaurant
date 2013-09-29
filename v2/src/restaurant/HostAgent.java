@@ -18,8 +18,8 @@ public class HostAgent extends Agent {
 	static public int NWAITERS = 1;
 	//Notice that we implement waitingCustomers using ArrayList, but type it
 	//with List semantics.
-	public List<CustomerAgent> waitingCustomers
-	= new ArrayList<CustomerAgent>();
+	
+	public List<CustomerAgent> waitingCustomers	= new ArrayList<CustomerAgent>();
 	public Collection<Table> tables;
 	//note that tables is typed with Collection semantics.
 	//Later we will see how it is implemented
@@ -135,6 +135,14 @@ public class HostAgent extends Agent {
 		else {
 			Do("There is no waiter!");
 		}
+	}
+	
+	public CookAgent getCook() {
+		return cook;
+	}
+	
+	public List<WaiterAgent> getWaiters() {
+		return waiters;
 	}
 	
 	//utilities

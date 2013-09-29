@@ -104,8 +104,15 @@ public class RestaurantPanel extends JPanel {
     	}
     }
     
+    public Vector<CustomerAgent> getCustomers() {
+    	return customers;
+    }
     public CustomerAgent getCustomerAgent(int index) {
     	return customers.get(index);
+    }
+    
+    public CustomerAgent getTheLastCustomer() {
+    	return customers.lastElement();
     }
 
     public HostAgent getHostAgent() {

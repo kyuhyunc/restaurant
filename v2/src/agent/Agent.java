@@ -10,8 +10,10 @@ import java.util.concurrent.*;
 public abstract class Agent {
 	// initial permit was initially 1, but it should work with 0 as initial  valeue as well
     Semaphore stateChange = new Semaphore(0, true);//binary semaphore, fair
-    Semaphore pause = new Semaphore(1, true);//binary semaphore, fair
     private AgentThread agentThread;
+    
+    Semaphore pause = new Semaphore(0, true);//binary semaphore, fair
+    boolean pauseFlag = false;
 
     protected Agent() {
     }
@@ -94,6 +96,16 @@ public abstract class Agent {
             agentThread = null;
         }
     }
+    
+    
+    public void msgPauseAgent() {
+    	pauseFlag = !pauseFlag;
+    	
+    	if(!pauseFlag){
+    		pause.release();
+    	}
+    }
+    
 
     /**
      * Agent scheduler thread, calls respondToStateChange() whenever a state
@@ -114,6 +126,9 @@ public abstract class Agent {
                     // The agent sleeps here until someone calls, stateChanged(),
                     // which causes a call to stateChange.give(), which wakes up agent.
                     stateChange.acquire();
+                    if(pauseFlag) {
+                    	pause.acquire();
+                    }
                     //The next while clause is the key to the control flow.
                     //When the agent wakes up it will call respondToStateChange()
                     //repeatedly until it returns FALSE.
@@ -131,11 +146,6 @@ public abstract class Agent {
             goOn = false;
             this.interrupt();
         }
-    }
-    
-   
-    void msgPauseAgent() {
-    	
     }
 }
 

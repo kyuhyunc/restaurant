@@ -71,7 +71,6 @@ public class CookAgent extends Agent {
 	void CookOrder(Order order) {
 		print("Start cooking");
 		order.DoCooking();
-		//print("aldskjfdsaf");
 		stateChanged();
 	}
 	
@@ -104,43 +103,13 @@ public class CookAgent extends Agent {
 		void DoCooking() {
 			timer.schedule(new TimerTask() {
 				public void run() {
-					System.out.println("Done cooking, " + choice);
+					System.out.println("Cook: Done cooking, " + choice.name + " for " + customer.getName());
 					state = Order.OrderState.Cooked;
 				}
 			},
-			choice.cookingTime);//getHungerLevel() * 1000);//how long to wait before running task
+			(int) (choice.time * choice.cookingTimeMultiplier));//getHungerLevel() * 1000);//how long to wait before running task
 		}
 		
 	}
-	
-	/**
-	public static class Order {
-		WaiterAgent waiter;
-		CustomerAgent customer;
-		String choice;
-		Timer timer = new Timer();
-		
-		Order (WaiterAgent waiter, CustomerAgent customer, String choice) {
-			this.waiter = waiter;
-			this.customer = customer;
-			this.choice = choice;
-		}
-		
-		public enum OrderState
-		{Pending, Cooking, Cooked};
-		OrderState state = OrderState.Pending;
-		
-		void DoCooking() {
-			timer.schedule(new TimerTask() {
-				public void run() {
-					System.out.println("Done cooking, " + choice);
-					state = Order.OrderState.Cooked;
-				}
-			},
-			2000);//getHungerLevel() * 1000);//how long to wait before running task
-		}
-		
-	}*/
-
 }
 

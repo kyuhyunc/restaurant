@@ -8,6 +8,7 @@ import restaurant.WaiterAgent.Food;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Random;
 
 /**
  * Restaurant customer agent.
@@ -17,15 +18,14 @@ public class CustomerAgent extends Agent {
 	private int hungerLevel = 5;        // determines length of meal
 	Timer timer = new Timer();
 	private CustomerGui customerGui;
-	private boolean isHungry = false;
 
 	// agent correspondents
 	private HostAgent host;
 	private WaiterAgent wait;
-	Set<Food> choices;
+	Set<String> menu;
 	String choice;
+	Food fChoice;
 	
-	//    private boolean isHungry = false; //hack for gui
 	public enum AgentState
 	{DoingNothing, WaitingInRestaurant, BeingSeated, Seated, ReadyToOrder, WaitingFood, Eating, DoneEating, Leaving};
 	private AgentState state = AgentState.DoingNothing;//The start state
@@ -71,8 +71,8 @@ public class CustomerAgent extends Agent {
 		stateChanged();
 	}
 	
-	public void msgFollowMe(Set<Food> menu) {
-		choices = menu;
+	public void msgFollowMe(Set<String> menu) {
+		this.menu = menu;
 		event = AgentEvent.followHost;
 		stateChanged();
 	}
@@ -171,7 +171,34 @@ public class CustomerAgent extends Agent {
 	private void ChooseMenu() {
 		//choice = choices.
 		Do("Choosing menu");
-		choice = "cookie";
+		Random oRandom = new Random();
+		
+		int randomNum = oRandom.nextInt(4);
+				
+		// algorithm for choose what to order
+		switch (randomNum) {
+		case 0:
+			choice = "Stake";
+			break;
+		case 1:
+			choice = "Chicken";
+			break;
+		case 2:
+			choice = "Salad";
+			break;
+		case 3:
+			choice = "Pizza";
+			break;
+		default:
+			print("defaul");
+			choice = "Stake";
+			break;
+		}
+		
+		if(menu.contains(choice)) {
+			fChoice = new Food(choice);
+		}
+		
 		event = AgentEvent.callWaiterToOrder;
 		stateChanged();
 	}
@@ -182,7 +209,7 @@ public class CustomerAgent extends Agent {
 	}
 	
 	private void HereIsMyChoice(String choice) {
-		Do("Here Is My Choice");
+		Do("Here Is My Choice : " + choice);
 		wait.msgHereIsMyChoice(this, choice);
 	}
 
@@ -203,13 +230,12 @@ public class CustomerAgent extends Agent {
 				stateChanged();
 			}
 		},
-		1000);//getHungerLevel() * 1000);//how long to wait before running task
+		(int) (fChoice.time * fChoice.eatingTimeMultiplier));//getHungerLevel() * 1000);//how long to wait before running task
 	}
 
 	private void leaveTable() {
 		Do("Leaving.");
 		wait.msgLeavingTable(this);
-		isHungry = false;
 		customerGui.DoExitRestaurant();
 	}
 
@@ -232,11 +258,6 @@ public class CustomerAgent extends Agent {
 	public String toString() {
 		return "customer " + getName();
 	}
-
-	public boolean isHungry() {
-		return isHungry;
-	}
-	
 	
 	public void setGui(CustomerGui g) {
 		customerGui = g;

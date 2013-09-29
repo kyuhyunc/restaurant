@@ -39,9 +39,10 @@ public class ListPanel extends JPanel implements ActionListener {
          
          CustName.setFont(new Font("Courier", Font.PLAIN, 20));		
          add(CustName);
-         
+              
          addPersonB.addActionListener(this);
          add(addPersonB);
+
          
          //add(new JLabel("Click add to add customers"));
     }
@@ -55,7 +56,7 @@ public class ListPanel extends JPanel implements ActionListener {
          	// Chapter 2.19 describes showInputDialog()
              //addPerson(JOptionPane.showInputDialog("Please enter a name:"));
          	if(!CustName.getText().equals("")) {
-         		addPerson(CustName.getText());  		
+         		addPerson(CustName.getText());
             }
          }
                 
