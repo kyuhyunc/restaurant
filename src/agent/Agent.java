@@ -8,8 +8,12 @@ import java.util.concurrent.*;
  * Base class for simple agents
  */
 public abstract class Agent {
-    Semaphore stateChange = new Semaphore(1, true);//binary semaphore, fair
+	// initial permit was initially 1, but it should work with 0 as initial  valeue as well
+    Semaphore stateChange = new Semaphore(0, true);//binary semaphore, fair
     private AgentThread agentThread;
+    
+    Semaphore pause = new Semaphore(0, true);//binary semaphore, fair
+    boolean pauseFlag = false;
 
     protected Agent() {
     }
@@ -27,7 +31,7 @@ public abstract class Agent {
      * current state.  Will be called whenever a state change has occurred,
      * and will be called repeated as long as it returns true.
      *
-     * @return true if some action was executed that might have changed the
+     * @return true iff some action was executed that might have changed the
      *         state.
      */
     protected abstract boolean pickAndExecuteAnAction();
@@ -90,11 +94,19 @@ public abstract class Agent {
         if (agentThread != null) {
             agentThread.stopAgent();
             agentThread = null;
-            
-            //this.Do("stopThread");  
         }
     }
     
+    
+    public void msgPauseAgent() {
+    	pauseFlag = !pauseFlag;
+    	
+    	if(!pauseFlag){
+    		pause.release();
+    	}
+    }
+    
+
     /**
      * Agent scheduler thread, calls respondToStateChange() whenever a state
      * change has been signalled.
@@ -114,11 +126,14 @@ public abstract class Agent {
                     // The agent sleeps here until someone calls, stateChanged(),
                     // which causes a call to stateChange.give(), which wakes up agent.
                     stateChange.acquire();
+                    if(pauseFlag) {
+                    	pause.acquire();
+                    }
                     //The next while clause is the key to the control flow.
                     //When the agent wakes up it will call respondToStateChange()
                     //repeatedly until it returns FALSE.
                     //You will see that pickAndExecuteAnAction() is the agent scheduler.
-                    while (pickAndExecuteAnAction()) ; 
+                    while (pickAndExecuteAnAction()) ;
                 } catch (InterruptedException e) {
                     // no action - expected when stopping or when deadline changed
                 } catch (Exception e) {

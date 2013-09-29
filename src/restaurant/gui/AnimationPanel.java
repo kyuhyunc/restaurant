@@ -14,39 +14,45 @@ public class AnimationPanel extends JPanel implements ActionListener {
 
     private final int WINDOWX = 450;
     private final int WINDOWY = 350;
-    private Image bufferImage;
-    private Dimension bufferSize;
+    //private Image bufferImage;
+    //private Dimension bufferSize;
 
     private List<Gui> guis = new ArrayList<Gui>();
-
+    
     //static variables to replace magic numbers
     protected static int TableLocationX = 50;
     protected static int TableLocationY = 250;
     private static int TableSizeX = 50;
     private static int TableSizeY = 50;
     
-    protected Timer timer;
-    private final int timerSpeed = 5;
+    protected static int CookLocationX = 370;
+    protected static int CookLocationY = 50;
     
-    public static boolean pauseFlag = true;
+    protected Timer timer;
+    private final int timerSpeed = 15;
+    
+    public static boolean pauseFlag = false;
+
+	private ImageIcon cookImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/Cook.jpg");
+	private Image image = cookImage.getImage();
     
     public AnimationPanel() {
     	setSize(WINDOWX, WINDOWY);
         setVisible(true);
         
-        bufferSize = this.getSize();
+        //bufferSize = this.getSize();
  
     	timer = new Timer(timerSpeed, this );
     	timer.start();
     }
 
 	public void actionPerformed(ActionEvent e) {
-		if(pauseFlag == true) {
+		if(!pauseFlag) {
 			repaint();  //Will have paintComponent called
 		}
 	}
 
-    public void paintComponent(Graphics g) {
+	 public void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D)g;
 
         //Clear the screen by painting a rectangle the size of the frame
@@ -58,6 +64,8 @@ public class AnimationPanel extends JPanel implements ActionListener {
 	        g2.setColor(Color.ORANGE);
 	        g2.fillRect(TableLocationX + (70*i), TableLocationY, TableSizeX, TableSizeY);//200 and 250 need to be table params
         }
+        
+        g.drawImage(image, CookLocationX, CookLocationY, 30, 30, null);
 
         for(Gui gui : guis) {
             if (gui.isPresent()) {
@@ -78,8 +86,11 @@ public class AnimationPanel extends JPanel implements ActionListener {
         guis.add(gui);
     }
 
-    public void addGui(HostGui gui) {
+    public void addGui(WaiterGui gui) {
         guis.add(gui);
     }
     
+    public void addGui(FoodGui gui) {
+        guis.add(gui);
+    }
 }

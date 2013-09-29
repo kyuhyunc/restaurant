@@ -1,7 +1,6 @@
 package restaurant.gui;
 
 import java.awt.*;
-import javax.swing.*;
 
 public interface Gui {
 

@@ -1,20 +1,12 @@
 package restaurant.gui;
 
-import restaurant.CustomerAgent;
 import restaurant.*;
-import agent.*;
 
 import javax.swing.*;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
 
 /**
  * Main GUI class.
@@ -25,8 +17,7 @@ public class RestaurantGui extends JFrame implements ActionListener {
      * and the animation frame, (in variable animationFrame within gui)
      */
 	//JFrame animationFrame = new JFrame("Restaurant Animation");
-	//JPanel animationFrame = new JPanel();	
-	AnimationPanel animationPanel = new AnimationPanel();
+	public AnimationPanel animationPanel = new AnimationPanel();
 	
     /* restPanel holds 2 panels
      * 1) the staff listing, menu, and lists of current customers all constructed
@@ -36,25 +27,28 @@ public class RestaurantGui extends JFrame implements ActionListener {
     private RestaurantPanel restPanel = new RestaurantPanel(this);
     
     /* infoPanel holds information about the clicked customer, if there is one*/
-    private JPanel infoPanel; // this infopanel should be assigned to pane for scroll bar
-    
-    private Vector<JCheckBox> stateCBs = new Vector<JCheckBox>();
-    private Vector<String> nameList = new Vector<String>();
-    private Vector<JPanel> customerList = new Vector<JPanel>();
+    private JPanel infoPanel;
+    //private JLabel infoLabel; //part of infoPanel
+    //private JCheckBox stateCB;//part of infoLabel
     
     private JPanel sub_infoPanel; //for adding my name
     private JLabel sub_infoLabel;
     private JLabel sub_infoPic;
     
-    private Object currentPerson; /* Holds the agent that the info is about.
-    								 Seems like a hack */
+    private Vector<JCheckBox> stateCBs = new Vector<JCheckBox>();
+    private Vector<String> nameList = new Vector<String>();
+    private Vector<JPanel> customerList = new Vector<JPanel>();
 
     public JScrollPane pane =
             new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
                     JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
     
+    private JCheckBox initialStateB = new JCheckBox();
+    
     private JButton pause = new JButton("Pause");
     private JButton addTable = new JButton("Add Table");
+    private JButton addWaiter = new JButton("Add Waiter");
+    private JPanel addButtons = new JPanel();
     
     /**
      * Constructor for RestaurantGui class.
@@ -65,10 +59,8 @@ public class RestaurantGui extends JFrame implements ActionListener {
         int WINDOWY = 700;
 
     	setBounds(50, 10, WINDOWX, WINDOWY+100);
-    	
+
         setLayout(new BoxLayout((Container) getContentPane(), BoxLayout.Y_AXIS));
-    	//setLayout(new BoxLayout((Container) this, BoxLayout.Y_AXIS));
-    	//setLayout(new GridLayout(3,0));
         
         // adding animationPanel directly to the main frame
         Dimension animationDim = new Dimension(WINDOWX, 350);
@@ -76,18 +68,27 @@ public class RestaurantGui extends JFrame implements ActionListener {
         animationPanel.setBorder(BorderFactory.createTitledBorder("Animation Panel"));
         add(animationPanel);
         
-        Dimension restDim = new Dimension(WINDOWX, (int) (WINDOWY * .27));
+        Dimension restDim = new Dimension(WINDOWX, (int) (WINDOWY * .4));
         restPanel.setPreferredSize(restDim);
         restPanel.setMinimumSize(restDim);
         restPanel.setMaximumSize(restDim);
         
-        //restPanel.customerPanel.add(new JLabel(" "));
-        restPanel.customerPanel.add(addTable);
+        initialStateB.setText("Hungry? (initial state)");
+        initialStateB.setSize(100, 50);
+        
+        restPanel.customerPanel.add(initialStateB);
+        
+        addButtons.add(addTable);
+        addButtons.add(addWaiter);
+        restPanel.customerPanel.add(addButtons);
+        
+        //restPanel.customerPanel.add(new JLabel("=============================="));
         
         restPanel.customerPanel.add(pause);
         restPanel.customerPanel.add(new JLabel("Click to pause or resume the program"));
         
-        addTable.addActionListener(new addTableListener());
+        addTable.addActionListener(new addButtonListener());
+        addWaiter.addActionListener(new addButtonListener());
         pause.addActionListener(new PauseListener());
         
         add(restPanel);
@@ -96,13 +97,10 @@ public class RestaurantGui extends JFrame implements ActionListener {
         Dimension infoDim = new Dimension(WINDOWX, (int) (WINDOWY * .25));
         infoPanel = new JPanel();
         pane.setPreferredSize(infoDim);
-        //infoPanel.setPreferredSize(infoDim);
-        //infoPanel.setMinimumSize(infoDim);
-        //infoPanel.setMaximumSize(infoDim);
         infoPanel.setBorder(BorderFactory.createTitledBorder("Customer List"));
-                
+        
         infoPanel.setLayout(new BoxLayout((Container) infoPanel, BoxLayout.Y_AXIS));
-  
+
         pane.setViewportView(infoPanel);
         pane.setWheelScrollingEnabled(true);
         add(pane);
@@ -134,27 +132,12 @@ public class RestaurantGui extends JFrame implements ActionListener {
      */
     public void updateInfoPanel(Object person) {
     	
-    	// original code
-    	/**
-        stateCB.setVisible(true);
-        currentPerson = person;
-               
-        if (person instanceof CustomerAgent) {
-            CustomerAgent customer = (CustomerAgent) person;
-            stateCB.setText("Hungry?");
-          //Should checkmark be there? 
-            stateCB.setSelected(customer.getGui().isHungry());
-          //Is customer hungry? Hack. Should ask customerGui
-            stateCB.setEnabled(!customer.getGui().isHungry());
-          // Hack. Should ask customerGui
-            infoLabel.setText(
-               "<html><pre>     Name: " + customer.getName() + " </pre></html>");
-        }
-        infoPanel.validate();*/
-    	
-    	currentPerson = person;
-    	
     	if (person instanceof CustomerAgent) {
+     		// set initial state of customer 
+    		if(initialStateB.isSelected()) {
+     			restPanel.getTheLastCustomer().getGui().setHungry();
+     		}
+    		
     		CustomerAgent customer = (CustomerAgent) person;
     		
     		customerList.add(new JPanel());
@@ -194,14 +177,6 @@ public class RestaurantGui extends JFrame implements ActionListener {
      * For v3, it will propose a break for the waiter.
      */
     public void actionPerformed(ActionEvent e) {
-        // original code
-    	/**if (e.getSource() == stateCB) {
-            if (currentPerson instanceof CustomerAgent) {
-                CustomerAgent c = (CustomerAgent) currentPerson;
-                c.getGui().setHungry();
-                stateCB.setEnabled(false);
-            }
-        }*/
     	for(int i = 0; i < stateCBs.size() ; i++){
 	    	if (e.getSource() == stateCBs.get(i)) {
 	    		if( restPanel.getCustomerAgent(i) instanceof CustomerAgent) {
@@ -209,9 +184,8 @@ public class RestaurantGui extends JFrame implements ActionListener {
 	    			stateCBs.get(i).setEnabled(false);
 	    		}
 	    	}
-    	}
+	   	}
     }
-    
     /**
      * Message sent from a customer gui to enable that customer's
      * "I'm hungry" checkbox.
@@ -219,9 +193,7 @@ public class RestaurantGui extends JFrame implements ActionListener {
      * @param c reference to the customer
      */
     public void setCustomerEnabled(CustomerAgent c) {
-   		//QQQQ: what is object and who is currentPerson? 
-   		//CustomerAgent cust = (CustomerAgent) currentPerson;
-		for(int i = 0; i < stateCBs.size() ; i++) {
+    	for(int i = 0; i < stateCBs.size() ; i++) {
 			if(restPanel.getCustomerAgent(i) == c) {
 				stateCBs.get(i).setEnabled(true);
 				stateCBs.get(i).setSelected(false);
@@ -231,29 +203,26 @@ public class RestaurantGui extends JFrame implements ActionListener {
 				stateCBs.get(i).setSelected(false);
 			}*/
     	}	
-    	
-    	// original code
-    	/**if (currentPerson instanceof CustomerAgent) {
-            CustomerAgent cust = (CustomerAgent) currentPerson;
-            if (c.equals(cust)) {
-                stateCB.setEnabled(true);
-                stateCB.setSelected(false);
-            }
-        }*/
     }
     
     // action listener for pause button 
     class PauseListener implements ActionListener {
     	public void actionPerformed(ActionEvent e) {
     		if(e.getSource() == pause){
-    			/**
-    			for(int i = 0; i < customerList.size(); i++){
-    				restPanel.getCustomerAgent(i).stopThread();
+    			restPanel.getHostAgent().msgPauseAgent();
+    			restPanel.getHostAgent().getCook().msgPauseAgent();
+    		
+    			for(WaiterAgent w : restPanel.getHostAgent().getWaiters()) {
+    				w.msgPauseAgent();
     			}
-    			restPanel.getHostAgent().stopThread();*/
     			
-    			if(AnimationPanel.pauseFlag == true){
-    				AnimationPanel.pauseFlag = false;
+    			for(CustomerAgent c : restPanel.getCustomers()) {
+    				c.msgPauseAgent();
+    			}   		
+    			
+    			if(AnimationPanel.pauseFlag == false){
+    				AnimationPanel.pauseFlag = true;
+    	
     				System.out.println("Pause");
     				
     				for(int i = 0; i < stateCBs.size() ; i++) {
@@ -261,15 +230,12 @@ public class RestaurantGui extends JFrame implements ActionListener {
     		    	}	
     				
     				addTable.setEnabled(false);
+    				addWaiter.setEnabled(false);
     				restPanel.customerPanel.disableButtons();
-    				
-    				/**for(int i = 0; i < customerList.size(); i++) {
-    					//restPanel.getCustomerAgent(i).timer.
-    				}*/
-    				
     			}
+    			
     			else {
-    				AnimationPanel.pauseFlag = true;
+    				AnimationPanel.pauseFlag = false;
     				System.out.println("Resume");
     				
     				for(int i = 0; i < stateCBs.size() ; i++) {
@@ -279,17 +245,50 @@ public class RestaurantGui extends JFrame implements ActionListener {
     		    	}    				
     				
     				addTable.setEnabled(true);
+    				addWaiter.setEnabled(true);
     				restPanel.customerPanel.enableButtons();
     				
     				//pane.setEnabled(true);
     				//animationPanel.timer.start();
     			}    				
     		}
+    		/**if(e.getSource() == pause){ 			
+    			if(AnimationPanel.pauseFlag == false){
+    				AnimationPanel.pauseFlag = true;
+    	
+    				System.out.println("Pause");
+    				
+    				for(int i = 0; i < stateCBs.size() ; i++) {
+    					stateCBs.get(i).setEnabled(false);
+    		    	}	
+    				
+    				addTable.setEnabled(false);
+    				addWaiter.setEnabled(false);
+    				restPanel.customerPanel.disableButtons();  				
+    			}
+    			else {
+    				AnimationPanel.pauseFlag = false;
+    				System.out.println("Resume");
+    				
+    				for(int i = 0; i < stateCBs.size() ; i++) {
+    					if(!stateCBs.get(i).isSelected()) {
+    						stateCBs.get(i).setEnabled(true);	
+    					}
+    		    	}    				
+    				
+    				addTable.setEnabled(true);
+    				addWaiter.setEnabled(true);
+    				restPanel.customerPanel.enableButtons();
+    				
+    				//pane.setEnabled(true);
+    				//animationPanel.timer.start();
+    			}    				
+    		}*/
     	}
     }
-     
+    
     // action listener for add table button 
-    class addTableListener implements ActionListener {
+    class addButtonListener implements ActionListener {
     	public void actionPerformed(ActionEvent e) {
     		if(e.getSource() == addTable){
     			if(HostAgent.NTABLES < 5) {
@@ -302,9 +301,20 @@ public class RestaurantGui extends JFrame implements ActionListener {
     			}
     				
     		}
+    		else if(e.getSource() == addWaiter){
+    			if(HostAgent.NWAITERS < 5){
+    				HostAgent.NWAITERS ++;
+    				restPanel.getHostAgent().addWaiterByGui();
+    				System.out.println("Adding one more waiter: " + HostAgent.NWAITERS);
+    				animationPanel.addGui(restPanel.getHostAgent().waiters.get(HostAgent.NWAITERS-1).getGui()); // adding newly created waiter to animation panel
+    			}
+    			else {
+    				System.out.println("Cannot add more waiter!! (maximum is 5)");
+    			}
+    		}
     	}
     }
-    
+       
     /**
      * Main routine to get gui started
      */
@@ -315,5 +325,4 @@ public class RestaurantGui extends JFrame implements ActionListener {
         gui.setResizable(false);
         gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
-   
 }
