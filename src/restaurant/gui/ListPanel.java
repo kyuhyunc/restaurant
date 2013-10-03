@@ -107,4 +107,8 @@ public class ListPanel extends JPanel implements ActionListener {
     public void enableButtons() {
     	addPersonB.setEnabled(true);
     }
+    
+    public String getTextInTextBox() {
+    	return CustName.getText();
+    }
 }

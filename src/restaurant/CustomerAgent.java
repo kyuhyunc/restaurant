@@ -6,7 +6,7 @@ import agent.Agent;
 import restaurant.CookAgent.Food;
 import restaurant.WaiterAgent;
 
-import java.util.Set;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Random;
@@ -16,7 +16,7 @@ import java.util.Random;
  */
 public class CustomerAgent extends Agent {
 	private String name;
-	private int hungerLevel = 2;        // determines length of meal
+	private int hungerLevel = 1;        // determines length of meal
 	Timer timer = new Timer();
 	private CustomerGui customerGui;
 	private FoodGui foodGui;
@@ -25,16 +25,18 @@ public class CustomerAgent extends Agent {
 	private HostAgent host;
 	private WaiterAgent wait;
 	
-	Set<String> menu;
+	Map<String, Food> menu;
 	String choice;
-	Food fChoice;
+	//Food fChoice;
 	
 	public enum AgentState
-	{DoingNothing, WaitingInRestaurant, BeingSeated, Seated, ReadyToOrder, WaitingFood, Eating, DoneEating, Leaving};
+	{DoingNothing, WaitingInRestaurant, BeingSeated, Seated, ReadyToOrder
+		, WaitingFood, Eating, DoneEating, Leaving};
 	private AgentState state = AgentState.DoingNothing;//The start state
 
 	public enum AgentEvent 
-	{none, gotHungry, followHost, seated, callWaiterToOrder, makeOrder, getFood, doneEating, doneLeaving};
+	{none, gotHungry, followHost, seated, callWaiterToOrder, makeOrder
+		, getFood, doneEating, doneLeaving, reOrder};
 	AgentEvent event = AgentEvent.none;
 
 	/**
@@ -70,7 +72,7 @@ public class CustomerAgent extends Agent {
 	}
 	
 	// 3: FollowMe(menu)
-	public void msgFollowMe(Set<String> menu) {
+	public void msgFollowMe(Map<String, Food> menu) {
 		this.menu = menu;
 		event = AgentEvent.followHost;
 		stateChanged();
@@ -79,6 +81,12 @@ public class CustomerAgent extends Agent {
 	// 5: WhatWouldYouLike()
 	public void msgWhatWouldYouLike() {
 		event = AgentEvent.makeOrder;
+		stateChanged();
+	}
+	
+	public void msgAskForOrderAgain(Map<String, Food> menu) {
+		this.menu = menu;
+		event = AgentEvent.reOrder;
 		stateChanged();
 	}
 	
@@ -133,6 +141,12 @@ public class CustomerAgent extends Agent {
 			HereIsMyChoice(choice);
 			return true;
 		}
+		else if (state == AgentState.WaitingFood && event == AgentEvent.reOrder){
+			// Go back to previous step to go over the process again
+			state = AgentState.Seated;
+			ChooseMenu();
+			return true;
+		}
 		else if (state == AgentState.WaitingFood && event == AgentEvent.getFood){
 			state = AgentState.Eating;
 			EatFood();
@@ -169,10 +183,15 @@ public class CustomerAgent extends Agent {
 	}
 	
 	private void ChooseMenu() {
+		// this is for reset the foodGui
+		if(!(foodGui == null)){
+			foodGui.state = FoodGui.State.doneEating;
+		}
+		
 		Do("Choosing menu");
 		Random oRandom = new Random();
 		
-		int randomNum = oRandom.nextInt(4);
+		int randomNum = oRandom.nextInt(menu.size());
 				
 		// algorithm for choose what to order
 		switch (randomNum) {
@@ -194,14 +213,25 @@ public class CustomerAgent extends Agent {
 			break;
 		}
 		
-		if(menu.contains(choice)) {
+		// this is temporary code for testing outofFood function
+		// default will be stake
+		choice = name;
+		
+		/**
+		if(menu.containsKey(choice)) {
 			fChoice = new Food(choice);
 		}
 		else {
-			Do("failed to choose menu");
+			//Do("failed to choose menu");
+			Do("Choose Stake as a default");
+			choice = "Stake";
+		}*/
+		if(!menu.containsKey(choice) || menu.get(choice).amount == 0) {
+			Do("Choose Chicken as default");
+			choice = "Chicken";
 		}
-			
-		event = AgentEvent.callWaiterToOrder;
+
+		event = AgentEvent.callWaiterToOrder;	
 		stateChanged();
 	}
 	
@@ -212,10 +242,11 @@ public class CustomerAgent extends Agent {
 	
 	private void HereIsMyChoice(String choice) {
 		Do("Here Is My Choice : " + choice);
-			
+		
 		for(WaiterAgent.MyCustomer myC : wait.getMyCustomers()) {
 			if(myC.c == this) {
-				foodGui = new FoodGui(myC.t.tableNumber, fChoice);			
+				//foodGui = new FoodGui(myC.t.tableNumber, fChoice);
+				foodGui = new FoodGui(myC.t.tableNumber, menu.get(choice));
 				break;
 			}		
 		}
@@ -236,6 +267,7 @@ public class CustomerAgent extends Agent {
 		//Since Java does not all us to pass functions, only objects.
 		//So, we use Java syntactic mechanism to create an
 		//anonymous inner class that has the public method run() in it.
+		
 		timer.schedule(new TimerTask() {
 			public void run() {
 				print("Done eating, " + choice);
@@ -244,7 +276,7 @@ public class CustomerAgent extends Agent {
 				stateChanged();
 			}
 		},
-		(int) (fChoice.time * fChoice.eatingTimeMultiplier) * getHungerLevel());//how long to wait before running task
+		(int) (menu.get(choice).time * menu.get(choice).eatingTimeMultiplier) * getHungerLevel());//how long to wait before running task
 	}
 
 	private void leaveTable() {

@@ -4,15 +4,14 @@ import restaurant.HostAgent.Table;
 import restaurant.gui.FoodGui;
 import restaurant.gui.WaiterGui;
 import agent.Agent;
+import restaurant.CookAgent.Food;
 import restaurant.CookAgent.Order;
 import restaurant.HostAgent;
 import restaurant.CookAgent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -37,7 +36,9 @@ public class WaiterAgent extends Agent {
 	private Semaphore atCook = new Semaphore(0,true);
 	private Semaphore atHost = new Semaphore(0,true);
 		
-	public Set<String> menu = new TreeSet<String>();
+	//public Map<String, Food> menu = new HashMap<String, Food> ();
+	public Map<String, Food> menu;
+	//public List<String> menu_list = new ArrayList<String> ();
 	
 	/**
 	 * Constructor for WaiterAgent class
@@ -47,8 +48,6 @@ public class WaiterAgent extends Agent {
 	public WaiterAgent(String name){
 		super();
 		this.name = name;
-		
-		menu.addAll(Arrays.asList("Stake","Chicken","Salad","Pizza"));
 	}
 
 	// Messages
@@ -100,6 +99,17 @@ public class WaiterAgent extends Agent {
 		atCook.release();
 	}
 
+	public void msgOrderIsOutOfStock(Order order) {
+		//menu.remove(order.choice);
+		for(MyCustomer cust : MyCustomers) {
+			if(cust.c == order.customer) {
+				cust.state = MyCustomer.CustState.reOrder;
+				stateChanged();
+				break;
+			}
+		}
+	}
+	
 	// 8: OrderIsReady(order)
 	public void msgOrderIsReady(Order order) {
 		for(MyCustomer cust : MyCustomers) {
@@ -121,7 +131,7 @@ public class WaiterAgent extends Agent {
 			}
 		}
 	}
-
+	
 	/**
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
@@ -143,6 +153,11 @@ public class WaiterAgent extends Agent {
 				else if (customer.state == MyCustomer.CustState.waitingFood1) {
 					state = AgentState.Serving;
 					HereIsAnOrder(this, customer);
+					return true;
+				}
+				else if (customer.state == MyCustomer.CustState.reOrder) {
+					state = AgentState.Serving;
+					WhatWouldYouLikeAgain(customer);
 					return true;
 				}
 				else if (customer.state == MyCustomer.CustState.foodIsReady) {
@@ -169,6 +184,9 @@ public class WaiterAgent extends Agent {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
+		
+		// initializing menu list
+		menu = cook.getMenu();
 		
 		customer.c.msgFollowMe(menu);
 		DoSeatCustomer(customer);
@@ -226,6 +244,24 @@ public class WaiterAgent extends Agent {
 		waiterGui.GoToCook();
 	}
 	
+	void WhatWouldYouLikeAgain(MyCustomer customer) {
+		Do("Ask for the order again");
+		waiterGui.DoGoToTable(customer.c, customer.t.tableNumber);
+		try {
+			atTable.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// update the menu;
+		customer.c.msgAskForOrderAgain(menu);
+				
+		state = AgentState.Waiting;
+		waiterGui.DoGoBackToHost2();
+		stateChanged();
+	}
+	
 	void HereIsYourOrder(MyCustomer customer) {
 		// going to cook to pick up the order
 		DoGoToCook();
@@ -246,7 +282,7 @@ public class WaiterAgent extends Agent {
 			e.printStackTrace();
 		}	
 		
-		Do("Here is an order for you, " + customer.c);
+		Do("Here is an order " + customer.choice + " for you, " + customer.c);
 		customer.c.msgHereIsYourOrder();
 		customer.state = MyCustomer.CustState.eating;
 		
@@ -305,7 +341,8 @@ public class WaiterAgent extends Agent {
 		String choice;
 
 		public enum CustState
-		{Waiting, seated, readyToOrder, waitingFood1, waitingFood2, foodIsReady, eating, doneEating};
+		{Waiting, seated, readyToOrder, waitingFood1, waitingFood2, foodIsReady, 
+			eating, doneEating, reOrder};
 		CustState state = CustState.Waiting;//The start state
 		
 		MyCustomer(CustomerAgent customer, Table table) {

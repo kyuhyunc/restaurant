@@ -252,38 +252,6 @@ public class RestaurantGui extends JFrame implements ActionListener {
     				//animationPanel.timer.start();
     			}    				
     		}
-    		/**if(e.getSource() == pause){ 			
-    			if(AnimationPanel.pauseFlag == false){
-    				AnimationPanel.pauseFlag = true;
-    	
-    				System.out.println("Pause");
-    				
-    				for(int i = 0; i < stateCBs.size() ; i++) {
-    					stateCBs.get(i).setEnabled(false);
-    		    	}	
-    				
-    				addTable.setEnabled(false);
-    				addWaiter.setEnabled(false);
-    				restPanel.customerPanel.disableButtons();  				
-    			}
-    			else {
-    				AnimationPanel.pauseFlag = false;
-    				System.out.println("Resume");
-    				
-    				for(int i = 0; i < stateCBs.size() ; i++) {
-    					if(!stateCBs.get(i).isSelected()) {
-    						stateCBs.get(i).setEnabled(true);	
-    					}
-    		    	}    				
-    				
-    				addTable.setEnabled(true);
-    				addWaiter.setEnabled(true);
-    				restPanel.customerPanel.enableButtons();
-    				
-    				//pane.setEnabled(true);
-    				//animationPanel.timer.start();
-    			}    				
-    		}*/
     	}
     }
     
@@ -304,7 +272,7 @@ public class RestaurantGui extends JFrame implements ActionListener {
     		else if(e.getSource() == addWaiter){
     			if(HostAgent.NWAITERS < 5){
     				HostAgent.NWAITERS ++;
-    				restPanel.getHostAgent().addWaiterByGui();
+    				restPanel.getHostAgent().addWaiterByGui(restPanel.customerPanel.getTextInTextBox());
     				System.out.println("Adding one more waiter: " + HostAgent.NWAITERS);
     				animationPanel.addGui(restPanel.getHostAgent().waiters.get(HostAgent.NWAITERS-1).getGui()); // adding newly created waiter to animation panel
     			}

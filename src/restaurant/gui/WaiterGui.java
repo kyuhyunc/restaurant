@@ -58,7 +58,9 @@ public class WaiterGui implements Gui {
     }
 
     public void draw(Graphics2D g) {
-        g.drawImage(image, xPos, yPos, 20, 20, null);
+    	g.setColor(Color.black);
+    	g.drawImage(image, xPos, yPos, 20, 20, null);
+        g.drawString(agent.getName(), xPos, yPos);
     }
 
     public boolean isPresent() {

@@ -3,8 +3,11 @@ package restaurant;
 import agent.Agent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,6 +23,9 @@ public class CookAgent extends Agent {
 	//private List<Order> orders = new ArrayList<Order>();
 	private List<Order> orders = Collections.synchronizedList(new ArrayList<Order>());
 	
+	public Map<String, Food> menu = new HashMap<String, Food> ();
+	public List<String> menu_list = new ArrayList<String> ();
+	
 	/**
 	 * Constructor for CookrAgent class
 	 *
@@ -28,7 +34,16 @@ public class CookAgent extends Agent {
 	public CookAgent(String name){
 		super();
 		this.name = name;
+		
+		menu_list.addAll(Arrays.asList("Stake","Chicken","Salad","Pizza"));
+		
+		// setting up the menu
+		for(String s : menu_list) {
+			menu.put(s, new Food(s));
+		}		
 	}
+	
+	
 
 	/**
 	 * hack to establish connection to Host agent.
@@ -56,7 +71,13 @@ public class CookAgent extends Agent {
 					}
 					else if(orders.get(i).state == Order.OrderState.Cooked) {
 						orders.get(i).waiter.msgOrderIsReady(orders.get(i));
-						Do("Order for customer " + orders.get(i).customer + " is ready : " + orders.get(i).choice.name);
+						Do("Order for customer " + orders.get(i).customer + " is ready : " + orders.get(i).choice);
+						orders.remove(i);
+						return true;
+					}
+					else if(orders.get(i).state == Order.OrderState.outOfStock) {
+						orders.get(i).waiter.msgOrderIsOutOfStock(orders.get(i));
+						Do("Order for customer " + orders.get(i).customer + " is out of stock : " + orders.get(i).choice);
 						orders.remove(i);
 						return true;
 					}
@@ -67,12 +88,23 @@ public class CookAgent extends Agent {
 		return false;
 	}
 
-
 	// Actions
 	void CookOrder(Order order) {
 		print("Start cooking");
-		order.DoCooking();
-		//stateChanged();
+		if(menu.get(order.choice).amount > 0) {
+			DoCooking(order);
+			//order.choice.amount --; // decreasing stock by 1
+			menu.get(order.choice).amount --;
+			if (menu.get(order.choice).amount == 1) {
+				Do("There is only 1 stock left for the food " + order.choice);
+			}
+		} 
+		else {
+			// tell waiter there is no food
+			Do(order.choice + " is out of stock right now");			
+			order.state = Order.OrderState.outOfStock;
+			stateChanged();
+		}
 	}
 	
 	// Accessors, etc.
@@ -80,44 +112,50 @@ public class CookAgent extends Agent {
 	public String getName() {
 		return name;
 	}
+	
+	public Map<String, Food> getMenu() {
+		return menu;
+	}
 
 	public String toString() {
 		return "cook " + getName();
 	}
 	
+	public void DoCooking(Order order) {
+		Timer timer = new Timer();
+		final Order o = order;
+		
+		timer.schedule(new TimerTask() {
+			public void run() {
+				System.out.println("Cook: Done cooking, " + o.choice + " for " + o.customer.getName());
+				o.state = Order.OrderState.Cooked;
+				o.waiter.getCook().stateChanged();
+			}
+		},
+		(int) (menu.get(o.choice).time * menu.get(o.choice).cookingTimeMultiplier));//getHungerLevel() * 1000);//how long to wait before running task
+	}
+	
 	public static class Order {
 		WaiterAgent waiter;
 		CustomerAgent customer;
-		Food choice;
-		Timer timer = new Timer();
+		String choice;
 		
 		Order (WaiterAgent waiter, CustomerAgent customer, String choice) {
 			this.waiter = waiter;
 			this.customer = customer;
-			this.choice = new Food(choice);
+			this.choice = choice;
 		}
 		
 		public enum OrderState
-		{Pending, Cooking, Cooked};
+		{Pending, Cooking, Cooked, outOfStock};
 		OrderState state = OrderState.Pending;
-		
-		void DoCooking() {
-			timer.schedule(new TimerTask() {
-				public void run() {
-					System.out.println("Cook: Done cooking, " + choice.name + " for " + customer.getName());
-					state = Order.OrderState.Cooked;
-					waiter.getCook().stateChanged();
-				}
-			},
-			(int) (choice.time * choice.cookingTimeMultiplier));//getHungerLevel() * 1000);//how long to wait before running task
-		}
-		
 	}
 	
 	public static class Food {
 		String name;
 		
 		int time; // for setting timer differently
+		int amount;
 		double cookingTimeMultiplier = 2.5;
 		double eatingTimeMultiplier = 4;
 		
@@ -125,6 +163,7 @@ public class CookAgent extends Agent {
 		
 		Food(String name) {
 			this.name = name;
+			amount = 2; // can set initial amount  depending on foods later
 			
 			if (name == "Stake") {
 				time = (int) (1000 * cookingTimeMultiplier);
@@ -167,7 +206,7 @@ public class CookAgent extends Agent {
 		
 		public ImageIcon getImageIcon() {
 			return foodImage;
-		}
+		}	
 	}
 }
 

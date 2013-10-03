@@ -3,10 +3,12 @@ package restaurant.gui;
 import javax.swing.*;
 
 import restaurant.HostAgent;
+import restaurant.CookAgent.Order;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -17,8 +19,8 @@ public class AnimationPanel extends JPanel implements ActionListener {
     //private Image bufferImage;
     //private Dimension bufferSize;
 
-    private List<Gui> guis = new ArrayList<Gui>();
-    
+    private List<Gui> guis = Collections.synchronizedList(new ArrayList<Gui>());
+       
     //static variables to replace magic numbers
     protected static int TableLocationX = 50;
     protected static int TableLocationY = 250;
@@ -67,18 +69,21 @@ public class AnimationPanel extends JPanel implements ActionListener {
         
         g.drawImage(image, CookLocationX, CookLocationY, 30, 30, null);
 
-        for(Gui gui : guis) {
-            if (gui.isPresent()) {
-            	
-                gui.updatePosition();
-            }
+        synchronized (guis) {
+	        for(Gui gui : guis) {
+	            if (gui.isPresent()) {
+	                gui.updatePosition();
+	            }
+	        }
         }
-
-        for(Gui gui : guis) {
-            if (gui.isPresent()) {
-                gui.draw(g2);
-            	//gui.drawImg();
-            }
+        
+        synchronized (guis) {
+	        for(Gui gui : guis) {
+	            if (gui.isPresent()) {
+	                gui.draw(g2);
+	            	//gui.drawImg();
+	            }
+	        }
         }
     }
 

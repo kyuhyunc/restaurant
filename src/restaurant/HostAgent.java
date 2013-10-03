@@ -95,9 +95,11 @@ public class HostAgent extends Agent {
 			
 			// choosing a waiter that has the least number of customers in the list
 			for(int i=0;i<waiters.size();i++) {
-				if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
-					if(customerSize > waiters.get(i).getMyCustomers().size()) {
-						waiterNumber = i;
+				if(!waiters.get(i).getName().equals("OnBreak")) {
+					if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
+						if(customerSize > waiters.get(i).getMyCustomers().size()) {
+							waiterNumber = i;
+						}
 					}
 				}
 			}
@@ -106,6 +108,7 @@ public class HostAgent extends Agent {
 			waiters.get(waiterNumber).msgSitAtTable(customer, table);
 			customer.setWaiter(waiters.get(waiterNumber));
 			waitingCustomers.remove(customer);		
+			
 		}
 		else {
 			Do("There is no waiter!");
@@ -129,13 +132,22 @@ public class HostAgent extends Agent {
 	public String getName() {
 		return name;
 	}
-	
+		
 	public void addTableByGui() {
 		tables.add(new Table(NTABLES));//how you add to a collections
 	}
 	
-	public void addWaiterByGui() {
-		WaiterAgent w = new WaiterAgent("waiter #"+ (NWAITERS-1));
+	public void addWaiterByGui(String name) {
+		//WaiterAgent w = new WaiterAgent("waiter #"+ (NWAITERS-1));
+		WaiterAgent w;
+		if(name.equals("")){
+			w = new WaiterAgent("waiter #"+ (NWAITERS-1));
+		}
+		else {
+			w = new WaiterAgent(name);
+		}
+		Do("New waiter " + w.getName() + " is added");
+		
 		w.setHost(this);		
 		w.setCook(cook);
 				
