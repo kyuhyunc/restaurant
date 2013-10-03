@@ -51,6 +51,7 @@ public class WaiterAgent extends Agent {
 	}
 
 	// Messages
+	
 	// 2: SitAtTable(customer, table)
 	public void msgSitAtTable(CustomerAgent customer, Table table) {
 		//state = AgentState.Serving;
@@ -132,12 +133,16 @@ public class WaiterAgent extends Agent {
 		}
 	}
 	
+	// msg from gui
+	public void msgOffBreak() {
+		host.msgOffBreak();
+	}
+
 	/**
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
 	protected boolean pickAndExecuteAnAction() {
 		//	WaiterAgent is a finite state machine
-		
 		if (state == AgentState.Waiting) {
 			for (MyCustomer customer : MyCustomers) {
 				if (customer.state == MyCustomer.CustState.Waiting) {

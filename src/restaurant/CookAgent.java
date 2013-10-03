@@ -43,7 +43,6 @@ public class CookAgent extends Agent {
 		}		
 	}
 	
-	
 
 	/**
 	 * hack to establish connection to Host agent.

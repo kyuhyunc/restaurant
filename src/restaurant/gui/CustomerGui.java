@@ -52,7 +52,7 @@ public class CustomerGui implements Gui{
 				agent.msgAnimationFinishedLeaveRestaurant();
 				System.out.println("about to call gui.setCustomerEnabled(agent);");
 				isHungry = false;
-				gui.setCustomerEnabled(agent);
+				gui.getCustomerPanel().setCustomerEnabled(agent);
 			}
 			command=Command.noCommand;
 		}
@@ -66,20 +66,22 @@ public class CustomerGui implements Gui{
 		g.drawString(agent.getName(), xPos, yPos);
 	}
 
+	public void setPresent(boolean p) {
+		isPresent = p;
+	}
+	
 	public boolean isPresent() {
 		return isPresent;
 	}
+	
 	public void setHungry() {
 		isHungry = true;
 		agent.gotHungry();
 		setPresent(true);
 	}
+	
 	public boolean isHungry() {
 		return isHungry;
-	}
-
-	public void setPresent(boolean p) {
-		isPresent = p;
 	}
 
 	public void DoGoToSeat(int tableNumber) {//later you will map seat number to table coordinates.

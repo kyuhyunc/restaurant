@@ -3,7 +3,6 @@ package restaurant.gui;
 import javax.swing.*;
 
 import restaurant.HostAgent;
-import restaurant.CookAgent.Order;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -14,8 +13,8 @@ import java.util.ArrayList;
 
 public class AnimationPanel extends JPanel implements ActionListener {
 
-    private final int WINDOWX = 450;
-    private final int WINDOWY = 350;
+    private final int WINDOWX = 700;
+    private final int WINDOWY = 380;
     //private Image bufferImage;
     //private Dimension bufferSize;
 

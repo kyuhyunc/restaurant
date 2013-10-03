@@ -11,20 +11,21 @@ import javax.swing.ImageIcon;
 public class WaiterGui implements Gui {
 
     private WaiterAgent agent = null;
-
+    private boolean isBreak = false;
+    
     private int xPos = -20, yPos = -20;//default waiter position
     private int xDestination = -20, yDestination = -20;//default start position
     private enum Command {noCommand, GoToTable, GoToCook, GoToHost, GoToHost2};
 	private Command command=Command.noCommand;
 	
-    //public static final int xTable = 200;
-    //public static final int yTable = 250;
+    RestaurantGui gui;
 
     private ImageIcon hostImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/W for Waiter.jpg");
     private Image image = hostImage.getImage();
     
-    public WaiterGui(WaiterAgent agent) {
+    public WaiterGui(WaiterAgent agent, RestaurantGui gui) {
         this.agent = agent;
+        this.gui = gui;
     }
 
     public void updatePosition() {
@@ -96,7 +97,19 @@ public class WaiterGui implements Gui {
                 
         command = Command.GoToHost2;
     }
-
+    
+	public void setBreak() {
+		isBreak = !isBreak;
+		
+		if(!isBreak) {
+			agent.msgOffBreak();
+		}
+	}
+	
+	public boolean isBreak() {
+		return isBreak;
+	}
+   
     public int getXPos() {
         return xPos;
     }
