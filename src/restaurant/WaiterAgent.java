@@ -135,7 +135,14 @@ public class WaiterAgent extends Agent {
 	
 	// msg from gui
 	public void msgOffBreak() {
+		Do("I am off Break");
 		host.msgOffBreak();
+	}
+	
+	public void msgOnBreak() {
+		Do("I am on Break");
+		//host.msgOffBreak();
+		// need to ask for permssion to Host
 	}
 
 	/**

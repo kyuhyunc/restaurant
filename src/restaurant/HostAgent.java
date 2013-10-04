@@ -89,24 +89,35 @@ public class HostAgent extends Agent {
 	// Actions
 	private void tellWaiter(CustomerAgent customer, Table table) {
 		int waiterNumber = -1;
-		int customerSize = 0;
+		int customerSize = -1;
 		
 		if(waiters.size() > 0){
-			customerSize = waiters.get(0).getMyCustomers().size();
+			// this for loop is for saving the first customersize and waiternumber to compare with others
+			for(int i=0;i<waiters.size();i++) {
+				if(!waiters.get(i).getGui().isBreak()) {
+					if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
+						customerSize = waiters.get(i).getMyCustomers().size();
+						waiterNumber = i;
+						break;
+					}
+				}
+			}
 			
 			// choosing a waiter that has the least number of customers in the list
 			for(int i=0;i<waiters.size();i++) {
 				if(!waiters.get(i).getGui().isBreak()) {
-					//if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
-						if(customerSize >= waiters.get(i).getMyCustomers().size()) {
+					if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
+						// customerSize == -1 is for when state changes to waiting after the first loop above, due to race condition
+						if(customerSize >= waiters.get(i).getMyCustomers().size() || customerSize == -1) {
+							customerSize = waiters.get(i).getMyCustomers().size();
 							waiterNumber = i;
 						}
-					//}
+					}
 				}
 			}
 			
 			if(waiterNumber == -1) { 
-				Do("There is no waiter available; they are all on break");
+				Do("There is no waiter available; they are all on break or serving");
 				try{
 					waiterRdy.acquire();
 				} catch (InterruptedException e) {
