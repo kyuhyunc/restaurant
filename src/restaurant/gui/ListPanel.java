@@ -220,6 +220,7 @@ public class ListPanel extends JPanel implements ActionListener {
     	    	if (e.getSource() == stateCBs.get(i)) {
     	    		if( restPanel.getWaiterAgent(i) instanceof WaiterAgent) {
     	    			restPanel.getWaiterAgent(i).getGui().setBreak();
+    	    			//stateCBs.get(i).setEnabled(false);
     	    		}
     	    	}
     	   	}
@@ -237,6 +238,18 @@ public class ListPanel extends JPanel implements ActionListener {
 			if(restPanel.getCustomerAgent(i) == c) {
 				stateCBs.get(i).setEnabled(true);
 				stateCBs.get(i).setSelected(false);
+			}
+    	}	
+    }
+    
+    public void setWaiterEnabled(WaiterAgent w, boolean breakPermission) {
+    	for(int i = 0; i < stateCBs.size() ; i++) {
+			if(restPanel.getWaiterAgent(i) == w) {
+				if(!breakPermission) { // if the waiter cannot be on break, uncheck the box 
+					stateCBs.get(i).setSelected(false);
+					restPanel.getWaiterAgent(i).getGui().setBreakFalse();
+				}
+				stateCBs.get(i).setEnabled(true);
 			}
     	}	
     }

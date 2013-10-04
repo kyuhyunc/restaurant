@@ -28,8 +28,11 @@ public class HostAgent extends Agent {
 	
 	private String name;
 	
-	private Semaphore waiterRdy = new Semaphore(0,true);
-
+	private Semaphore waiterAdd = new Semaphore(0,true);
+	//private Semaphore waiterBreak = new Semaphore(0,true);
+	
+	boolean flag = true;
+	
 	public HostAgent(String name) {
 		super();
 
@@ -45,16 +48,18 @@ public class HostAgent extends Agent {
 	// Messages
 	// 0:
 	public void msgAddWaiter(WaiterAgent waiter) {
-		Do("New waiter " + waiter.getName() + " is added");
-						
+		Do("New waiter " + waiter.getName() + " is added");				
+		
 		waiters.add(waiter);	
-		waiterRdy.release();
+		waiterAdd.release();
+		//waiterBreak.release();
 	}
 	
 	// 1: IWantFood(customer)
 	public void msgIWantFood(CustomerAgent cust) {
 		waitingCustomers.add(cust);
 		Do(cust + " is added to the waiting list");
+		flag = true;
 		stateChanged();
 	}
 
@@ -66,10 +71,13 @@ public class HostAgent extends Agent {
 	}
 
 	// msg from waiter
-	public void msgOffBreak() {
-		waiterRdy.release();
+	public void msgCanIBreak(WaiterAgent w) {
+		chkIfWaiterCanBreak(w);		
 	}
-		
+	
+	public void msgOffBreak() {
+		//waiterBreak.release();
+	}
 	
 	/**
 	 * Scheduler.  Determine what action is called for, and do it.
@@ -90,11 +98,13 @@ public class HostAgent extends Agent {
 	private void tellWaiter(CustomerAgent customer, Table table) {
 		int waiterNumber = -1;
 		int customerSize = -1;
+
 		
 		if(waiters.size() > 0){
 			// this for loop is for saving the first customersize and waiternumber to compare with others
 			for(int i=0;i<waiters.size();i++) {
 				if(!waiters.get(i).getGui().isBreak()) {
+					waiterNumber = -2;
 					if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
 						customerSize = waiters.get(i).getMyCustomers().size();
 						waiterNumber = i;
@@ -108,7 +118,8 @@ public class HostAgent extends Agent {
 				if(!waiters.get(i).getGui().isBreak()) {
 					if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
 						// customerSize == -1 is for when state changes to waiting after the first loop above, due to race condition
-						if(customerSize >= waiters.get(i).getMyCustomers().size() || customerSize == -1) {
+						// customerSize == -2 is for when isBreak changes after the first loop above, due to race condition
+						if(customerSize >= waiters.get(i).getMyCustomers().size() || customerSize == -1 || customerSize == -2) {
 							customerSize = waiters.get(i).getMyCustomers().size();
 							waiterNumber = i;
 						}
@@ -116,16 +127,22 @@ public class HostAgent extends Agent {
 				}
 			}
 			
-			if(waiterNumber == -1) { 
-				Do("There is no waiter available; they are all on break or serving");
-				try{
-					waiterRdy.acquire();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+			if(waiterNumber == -1) { // when all waiter are on break 
+				//Do("aaaaaaaaaaaa");
+				if(flag) {
+					Do("There is no waiter available; they are all on break");
+					flag = false;
 				}	
 			}
+			else if(waiterNumber == -2){ // when all waiter serving, although  there are waiters not on break
+				// using flag?
+				if(flag) {
+					Do("There is no waiter available; they are all serving customers");
+					flag = false;
+				}
+			}
 			else {
+				flag = true;
 				table.setOccupant(customer);
 				waiters.get(waiterNumber).msgSitAtTable(customer, table);
 				customer.setWaiter(waiters.get(waiterNumber));
@@ -135,7 +152,7 @@ public class HostAgent extends Agent {
 		else {
 			Do("There is no waiter!");
 			try{
-				waiterRdy.acquire();
+				waiterAdd.acquire();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -143,6 +160,23 @@ public class HostAgent extends Agent {
 		}
 	}
 	
+	public void chkIfWaiterCanBreak(WaiterAgent w) {
+		boolean breakPermission;
+		
+		if( waitingCustomers.isEmpty() ) {
+			breakPermission = true;
+			/**try{
+				waiterBreak.acquire();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}*/
+		}
+		else {
+			breakPermission = false;
+		}
+		w.msgReplyBreak(breakPermission);		
+	}
 
 	//utilities
 	public void setRestaurantGui(RestaurantGui gui) {

@@ -34,7 +34,7 @@ public class RestaurantGui extends JFrame{
         int WINDOWX = 700;
         int WINDOWY = 750;
 
-    	setBounds(400, 20, WINDOWX, WINDOWY);
+    	setBounds(900, 40, WINDOWX, WINDOWY);
     	//setSize(WINDOWX, WINDOWY + 400);
 
     	setLayout(new BoxLayout((Container) getContentPane(), BoxLayout.Y_AXIS));
@@ -72,6 +72,10 @@ public class RestaurantGui extends JFrame{
   
     public ListPanel getCustomerPanel() {
     	return restPanel.getCustomerPanel();
+    }
+    
+    public ListPanel getWaiterPanel() {
+    	return restPanel.getWaiterPanel();
     }
     
     /**

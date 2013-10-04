@@ -62,6 +62,9 @@ public class RestaurantPanel extends JPanel {
      * and host and cook information
      */
     private void initRestLabel() {
+    	int WINDOWX = 220;
+        int WINDOWY = 300;
+    	
     	JLabel label = new JLabel();
     	JPanel info = new JPanel();
     	
@@ -71,9 +74,13 @@ public class RestaurantPanel extends JPanel {
         
         buttons.setLayout(new GridLayout(2,1,10,5));
         
+        Dimension buttonDim = new Dimension((int) (WINDOWX), (int) (WINDOWY * 0.1));
+        addTable.setPreferredSize(buttonDim);
+        pause.setPreferredSize(buttonDim);
+        
         buttons.add(addTable);
         buttons.add(pause);   
-        
+                
         addTable.addActionListener(new ButtonListener());
         pause.addActionListener(new ButtonListener());
         
@@ -91,10 +98,12 @@ public class RestaurantPanel extends JPanel {
         info.add(new JLabel("           "));
         info.add(label);
         info.setBorder(BorderFactory.createTitledBorder("Restaurant Information"));
-        
-        restLabel.add(new JLabel(" "));
-        restLabel.add(buttons);
+                
         //restLabel.add(new JLabel(" "));
+        restLabel.add(buttons);
+        JLabel blank = new JLabel("  ");
+        blank.setFont(new Font("Arial", Font.PLAIN, 8));
+        restLabel.add(blank);
         restLabel.add(info);
     }
 
@@ -176,12 +185,10 @@ public class RestaurantPanel extends JPanel {
     				System.out.println("Resume");
     				
     				for(int i = 0; i < waiters.size() ; i++) {
-    					if(!waiterPanel.getStateCB(i).isSelected()){	
-    						waiterPanel.getStateCB(i).setEnabled(true);	
-    					}
+    					waiterPanel.getStateCB(i).setEnabled(true);	
     		    	}
     				for(int i = 0; i < customers.size() ; i++) {
-    					if(!waiterPanel.getStateCB(i).isSelected()){	
+    					if(!customerPanel.getStateCB(i).isSelected()){	
     						customerPanel.getStateCB(i).setEnabled(true);
     					}
     		    	}
@@ -228,5 +235,9 @@ public class RestaurantPanel extends JPanel {
     
     public ListPanel getCustomerPanel() {
     	return customerPanel;
+    }
+    
+    public ListPanel getWaiterPanel() {
+    	return waiterPanel;
     }
 }

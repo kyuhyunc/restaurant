@@ -134,15 +134,27 @@ public class WaiterAgent extends Agent {
 	}
 	
 	// msg from gui
-	public void msgOffBreak() {
-		Do("I am off Break");
-		host.msgOffBreak();
-	}
-	
 	public void msgOnBreak() {
-		Do("I am on Break");
+		Do("Can I have a break?");
 		//host.msgOffBreak();
 		// need to ask for permssion to Host
+		host.msgCanIBreak(this);
+	}
+	
+	public void msgReplyBreak(boolean breakPermission) {
+		
+		waiterGui.getReplyBreak(breakPermission);
+		
+		if(breakPermission) {
+			Do("I am on break");
+		}
+		else
+			Do("I can't be on break T.T...");
+	}
+	
+	public void msgOffBreak() {
+		Do("I am off break");
+		host.msgOffBreak();
 	}
 
 	/**

@@ -98,6 +98,10 @@ public class WaiterGui implements Gui {
         command = Command.GoToHost2;
     }
     
+    public void getReplyBreak(boolean breakPermission) {
+    	gui.getWaiterPanel().setWaiterEnabled(agent, breakPermission);
+    }    
+    
 	public void setBreak() {
 		isBreak = !isBreak;
 		
@@ -107,6 +111,10 @@ public class WaiterGui implements Gui {
 		else if(isBreak){
 			agent.msgOnBreak();
 		}
+	}
+	
+	public void setBreakFalse() {
+		isBreak = false;
 	}
 	
 	public boolean isBreak() {

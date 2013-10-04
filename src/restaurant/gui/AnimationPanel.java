@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 public class AnimationPanel extends JPanel implements ActionListener {
 
-    private final int WINDOWX = 700;
+    private final int WINDOWX = 720;
     private final int WINDOWY = 380;
     //private Image bufferImage;
     //private Dimension bufferSize;
