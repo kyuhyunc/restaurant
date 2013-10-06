@@ -46,7 +46,7 @@ public class CookAgent extends Agent {
 		// setting up the menu
 		for(String s : menu_list) {
 			foods.put(s, new Food(s));
-			foods.get(s).setBatchSize(5);
+			foods.get(s).setBatchSize(2);
 			foods.get(s).setAmount(2);
 		}		
 	}
@@ -109,14 +109,14 @@ public class CookAgent extends Agent {
 			if (foods.get(order.choice).amount == 1 || foods.get(order.choice).amount == 0) {
 				Do("There is only " + foods.get(order.choice).amount + " stock left for the food " + order.choice);
 				// BuyFood
-				BuyFood(order.choice);
+				BuyFood(order.choice, foods.get(order.choice).batchSize);
 			}
 		} 
 		else {
 			// tell waiter there is no food
 			Do(order.choice + " is out of stock right now");			
 			order.state = Order.OrderState.outOfStock;
-			BuyFood(order.choice);
+			BuyFood(order.choice, foods.get(order.choice).batchSize);
 			stateChanged();
 		}
 	}
@@ -136,7 +136,7 @@ public class CookAgent extends Agent {
 		(int) (foods.get(o.choice).getCookingTime()));
 	}
 	
-	void BuyFood(String food) {
+	void BuyFood(String food, int batchSize) {
 		boolean marketAvailable = false;
 		boolean alreadyOrdered = false;
 		
@@ -151,7 +151,7 @@ public class CookAgent extends Agent {
 		if(!alreadyOrdered) {
 			for(MarketAgent m : markets) {
 				// msgBuyFood will return true if the market has a stock for the choice
-				if(m.msgBuyFood(new Procure(food))) {
+				if(m.msgBuyFood(new Procure(food, batchSize))) {
 					marketAvailable = true;
 					Do("Ordered " + food + " to " + m.getName());
 					break;

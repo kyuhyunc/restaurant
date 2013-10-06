@@ -49,11 +49,12 @@ public class MarketAgent extends Agent {
 	public boolean msgBuyFood(Procure procure) {
 		print("received an procure order from cook");
 		// check availability for the procure order
-		if(inventory.get(procure.food).amount < inventory.get(procure.food).batchSize) {
+		if(inventory.get(procure.food).amount < procure.batchSize) {
 			return false;
 		}
 		else {
 			procures.add(procure);
+			//print("stock level : " + inventory.get(procure.food).amount);
 			stateChanged();
 			return true;
 		}
@@ -89,7 +90,8 @@ public class MarketAgent extends Agent {
 		print("Start Delivering");
 		
 		DoDeliver(procure);
-		inventory.get(procure.food).amount -= inventory.get(procure.food).batchSize;
+		inventory.get(procure.food).amount -= procure.batchSize;
+		//print("stock level : " + inventory.get(procure.food).amount);
 	}
 	
 	public void DoDeliver(Procure procure) {
@@ -121,7 +123,7 @@ public class MarketAgent extends Agent {
 		// setting up the inventory and stock level
 		for(String s : food_list) {
 			inventory.put(s, new Food(s));
-			inventory.get(s).setAmount(10);
+			inventory.get(s).setAmount(2);
 		}	
 	}
 	
@@ -144,9 +146,11 @@ public class MarketAgent extends Agent {
 	
 	public static class Procure {
 		private String food;
+		int batchSize;
 		
-		Procure (String food) {
+		Procure (String food, int batchSize) {
 			this.food = food;
+			this.batchSize = batchSize;
 		}
 		
 		public enum ProcureState
