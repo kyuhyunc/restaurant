@@ -3,13 +3,14 @@ package restaurant;
 import restaurant.gui.CustomerGui;
 import restaurant.gui.FoodGui;
 import agent.Agent;
-import restaurant.CookAgent.Food;
 import restaurant.WaiterAgent;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Random;
+
+
 
 /**
  * Restaurant customer agent.
@@ -25,9 +26,9 @@ public class CustomerAgent extends Agent {
 	private HostAgent host;
 	private WaiterAgent wait;
 	
-	Map<String, Food> menu;
+	//Map<String, Food> menu;
+	private List<String> menu_list;
 	String choice;
-	//Food fChoice;
 	
 	public enum AgentState
 	{DoingNothing, WaitingInRestaurant, BeingSeated, Seated, ReadyToOrder
@@ -72,8 +73,8 @@ public class CustomerAgent extends Agent {
 	}
 	
 	// 3: FollowMe(menu)
-	public void msgFollowMe(Map<String, Food> menu) {
-		this.menu = menu;
+	public void msgFollowMe(List<String> menu_list) {
+		this.menu_list = menu_list;
 		event = AgentEvent.followHost;
 		stateChanged();
 	}
@@ -84,8 +85,8 @@ public class CustomerAgent extends Agent {
 		stateChanged();
 	}
 	
-	public void msgAskForOrderAgain(Map<String, Food> menu) {
-		this.menu = menu;
+	public void msgAskForOrderAgain(List<String> menu_list) {
+		this.menu_list = menu_list;
 		event = AgentEvent.reOrder;
 		stateChanged();
 	}
@@ -185,48 +186,38 @@ public class CustomerAgent extends Agent {
 	private void ChooseMenu() {
 		// this is for reset the foodGui
 		if(!(foodGui == null)){
-			foodGui.state = FoodGui.State.doneEating;
+			foodGui.state = FoodGui.State.reOrdering;
 		}
 		
 		Do("Choosing menu");
 		Random oRandom = new Random();
 		
-		int randomNum = oRandom.nextInt(menu.size());
+		int randomNum = oRandom.nextInt(wait.getNumberOfMenu());
 				
 		// algorithm for choose what to order
-		switch (randomNum) {
-		case 0:
-			choice = "Stake";
-			break;
-		case 1:
-			choice = "Chicken";
-			break;
-		case 2:
-			choice = "Salad";
-			break;
-		case 3:
-			choice = "Pizza";
-			break;
-		default:
-			print("default");
-			choice = "Stake";
-			break;
-		}
+		do{
+			switch (randomNum) {
+			case 0:
+				choice = "Stake";
+				break;
+			case 1:
+				choice = "Chicken";
+				break;
+			case 2:
+				choice = "Salad";
+				break;
+			case 3:
+				choice = "Pizza";
+				break;
+			}
+		} while(!menu_list.contains(choice));
+		
 		
 		// this is temporary code for testing outofFood function
 		// default will be stake
 		choice = name;
 		
-		/**
-		if(menu.containsKey(choice)) {
-			fChoice = new Food(choice);
-		}
-		else {
-			//Do("failed to choose menu");
-			Do("Choose Stake as a default");
-			choice = "Stake";
-		}*/
-		if(!menu.containsKey(choice) || menu.get(choice).amount == 0) {
+		if(!menu_list.contains(choice)) {	
 			Do("Choose Chicken as default");
 			choice = "Chicken";
 		}
@@ -245,8 +236,7 @@ public class CustomerAgent extends Agent {
 		
 		for(WaiterAgent.MyCustomer myC : wait.getMyCustomers()) {
 			if(myC.c == this) {
-				//foodGui = new FoodGui(myC.t.tableNumber, fChoice);
-				foodGui = new FoodGui(myC.t.tableNumber, menu.get(choice));
+				foodGui = new FoodGui(myC.t.tableNumber, wait.getFood(choice));
 				break;
 			}		
 		}
@@ -276,7 +266,9 @@ public class CustomerAgent extends Agent {
 				stateChanged();
 			}
 		},
-		(int) (menu.get(choice).time * menu.get(choice).eatingTimeMultiplier) * getHungerLevel());//how long to wait before running task
+		//(int) (menu.get(choice).time * menu.get(choice).eatingTimeMultiplier) * getHungerLevel());//how long to wait before running task
+		//menu.get(choice).getEatingTime());//how long to wait before running task
+		wait.getFood(choice).getEatingTime());
 	}
 
 	private void leaveTable() {

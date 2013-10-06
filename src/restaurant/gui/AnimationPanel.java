@@ -2,6 +2,7 @@ package restaurant.gui;
 
 import javax.swing.*;
 
+import restaurant.CookAgent;
 import restaurant.HostAgent;
 
 import java.awt.*;
@@ -29,14 +30,20 @@ public class AnimationPanel extends JPanel implements ActionListener {
     protected static int CookLocationX = 370;
     protected static int CookLocationY = 50;
     
+    protected static int MarketLocationX = 550;
+    protected static int MarketLocationY = 50;
+    
     protected Timer timer;
     private final int timerSpeed = 15;
     
     public static boolean pauseFlag = false;
 
 	private ImageIcon cookImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/Cook.jpg");
-	private Image image = cookImage.getImage();
-    
+	private Image cImage = cookImage.getImage();
+	
+	private ImageIcon MarketImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/market.jpg");
+	private Image mImage = MarketImage.getImage();
+	
     public AnimationPanel() {
     	setSize(WINDOWX, WINDOWY);
         setVisible(true);
@@ -66,7 +73,11 @@ public class AnimationPanel extends JPanel implements ActionListener {
 	        g2.fillRect(TableLocationX + (70*i), TableLocationY, TableSizeX, TableSizeY);//200 and 250 need to be table params
         }
         
-        g.drawImage(image, CookLocationX, CookLocationY, 30, 30, null);
+        for(int i=0 ; i < CookAgent.NMARKETS ; i++) {
+	        g2.drawImage(mImage, MarketLocationX, MarketLocationY + (70*i), 50, 50, null);
+        }
+        
+        g.drawImage(cImage, CookLocationX, CookLocationY, 30, 30, null);
 
         synchronized (guis) {
 	        for(Gui gui : guis) {

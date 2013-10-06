@@ -32,13 +32,15 @@ public class RestaurantGui extends JFrame{
      */
     public RestaurantGui() {
         int WINDOWX = 700;
-        int WINDOWY = 750;
+        int WINDOWY = 730;
 
     	setBounds(900, 40, WINDOWX, WINDOWY);
     	//setSize(WINDOWX, WINDOWY + 400);
 
     	setLayout(new BoxLayout((Container) getContentPane(), BoxLayout.Y_AXIS));
               
+    	add(new JLabel("  "));
+    	
         Dimension restDim = new Dimension(WINDOWX, (int) (WINDOWY * .4));
         restPanel.setPreferredSize(restDim);
         restPanel.setMinimumSize(restDim);

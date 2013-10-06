@@ -13,18 +13,24 @@ import java.util.TimerTask;
 
 import javax.swing.ImageIcon;
 
+import restaurant.MarketAgent.Procure;
+
 /**
- * Restaurant customer agent.
+ * Restaurant cook agent.
  */
 public class CookAgent extends Agent {
+	static public int NMARKETS = 0;//a global for the number of markets
+	
 	private String name;
 	Timer timer = new Timer();
 		
 	//private List<Order> orders = new ArrayList<Order>();
 	private List<Order> orders = Collections.synchronizedList(new ArrayList<Order>());
 	
-	public Map<String, Food> menu = new HashMap<String, Food> ();
-	public List<String> menu_list = new ArrayList<String> ();
+	private Map<String, Food> foods = new HashMap<String, Food> ();
+	private List<String> menu_list = new ArrayList<String> ();
+	
+	private List<MarketAgent> markets = new ArrayList<MarketAgent> ();
 	
 	/**
 	 * Constructor for CookrAgent class
@@ -39,7 +45,9 @@ public class CookAgent extends Agent {
 		
 		// setting up the menu
 		for(String s : menu_list) {
-			menu.put(s, new Food(s));
+			foods.put(s, new Food(s));
+			foods.get(s).setBatchSize(5);
+			foods.get(s).setAmount(2);
 		}		
 	}
 	
@@ -56,6 +64,10 @@ public class CookAgent extends Agent {
 		stateChanged();
 	}
 	
+	public void msgOrderFulfillment(Procure procure) {
+		foods.get(procure.getFood()).amount += foods.get(procure.getFood()).batchSize; 
+	}
+	
 	/**
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
@@ -70,13 +82,13 @@ public class CookAgent extends Agent {
 					}
 					else if(orders.get(i).state == Order.OrderState.Cooked) {
 						orders.get(i).waiter.msgOrderIsReady(orders.get(i));
-						Do("Order for customer " + orders.get(i).customer + " is ready : " + orders.get(i).choice);
+						Do("Order for " + orders.get(i).customer + " is ready : " + orders.get(i).choice);
 						orders.remove(i);
 						return true;
 					}
 					else if(orders.get(i).state == Order.OrderState.outOfStock) {
 						orders.get(i).waiter.msgOrderIsOutOfStock(orders.get(i));
-						Do("Order for customer " + orders.get(i).customer + " is out of stock : " + orders.get(i).choice);
+						Do("Order for " + orders.get(i).customer + " is out of stock : " + orders.get(i).choice);
 						orders.remove(i);
 						return true;
 					}
@@ -90,34 +102,23 @@ public class CookAgent extends Agent {
 	// Actions
 	void CookOrder(Order order) {
 		print("Start cooking");
-		if(menu.get(order.choice).amount > 0) {
+		if(foods.get(order.choice).amount > 0) {
 			DoCooking(order);
 			//order.choice.amount --; // decreasing stock by 1
-			menu.get(order.choice).amount --;
-			if (menu.get(order.choice).amount == 1) {
-				Do("There is only 1 stock left for the food " + order.choice);
+			foods.get(order.choice).amount --;
+			if (foods.get(order.choice).amount == 1 || foods.get(order.choice).amount == 0) {
+				Do("There is only " + foods.get(order.choice).amount + " stock left for the food " + order.choice);
+				// BuyFood
+				BuyFood(order.choice);
 			}
 		} 
 		else {
 			// tell waiter there is no food
 			Do(order.choice + " is out of stock right now");			
 			order.state = Order.OrderState.outOfStock;
+			BuyFood(order.choice);
 			stateChanged();
 		}
-	}
-	
-	// Accessors, etc.
-
-	public String getName() {
-		return name;
-	}
-	
-	public Map<String, Food> getMenu() {
-		return menu;
-	}
-
-	public String toString() {
-		return "cook " + getName();
 	}
 	
 	public void DoCooking(Order order) {
@@ -128,10 +129,68 @@ public class CookAgent extends Agent {
 			public void run() {
 				System.out.println("Cook: Done cooking, " + o.choice + " for " + o.customer.getName());
 				o.state = Order.OrderState.Cooked;
-				o.waiter.getCook().stateChanged();
+				//o.waiter.getCook().stateChanged();
+				stateChanged();
 			}
 		},
-		(int) (menu.get(o.choice).time * menu.get(o.choice).cookingTimeMultiplier));//getHungerLevel() * 1000);//how long to wait before running task
+		(int) (foods.get(o.choice).getCookingTime()));
+	}
+	
+	void BuyFood(String food) {
+		boolean marketAvailable = false;
+		boolean alreadyOrdered = false;
+		
+		for(MarketAgent m : markets) {
+			// return true if the food has already been ordered to the market
+			if(m.chkProcureInProcess(food)) {
+				alreadyOrdered = true;
+			}
+			break;
+		}
+		
+		if(!alreadyOrdered) {
+			for(MarketAgent m : markets) {
+				// msgBuyFood will return true if the market has a stock for the choice
+				if(m.msgBuyFood(new Procure(food))) {
+					marketAvailable = true;
+					Do("Ordered " + food + " to " + m.getName());
+					break;
+				}
+			}
+			
+			if(!marketAvailable) {
+				Do("There is no market that has a stock for " + food);
+			}
+		}	
+		else {
+			Do(food + " has been ordered already");
+		}
+	}
+	
+	// Accessors, etc.
+
+	public String getName() {
+		return name;
+	}
+	
+	public Map<String, Food> getMenu() {
+		return foods;
+	}
+	
+	public List<String> getMenuList() {
+		return menu_list;
+	}
+
+	public String toString() {
+		return "cook " + getName();
+	}
+	
+	public void addMarketByGui() {
+		MarketAgent m = new MarketAgent("Market #" + NMARKETS);
+		m.setCook(this);
+		m.setMenuList(menu_list); // this will set up the initial inventory level of the market
+		markets.add(m);
+		m.startThread();
 	}
 	
 	public static class Order {
@@ -155,6 +214,8 @@ public class CookAgent extends Agent {
 		
 		int time; // for setting timer differently
 		int amount;
+		int batchSize; // amount of order
+		
 		double cookingTimeMultiplier = 2.5;
 		double eatingTimeMultiplier = 4;
 		
@@ -162,7 +223,7 @@ public class CookAgent extends Agent {
 		
 		Food(String name) {
 			this.name = name;
-			amount = 2; // can set initial amount  depending on foods later
+			//amount = 3; // can set initial amount  depending on foods later
 			
 			if (name == "Stake") {
 				time = (int) (1000 * cookingTimeMultiplier);
@@ -182,27 +243,26 @@ public class CookAgent extends Agent {
 			}
 			else {
 				time = 0;
+				foodImage = null;
 			}
 		}
 		
-		public int getEatingTime(String choice) {
-			if (name == "Stake") {
-				return (int) (1000 * eatingTimeMultiplier);
-			}
-			else if (name == "Chiken") {
-				return (int) (800 * eatingTimeMultiplier);
-			}
-			else if (name == "Salad") {
-				return (int) (600 * eatingTimeMultiplier);
-			}
-			else if (name == "Pizza") {
-				return (int) (300 * eatingTimeMultiplier);
-			}
-			else {
-				return 0;
-			}
+		public void setAmount(int amount) {
+			this.amount = amount;
 		}
 		
+		public void setBatchSize(int batchSize) {
+			this.batchSize = batchSize;
+		}
+		
+		public int getEatingTime() {
+			return (int) (time * eatingTimeMultiplier);
+		}
+		
+		public int getCookingTime() {
+			return (int) (time * cookingTimeMultiplier);
+		}
+				
 		public ImageIcon getImageIcon() {
 			return foodImage;
 		}	

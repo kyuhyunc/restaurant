@@ -12,7 +12,7 @@ public class FoodGui implements Gui{
 	private int xDestination, yDestination;
 	private boolean isPresent = false;
 	
-	public static enum State {noCommand, waiting, delivering, delivered, doneEating};
+	public static enum State {noCommand, waiting, delivering, delivered, doneEating, reOrdering};
 	public State state=State.noCommand;
 
 	//public static final int xTable = 200;

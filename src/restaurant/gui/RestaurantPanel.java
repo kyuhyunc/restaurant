@@ -26,8 +26,9 @@ public class RestaurantPanel extends JPanel {
     private Vector<WaiterAgent> waiters = new Vector<WaiterAgent>();    
 
     // these buttons are for the first list panel 
-    private JButton pause = new JButton("Pause");
     private JButton addTable = new JButton("Add Table");
+    private JButton addMarket = new JButton("Add Market");
+    private JButton pause = new JButton("Pause");
     private JPanel buttons = new JPanel();
     
     // restLabel has menu information
@@ -75,12 +76,15 @@ public class RestaurantPanel extends JPanel {
         buttons.setLayout(new GridLayout(2,1,10,5));
         
         Dimension buttonDim = new Dimension((int) (WINDOWX), (int) (WINDOWY * 0.1));
+        addMarket.setPreferredSize(buttonDim);
         addTable.setPreferredSize(buttonDim);
         pause.setPreferredSize(buttonDim);
-        
+    
+        buttons.add(addMarket);
         buttons.add(addTable);
         buttons.add(pause);   
                 
+        addMarket.addActionListener(new ButtonListener());
         addTable.addActionListener(new ButtonListener());
         pause.addActionListener(new ButtonListener());
         
@@ -146,7 +150,7 @@ public class RestaurantPanel extends JPanel {
     			System.out.println("Cannot add more waiter!! (maximum is 5)"); 		
     	}
     }
-    
+        
     // action listener for pause button 
     class ButtonListener implements ActionListener {
     	public void actionPerformed(ActionEvent e) {
@@ -208,6 +212,13 @@ public class RestaurantPanel extends JPanel {
     			}
     			else {
     				System.out.println("Cannot add more table!! (maximum is 5)");
+    			}
+    		}
+    		else if (e.getSource() == addMarket) {
+    			if(CookAgent.NMARKETS < 4) {
+    				CookAgent.NMARKETS ++;
+    				cook.addMarketByGui();
+    				System.out.println("Adding one more market: " + CookAgent.NMARKETS);
     			}
     		}
     	}
