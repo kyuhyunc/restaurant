@@ -5,7 +5,6 @@ import restaurant.gui.RestaurantGui;
 import restaurant.WaiterAgent;
 
 import java.util.*;
-import java.util.concurrent.Semaphore;
 
 /**
  * Restaurant Host Agent
@@ -15,6 +14,10 @@ public class HostAgent extends Agent {
 	//static public int NWAITERS = 1;
 	//Notice that we implement waitingCustomers using ArrayList, but type it
 	//with List semantics.
+	
+	public enum AgentState
+	{Waiting, Serving};
+	public AgentState state = AgentState.Waiting;//The start state
 	
 	public List<WaiterAgent> waiters = new ArrayList<WaiterAgent>();
 	public List<CustomerAgent> waitingCustomers	= new ArrayList<CustomerAgent>();
@@ -27,11 +30,6 @@ public class HostAgent extends Agent {
 	public RestaurantGui gui;
 	
 	private String name;
-	
-	private Semaphore waiterAdd = new Semaphore(0,true);
-	//private Semaphore waiterBreak = new Semaphore(0,true);
-	
-	boolean flag = true;
 	
 	public HostAgent(String name) {
 		super();
@@ -51,15 +49,16 @@ public class HostAgent extends Agent {
 		Do("New waiter " + waiter.getName() + " is added");				
 		
 		waiters.add(waiter);	
-		waiterAdd.release();
+		//waiterAdd.release();
 		//waiterBreak.release();
+		stateChanged();
 	}
 	
 	// 1: IWantFood(customer)
 	public void msgIWantFood(CustomerAgent cust) {
 		waitingCustomers.add(cust);
 		Do(cust + " is added to the waiting list");
-		flag = true;
+		//flag = true;
 		stateChanged();
 	}
 
@@ -69,6 +68,11 @@ public class HostAgent extends Agent {
 		table.setUnoccupied();
 		stateChanged(); // so that when a customer leaves, host will check availability of tables again
 	}
+	
+	// receiving msg when waiter's state becomes waiting
+	public void msgReadyToServe() {
+		stateChanged();
+	}
 
 	// msg from waiter
 	public void msgCanIBreak(WaiterAgent w) {
@@ -76,7 +80,7 @@ public class HostAgent extends Agent {
 	}
 	
 	public void msgOffBreak() {
-		//waiterBreak.release();
+		stateChanged();
 	}
 	
 	/**
@@ -86,8 +90,22 @@ public class HostAgent extends Agent {
 		for (Table table : tables) {
 			if (!table.isOccupied()) {
 				if (!waitingCustomers.isEmpty()) {
-					tellWaiter(waitingCustomers.get(0), table);
-					return true;//return true to the abstract agent to reinvoke the scheduler.
+					if(waiters.size() > 0) {
+						for(WaiterAgent w : waiters) {
+							if(!w.getGui().isBreak()) {
+								if(w.state == WaiterAgent.AgentState.Waiting){
+									tellWaiter(waitingCustomers.get(0), table);
+									return true;//return true to the abstract agent to reinvoke the scheduler.
+								}
+							}	
+						}
+						//Do("All waiters are serving customers");
+						return false;
+					}
+					else {
+						Do("There is no waiter");
+						return false;
+					}					
 				}
 			}
 		}
@@ -96,74 +114,33 @@ public class HostAgent extends Agent {
 
 	// Actions
 	private void tellWaiter(CustomerAgent customer, Table table) {
-		int waiterNumber = -1;
-		int customerSize = -1;
 
+		WaiterAgent w;
 		
-		if(waiters.size() > 0){
-			// this for loop is for saving the first customersize and waiternumber to compare with others
-			for(int i=0;i<waiters.size();i++) {
-				if(!waiters.get(i).getGui().isBreak()) {
-					waiterNumber = -2;
-					if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
-						customerSize = waiters.get(i).getMyCustomers().size();
-						waiterNumber = i;
-						break;
-					}
-				}
-			}
-			
-			// choosing a waiter that has the least number of customers in the list
-			for(int i=0;i<waiters.size();i++) {
-				if(!waiters.get(i).getGui().isBreak()) {
-					if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
-						// customerSize == -1 is for when state changes to waiting after the first loop above, due to race condition
-						// customerSize == -2 is for when isBreak changes after the first loop above, due to race condition
-						if(customerSize >= waiters.get(i).getMyCustomers().size() || customerSize == -1 || customerSize == -2) {
-							customerSize = waiters.get(i).getMyCustomers().size();
-							waiterNumber = i;
-						}
-					}
-				}
-			}
-			
-			if(waiterNumber == -1) { // when all waiter are on break 
-				//Do("aaaaaaaaaaaa");
-				if(flag) {
-					Do("There is no waiter available; they are all on break");
-					flag = false;
-				}	
-			}
-			else if(waiterNumber == -2){ // when all waiter serving, although  there are waiters not on break
-				// using flag?
-				if(flag) {
-					Do("There is no waiter available; they are all serving customers");
-					flag = false;
-				}
-			}
-			else {
-				flag = true;
-				table.setOccupant(customer);
-				waiters.get(waiterNumber).msgSitAtTable(customer, table);
-				customer.setWaiter(waiters.get(waiterNumber));
-				waitingCustomers.remove(customer);
-			}
+		w = getTheMostFreeWaiter();
+		
+		if(w!=null) {
+			table.setOccupant(customer);
+			w.msgSitAtTable(customer, table);
+			customer.setWaiter(w);
+			waitingCustomers.remove(customer);
 		}
-		else {
-			Do("There is no waiter!");
-			try{
-				waiterAdd.acquire();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	
-		}
+		else
+			Do("No waiter available");
 	}
 	
 	public void chkIfWaiterCanBreak(WaiterAgent w) {
 		boolean breakPermission;
 		
-		if( waitingCustomers.isEmpty() ) {
+		int numberOfNoBreakWaiters = 1;
+		
+		for(WaiterAgent wait : waiters){
+			if(!wait.getGui().isBreak()){
+				numberOfNoBreakWaiters ++;
+			}
+		}
+		
+		if( (waitingCustomers.isEmpty()) && (numberOfNoBreakWaiters > 1)) {
 			breakPermission = true;
 			/**try{
 				waiterBreak.acquire();
@@ -201,6 +178,34 @@ public class HostAgent extends Agent {
 		
 	public void addTableByGui() {
 		tables.add(new Table(NTABLES));//how you add to a collections
+	}
+	
+	public WaiterAgent getTheMostFreeWaiter() {
+		List<WaiterAgent> availableWaiters = new ArrayList<WaiterAgent>(); 
+		int numberOfCustomers = -1;
+		int waiterNumber = -1;
+		
+		// this for loop is for saving the first customersize and waiternumber to compare with others
+		for(int i=0;i<waiters.size();i++) {
+			if(!waiters.get(i).getGui().isBreak()) {
+				if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
+					availableWaiters.add(waiters.get(i));
+				}
+			}
+		}
+		
+		if(!availableWaiters.isEmpty()) {
+			numberOfCustomers = availableWaiters.get(0).getMyCustomers().size();
+			waiterNumber = 0;
+			for(int i=0; i < availableWaiters.size() ; i++) {
+				if( numberOfCustomers >= availableWaiters.get(i).getMyCustomers().size()) {
+					waiterNumber = i; 
+				}				
+			}
+			return availableWaiters.get(waiterNumber);
+		}
+		
+		return null;		
 	}
 	
 	public class Table {

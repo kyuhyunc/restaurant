@@ -223,6 +223,7 @@ public class WaiterAgent extends Agent {
 		customer.state = MyCustomer.CustState.seated;
 		
 		state = AgentState.Waiting;
+		host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		stateChanged();
 	}
@@ -259,6 +260,7 @@ public class WaiterAgent extends Agent {
 		customer.state = MyCustomer.CustState.waitingFood2;
 		
 		state = AgentState.Waiting;
+		host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		stateChanged();		
 	}
@@ -282,6 +284,7 @@ public class WaiterAgent extends Agent {
 		customer.c.msgAskForOrderAgain(menu);
 				
 		state = AgentState.Waiting;
+		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		stateChanged();
 	}
@@ -313,6 +316,7 @@ public class WaiterAgent extends Agent {
 		//customer.c.getFoodGui().state = FoodGui.State.delivered;
 
 		state = AgentState.Waiting;
+		host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		stateChanged();
 	}
