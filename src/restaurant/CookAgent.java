@@ -26,11 +26,18 @@ public class CookAgent extends Agent {
 		
 	//private List<Order> orders = new ArrayList<Order>();
 	private List<Order> orders = Collections.synchronizedList(new ArrayList<Order>());
+
+	private List<MarketAgent> markets = new ArrayList<MarketAgent> ();
 	
+	
+	/**
+	 * If I need to change foods list, all places I need to modify is here and the customerAgent's choose menu algorithm.
+	 * Besides these two places, other agents are using menu data by coping menu_list 
+	 * food (foods) in cook is current food information for cook
+	 * food (inventory) in market is current food information for markets
+	 */
 	private Map<String, Food> foods = new HashMap<String, Food> ();
 	private List<String> menu_list = new ArrayList<String> ();
-	
-	private List<MarketAgent> markets = new ArrayList<MarketAgent> ();
 	
 	/**
 	 * Constructor for CookrAgent class
@@ -101,8 +108,8 @@ public class CookAgent extends Agent {
 
 	// Actions
 	void CookOrder(Order order) {
-		print("Start cooking");
 		if(foods.get(order.choice).amount > 0) {
+			Do("Start cooking");
 			DoCooking(order);
 			//order.choice.amount --; // decreasing stock by 1
 			foods.get(order.choice).amount --;
@@ -117,7 +124,7 @@ public class CookAgent extends Agent {
 			Do(order.choice + " is out of stock right now");			
 			order.state = Order.OrderState.outOfStock;
 			BuyFood(order.choice, foods.get(order.choice).batchSize);
-			stateChanged();
+			//stateChanged();
 		}
 	}
 	

@@ -34,7 +34,7 @@ public class RestaurantGui extends JFrame{
         int WINDOWX = 700;
         int WINDOWY = 730;
 
-    	setBounds(900, 40, WINDOWX, WINDOWY);
+    	setBounds(400, 40, WINDOWX, WINDOWY);
     	//setSize(WINDOWX, WINDOWY + 400);
 
     	setLayout(new BoxLayout((Container) getContentPane(), BoxLayout.Y_AXIS));

@@ -47,12 +47,12 @@ public class MarketAgent extends Agent {
 	// Messages
 
 	public boolean msgBuyFood(Procure procure) {
-		print("received an procure order from cook");
 		// check availability for the procure order
 		if(inventory.get(procure.food).amount < procure.batchSize) {
 			return false;
 		}
 		else {
+			print("received an procure order from cook");
 			procures.add(procure);
 			//print("stock level : " + inventory.get(procure.food).amount);
 			stateChanged();
@@ -79,7 +79,7 @@ public class MarketAgent extends Agent {
 						return true;
 					}
 				}
-				return true; // return true when state is Delivering, so that market can wait
+				//return true; // return true when state is Delivering, so that market can wait
 			}
 		}
 		return false; // return false when there is no procure orders
@@ -107,11 +107,7 @@ public class MarketAgent extends Agent {
 		},
 		(int) deliveryTime); // delivery will be done in deliveryTime
 	}
-	
-	public void DoneDelivery() {
-		stateChanged();
-	}
-	
+		
 	// Accessors, etc.
 	public void setCook(CookAgent cook) {
 		this.cook = cook; 

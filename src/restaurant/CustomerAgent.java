@@ -5,6 +5,7 @@ import restaurant.gui.FoodGui;
 import agent.Agent;
 import restaurant.WaiterAgent;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,7 +28,7 @@ public class CustomerAgent extends Agent {
 	private WaiterAgent wait;
 	
 	//Map<String, Food> menu;
-	private List<String> menu_list;
+	private List<String> menu_list = new ArrayList<String> ();
 	String choice;
 	
 	public enum AgentState
@@ -74,7 +75,8 @@ public class CustomerAgent extends Agent {
 	
 	// 3: FollowMe(menu)
 	public void msgFollowMe(List<String> menu_list) {
-		this.menu_list = menu_list;
+		//this.menu_list = menu_list; // update menu with the full version one
+		this.menu_list.addAll(menu_list);
 		event = AgentEvent.followHost;
 		stateChanged();
 	}
@@ -86,7 +88,12 @@ public class CustomerAgent extends Agent {
 	}
 	
 	public void msgAskForOrderAgain(List<String> menu_list) {
-		this.menu_list = menu_list;
+		//this.menu_list = menu_list; // update menu that out of stocked food is not included
+		this.menu_list.clear();
+		this.menu_list.addAll(menu_list);
+		
+		// check menu list
+		//Do("cccccccccc");
 		event = AgentEvent.reOrder;
 		stateChanged();
 	}
@@ -214,7 +221,7 @@ public class CustomerAgent extends Agent {
 		
 		
 		// this is temporary code for testing outofFood function
-		// default will be stake
+		// default will be chicken
 		choice = name;
 		
 		if(!menu_list.contains(choice)) {	
@@ -223,7 +230,7 @@ public class CustomerAgent extends Agent {
 		}
 
 		event = AgentEvent.callWaiterToOrder;	
-		stateChanged();
+		//stateChanged();
 	}
 	
 	private void ReadyToOrder() {

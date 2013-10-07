@@ -101,8 +101,12 @@ public class WaiterAgent extends Agent {
 	}
 
 	public void msgOrderIsOutOfStock(Order order) {
-		//menu.remove(order.choice);
+		// the food that is out of stock will be erased from the menu list 
+		// and will be passed to the customer when the waiter ask the customer again.
+		// However, this menu list will be reseted when the waiter sits the customer down.
+	
 		menu_list.remove(order.choice);
+
 		for(MyCustomer cust : MyCustomers) {
 			if(cust.c == order.customer) {
 				cust.state = MyCustomer.CustState.reOrder;
@@ -138,7 +142,7 @@ public class WaiterAgent extends Agent {
 	public void msgOnBreak() {
 		Do("Can I have a break?");
 		//host.msgOffBreak();
-		// need to ask for permssion to Host
+		// need to ask for permission to Host
 		host.msgCanIBreak(this);
 	}
 	
@@ -212,9 +216,11 @@ public class WaiterAgent extends Agent {
 		
 		// initializing menu list
 		//menu_list = cook.getMenuList(); 
+		menu_list.clear();
 		menu_list.addAll(cook.getMenuList());
 		numberOfMenu = menu_list.size();
 		
+		// giving a full menu to customer
 		customer.c.msgFollowMe(menu_list);
 		DoSeatCustomer(customer);
 		try {
@@ -226,9 +232,9 @@ public class WaiterAgent extends Agent {
 		customer.state = MyCustomer.CustState.seated;
 		
 		state = AgentState.Waiting;
-		host.msgReadyToServe();
+		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
-		stateChanged();
+		//stateChanged();
 	}
 	
 	void DoSeatCustomer(MyCustomer customer) {
@@ -257,15 +263,16 @@ public class WaiterAgent extends Agent {
 			e.printStackTrace();
 		}
 		
-		Do("Here is an order " + customer.choice + " from " + customer.c);
-		cook.msgHereIsAnOrder(new Order(waiter, customer.c, customer.choice));
-		
 		customer.state = MyCustomer.CustState.waitingFood2;
 		
 		state = AgentState.Waiting;
 		host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
-		stateChanged();		
+		
+		Do("Here is an order " + customer.choice + " from " + customer.c);
+		cook.msgHereIsAnOrder(new Order(waiter, customer.c, customer.choice));
+		
+		//stateChanged();		
 	}
 	
 	void DoGoToCook() {
@@ -283,13 +290,17 @@ public class WaiterAgent extends Agent {
 			e.printStackTrace();
 		}
 		
-		// update the menu of customer;
-		customer.c.msgAskForOrderAgain(menu_list);
-				
+		customer.state = MyCustomer.CustState.reOrdering;
+		
 		state = AgentState.Waiting;
 		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
-		stateChanged();
+		
+		// update the menu of customer;
+		
+		customer.c.msgAskForOrderAgain(menu_list);
+				
+		//stateChanged();
 	}
 	
 	void HereIsYourOrder(MyCustomer customer) {
@@ -312,16 +323,17 @@ public class WaiterAgent extends Agent {
 			e.printStackTrace();
 		}	
 		
+		state = AgentState.Waiting;
+		host.msgReadyToServe();
+		waiterGui.DoGoBackToHost2();
+		
 		Do("Here is an order " + customer.choice + " for you, " + customer.c);
 		customer.c.msgHereIsYourOrder();
 		customer.state = MyCustomer.CustState.eating;
 		
 		//customer.c.getFoodGui().state = FoodGui.State.delivered;
 
-		state = AgentState.Waiting;
-		host.msgReadyToServe();
-		waiterGui.DoGoBackToHost2();
-		stateChanged();
+		//stateChanged();
 	}
 
 	void TableIsCleared(MyCustomer customer) {
@@ -382,7 +394,7 @@ public class WaiterAgent extends Agent {
 
 		public enum CustState
 		{Waiting, seated, readyToOrder, waitingFood1, waitingFood2, foodIsReady, 
-			eating, doneEating, reOrder};
+			eating, doneEating, reOrder, reOrdering};
 		CustState state = CustState.Waiting;//The start state
 		
 		MyCustomer(CustomerAgent customer, Table table) {
