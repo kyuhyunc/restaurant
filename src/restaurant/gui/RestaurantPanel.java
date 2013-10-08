@@ -1,5 +1,6 @@
 package restaurant.gui;
 
+import restaurant.CashierAgent;
 import restaurant.CookAgent;
 import restaurant.CustomerAgent;
 import restaurant.HostAgent;
@@ -21,6 +22,7 @@ public class RestaurantPanel extends JPanel {
     //Host, cook, waiters and customers
     private HostAgent host = new HostAgent("Sarah");
     private CookAgent cook = new CookAgent("Cook");
+    private CashierAgent cashier = new CashierAgent("Cashier");
  
     private Vector<CustomerAgent> customers = new Vector<CustomerAgent>();
     private Vector<WaiterAgent> waiters = new Vector<WaiterAgent>();    
@@ -49,6 +51,11 @@ public class RestaurantPanel extends JPanel {
         host.startThread();
         
         cook.startThread();
+        
+        cashier.setCook(cook);
+        cashier.startThread();
+        
+        
         
         setLayout(new GridLayout(1, 3, 10, 10));
 
@@ -124,6 +131,7 @@ public class RestaurantPanel extends JPanel {
 
     		gui.animationPanel.addGui(c_g);// dw
     		c.setHost(host);
+    		c.setCashier(cashier);
     		c.setGui(c_g);
     		customers.add(c);
     		c.startThread();
@@ -138,6 +146,7 @@ public class RestaurantPanel extends JPanel {
 	    		gui.animationPanel.addGui(w_g);
 	    		w.setHost(host);
 	    		w.setCook(cook);
+	    		w.setCashier(cashier);
 	    		w.setGui(w_g);
 	    		waiters.add(w);
 	    		w.startThread();

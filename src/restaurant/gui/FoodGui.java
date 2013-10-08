@@ -12,17 +12,17 @@ public class FoodGui implements Gui{
 	private int xDestination, yDestination;
 	private boolean isPresent = false;
 	
-	public static enum State {noCommand, waiting, delivering, delivered, doneEating, reOrdering};
+	public static enum State {noCommand, waiting, delivering, delivered,
+		doneEating, waitingCheck, deliveringCheck, goToCashier, reOrdering, done};
 	public State state=State.noCommand;
 
-	//public static final int xTable = 200;
-	//public static final int yTable = 250;
-	
 	Food choice;
 	
 	private ImageIcon questionMark = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/question.jpg");
+	private ImageIcon checkImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/check.jpg");
 	
 	private Image qImage = questionMark.getImage();
+	private Image cImage = checkImage.getImage();
 	private Image fImage;
 	
 	int tableNumber;
@@ -41,7 +41,7 @@ public class FoodGui implements Gui{
 	}
 
 	public void updatePosition() {
-		if( state == State.delivering ) {
+		if( state == State.delivering || state == State.deliveringCheck || state == State.goToCashier ) {
 			if (xPos < xDestination)
 				xPos++;
 			else if (xPos > xDestination)
@@ -53,7 +53,12 @@ public class FoodGui implements Gui{
 				yPos--;
 	
 			if (xPos == xDestination && yPos == yDestination) {
-				state = State.delivered;
+				if(state == State.delivering) {
+					state = State.delivered;
+				}
+				else if(state == State.deliveringCheck) {
+					state = State.goToCashier;
+				}
 			}
 		}
 	}
@@ -67,13 +72,42 @@ public class FoodGui implements Gui{
 		if( state == State.delivering || state == State.delivered ) {
 			g.drawImage(fImage, xPos, yPos, 20, 20, null);
 		}
+		
+		
+		// following if statements are for check animation
+		if ( state == State.waitingCheck || state == State.deliveringCheck ) {
+			g.drawImage(cImage, AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20, AnimationPanel.TableLocationY, 20, 20, null);
+			g.drawImage(qImage, AnimationPanel.TableLocationX + 70*(tableNumber-1) + 40, AnimationPanel.TableLocationY, 10, 20, null);
+		}
+		
+		if( state == State.deliveringCheck || state == State.goToCashier ) {
+			g.drawImage(cImage, xPos, yPos, 20, 20, null);
+		}
 	}
 
 	public void DoGoToTable () {//later you will map seat number to table coordinates.
-		if (state == State.delivering) {
+		if (state == State.delivering) { // delivering food to Table
+			xPos = AnimationPanel.CookLocationX;
+			yPos = AnimationPanel.CookLocationY;
+			
 			xDestination = AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20;
 			yDestination = AnimationPanel.TableLocationY;
 		}
+		else if (state == State.deliveringCheck) { // delivering check to table
+			xPos = AnimationPanel.CashierLocationX;
+			yPos = AnimationPanel.CashierLocationY + AnimationPanel.CashierSizeY - 20;
+			
+			xDestination = AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20;
+			yDestination = AnimationPanel.TableLocationY;
+		}
+	}
+
+	public void DoGoToCashier () {
+		xPos = AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20;
+		yPos = AnimationPanel.TableLocationY;
+		
+		xDestination = AnimationPanel.CashierLocationX + 20;
+		yDestination = AnimationPanel.CashierLocationY + AnimationPanel.CashierSizeY ;
 	}
 
 	@Override

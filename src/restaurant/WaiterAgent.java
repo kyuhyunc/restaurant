@@ -4,12 +4,14 @@ import restaurant.HostAgent.Table;
 import restaurant.gui.FoodGui;
 import restaurant.gui.WaiterGui;
 import agent.Agent;
+import restaurant.CashierAgent.Check;
 import restaurant.CookAgent.Food;
 import restaurant.CookAgent.Order;
 import restaurant.HostAgent;
 import restaurant.CookAgent;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 
@@ -22,18 +24,20 @@ public class WaiterAgent extends Agent {
 	// agent correspondents
 	private HostAgent host;
 	private CookAgent cook;
+	private CashierAgent cashier;
 	
 	public enum AgentState
 	{Waiting, Serving};
 	public AgentState state = AgentState.Waiting;//The start state
 
-	private List<MyCustomer> MyCustomers = new ArrayList<MyCustomer>();
+	private List<MyCustomer> MyCustomers = Collections.synchronizedList(new ArrayList<MyCustomer>());
 	
 	public WaiterGui waiterGui = null;
 	public int CurrentTableNumber = 0;
 	private Semaphore atTable = new Semaphore(0,true);
 	private Semaphore atCook = new Semaphore(0,true);
 	private Semaphore atHost = new Semaphore(0,true);
+	private Semaphore atCashier = new Semaphore(0,true);
 		
 	//public Map<String, Food> menu = new HashMap<String, Food> ();
 	//public List<String> menu_list = new ArrayList<String> ();
@@ -57,7 +61,9 @@ public class WaiterAgent extends Agent {
 		//state = AgentState.Serving;
 		//state = AgentState.Waiting;
 		print("Received msgSitAtTable from the host");
-		MyCustomers.add(new MyCustomer(customer, table));
+		synchronized (MyCustomers) {
+			MyCustomers.add(new MyCustomer(customer, table));
+		}
 		stateChanged();
 	}
 	
@@ -73,24 +79,29 @@ public class WaiterAgent extends Agent {
 	
 	// 4: ReadyToOrder(customer); 
 	public void msgReadyToOrder(CustomerAgent customer) {
-		for(int i=0; i < MyCustomers.size() ; i++) {
-			if(MyCustomers.get(i).c == customer) {
-				MyCustomers.get(i).state = MyCustomer.CustState.readyToOrder;
-				stateChanged();
-				break;
+		synchronized (MyCustomers) {
+			for(int i=0; i < MyCustomers.size() ; i++) {
+				if(MyCustomers.get(i).c == customer) {
+					state = AgentState.Waiting;
+					MyCustomers.get(i).state = MyCustomer.CustState.readyToOrder;
+					stateChanged();
+					break;
+				}
 			}
 		}
 	}
 	
 	// 6: HereIsMyChoice(customer, choice)
 	public void msgHereIsMyChoice(CustomerAgent customer, String choice) {
-		for(int i=0; i < MyCustomers.size() ; i++) {
-			if(MyCustomers.get(i).c == customer) {
-				MyCustomers.get(i).state = MyCustomer.CustState.waitingFood1;
-				MyCustomers.get(i).choice = choice;
-				state = AgentState.Waiting;
-				stateChanged();
-				break;
+		synchronized (MyCustomers) {
+			for(int i=0; i < MyCustomers.size() ; i++) {
+				if(MyCustomers.get(i).c == customer) {
+					MyCustomers.get(i).state = MyCustomer.CustState.waitingFood1;
+					MyCustomers.get(i).choice = choice;
+					state = AgentState.Waiting;
+					stateChanged();
+					break;
+				}
 			}
 		}
 	}
@@ -107,33 +118,70 @@ public class WaiterAgent extends Agent {
 	
 		menu_list.remove(order.choice);
 
-		for(MyCustomer cust : MyCustomers) {
-			if(cust.c == order.customer) {
-				cust.state = MyCustomer.CustState.reOrder;
-				stateChanged();
-				break;
+		synchronized (MyCustomers) {
+			for(MyCustomer cust : MyCustomers) {
+				if(cust.c == order.customer) {
+					cust.state = MyCustomer.CustState.reOrder;
+					stateChanged();
+					break;
+				}
 			}
 		}
 	}
 	
 	// 8: OrderIsReady(order)
 	public void msgOrderIsReady(Order order) {
-		for(MyCustomer cust : MyCustomers) {
-			if(cust.c == order.customer) {
-				cust.state = MyCustomer.CustState.foodIsReady;
-				stateChanged();
-				break;
+		synchronized (MyCustomers) {
+			for(MyCustomer cust : MyCustomers) {
+				if(cust.c == order.customer) {
+					cust.state = MyCustomer.CustState.foodIsReady;
+					stateChanged();
+					break;
+				}
+			}
+		}
+	}
+	
+	public void msgReadyForCheck(CustomerAgent customer) {
+		synchronized (MyCustomers) {
+			for(MyCustomer cust : MyCustomers) {
+				if(cust.c == customer) {
+					cust.state = MyCustomer.CustState.askingForCheck;
+					stateChanged();
+					break;
+				}
+			}
+		}
+	}
+	
+	public void msgArrivedToCashier() {
+		atCashier.release();
+	}
+	
+	// 
+	public void msgHereIsCheck(Check check) {
+		synchronized (MyCustomers) {
+			for(MyCustomer cust : MyCustomers) {
+				if(cust.c == check.customer) {
+					state = AgentState.Waiting;
+					cust.state = MyCustomer.CustState.checkIsReady;
+					cust.check = check;
+					stateChanged();
+					break;
+				}
 			}
 		}
 	}
 	
 	// 10: IAmDone(customer)
 	public void msgLeavingTable(CustomerAgent customer) {
-		for(MyCustomer cust : MyCustomers) {
-			if(cust.c == customer) {
-				cust.state = MyCustomer.CustState.doneEating;
-				stateChanged();
-				break;
+		synchronized (MyCustomers) {
+			for(MyCustomer cust : MyCustomers) {
+				if(cust.c == customer) {
+					cust.state = MyCustomer.CustState.leaving;
+					stateChanged();
+					break;
+				}
 			}
 		}
 	}
@@ -167,36 +215,48 @@ public class WaiterAgent extends Agent {
 	 */
 	protected boolean pickAndExecuteAnAction() {
 		//	WaiterAgent is a finite state machine
-		if (state == AgentState.Waiting) {
-			for (MyCustomer customer : MyCustomers) {
-				if (customer.state == MyCustomer.CustState.Waiting) {
-					state = AgentState.Serving;
-					SitAtTable(customer);
-					return true;
-				}
-				else if (customer.state == MyCustomer.CustState.readyToOrder) {
-					state = AgentState.Serving;
-					WhatWouldYouLike(customer);
-					return true;
-				}
-				else if (customer.state == MyCustomer.CustState.waitingFood1) {
-					state = AgentState.Serving;
-					HereIsAnOrder(this, customer);
-					return true;
-				}
-				else if (customer.state == MyCustomer.CustState.reOrder) {
-					state = AgentState.Serving;
-					WhatWouldYouLikeAgain(customer);
-					return true;
-				}
-				else if (customer.state == MyCustomer.CustState.foodIsReady) {
-					state = AgentState.Serving;
-					HereIsYourOrder(customer);
-					return true;
-				}
-				else if (customer.state == MyCustomer.CustState.doneEating) {
-					TableIsCleared(customer);
-					return true;
+		synchronized (MyCustomers) {
+			if (state == AgentState.Waiting) {
+				for (MyCustomer customer : MyCustomers) {
+					if (customer.state == MyCustomer.CustState.Waiting) {
+						state = AgentState.Serving;
+						SitAtTable(customer);
+						return true;
+					}
+					else if (customer.state == MyCustomer.CustState.readyToOrder) {
+						state = AgentState.Serving;
+						WhatWouldYouLike(customer);
+						return true;
+					}
+					else if (customer.state == MyCustomer.CustState.waitingFood1) {
+						state = AgentState.Serving;
+						HereIsAnOrder(this, customer);
+						return true;
+					}
+					else if (customer.state == MyCustomer.CustState.reOrder) {
+						state = AgentState.Serving;
+						WhatWouldYouLikeAgain(customer);
+						return true;
+					}
+					else if (customer.state == MyCustomer.CustState.foodIsReady) {
+						state = AgentState.Serving;
+						HereIsYourOrder(customer);
+						return true;
+					}
+					else if (customer.state == MyCustomer.CustState.askingForCheck) {
+						state = AgentState.Serving;
+						AskForCheck(customer);
+						return true;
+					}					
+					else if (customer.state == MyCustomer.CustState.checkIsReady) {
+						state = AgentState.Serving;
+						HereIsCheck(customer);
+						return true;
+					}
+					else if (customer.state == MyCustomer.CustState.leaving) {
+						TableIsCleared(customer);
+						return true;
+					}
 				}
 			}
 		}
@@ -231,7 +291,7 @@ public class WaiterAgent extends Agent {
 		}
 		customer.state = MyCustomer.CustState.seated;
 		
-		state = AgentState.Waiting;
+		//state = AgentState.Waiting;
 		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		//stateChanged();
@@ -272,7 +332,7 @@ public class WaiterAgent extends Agent {
 		Do("Here is an order " + customer.choice + " from " + customer.c);
 		cook.msgHereIsAnOrder(new Order(waiter, customer.c, customer.choice));
 		
-		//stateChanged();		
+		stateChanged();		
 	}
 	
 	void DoGoToCook() {
@@ -292,12 +352,11 @@ public class WaiterAgent extends Agent {
 		
 		customer.state = MyCustomer.CustState.reOrdering;
 		
-		state = AgentState.Waiting;
+		//state = AgentState.Waiting;
 		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		
 		// update the menu of customer;
-		
 		customer.c.msgAskForOrderAgain(menu_list);
 				
 		//stateChanged();
@@ -330,15 +389,74 @@ public class WaiterAgent extends Agent {
 		Do("Here is an order " + customer.choice + " for you, " + customer.c);
 		customer.c.msgHereIsYourOrder();
 		customer.state = MyCustomer.CustState.eating;
+	
+		stateChanged();
+	}
+	
+	void AskForCheck(MyCustomer c) {
+		waiterGui.DoGoToTable(c.c, c.t.tableNumber);
+		try {
+			atTable.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 		
-		//customer.c.getFoodGui().state = FoodGui.State.delivered;
-
-		//stateChanged();
+		c.c.getFoodGui().state = FoodGui.State.waitingCheck;
+		c.state = MyCustomer.CustState.waitingForCheck;		
+		
+		waiterGui.DoGoToCashier();
+		try {
+			atCashier.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+				
+		cashier.msgComputeBill(c.choice, c.c, this, c.t.tableNumber);		
+		
+		/**state = AgentState.Waiting;
+		host.msgReadyToServe();
+		waiterGui.DoGoBackToHost2();
+		
+		stateChanged();*/
 	}
 
+	void HereIsCheck(MyCustomer c) {
+		waiterGui.DoGoToCashier();
+		try {
+			atCashier.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		c.c.getFoodGui().state = FoodGui.State.deliveringCheck;
+		c.c.getFoodGui().DoGoToTable();
+		
+		waiterGui.DoGoToTable(c.c, c.t.tableNumber);
+		try {
+			atTable.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		
+		c.state = MyCustomer.CustState.getTheCheck;
+		
+		c.c.msgHereIsYourCheck(c.check);
+		
+		state = AgentState.Waiting;
+		host.msgReadyToServe();
+		waiterGui.DoGoBackToHost2();
+		
+		stateChanged();
+	}
+	
 	void TableIsCleared(MyCustomer customer) {
 		
-		MyCustomers.remove(customer);
+		synchronized (MyCustomers) {
+			MyCustomers.remove(customer);
+		}
 		
 		host.msgTableIsCleared(customer.t);
 		//state = AgentState.Waiting;
@@ -352,6 +470,10 @@ public class WaiterAgent extends Agent {
 	
 	public void setCook(CookAgent cook) {
 		this.cook = cook;
+	}
+	
+	public void setCashier(CashierAgent cashier) {
+		this.cashier = cashier;
 	}
 	
 	public CookAgent getCook() {
@@ -375,7 +497,7 @@ public class WaiterAgent extends Agent {
 	}
 	
 	public Food getFood(String choice){
-		return cook.getMenu().get(choice);
+		return cook.getFoods().get(choice);
 	}
 	
 	public int getNumberOfMenu() {
@@ -391,10 +513,12 @@ public class WaiterAgent extends Agent {
 		CustomerAgent c;
 		Table t;
 		String choice;
+		Check check;
 
 		public enum CustState
 		{Waiting, seated, readyToOrder, waitingFood1, waitingFood2, foodIsReady, 
-			eating, doneEating, reOrder, reOrdering};
+		eating, askingForCheck, waitingForCheck, checkIsReady, getTheCheck, leaving,
+		reOrder, reOrdering};
 		CustState state = CustState.Waiting;//The start state
 		
 		MyCustomer(CustomerAgent customer, Table table) {

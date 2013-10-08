@@ -27,11 +27,20 @@ public class AnimationPanel extends JPanel implements ActionListener {
     private static int TableSizeX = 50;
     private static int TableSizeY = 50;
     
-    protected static int CookLocationX = 370;
+    protected static int CookLocationX = 300;
     protected static int CookLocationY = 50;
+    private static int CookSizeX = 30;
+    private static int CookSizeY = 30;
     
     protected static int MarketLocationX = 550;
     protected static int MarketLocationY = 50;
+    private static int MarketSizeX = 50;
+    private static int MarketSizeY = 50;
+    
+    protected static int CashierLocationX = 50;
+    protected static int CashierLocationY = 20;
+    protected static int CashierSizeX = 40;
+    protected static int CashierSizeY = 40;
     
     protected Timer timer;
     private final int timerSpeed = 15;
@@ -43,6 +52,9 @@ public class AnimationPanel extends JPanel implements ActionListener {
 	
 	private ImageIcon MarketImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/market.jpg");
 	private Image mImage = MarketImage.getImage();
+	
+	private ImageIcon cashierImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/cashier.jpg");
+	private Image cashImage = cashierImage.getImage();
 	
     public AnimationPanel() {
     	setSize(WINDOWX, WINDOWY);
@@ -74,11 +86,12 @@ public class AnimationPanel extends JPanel implements ActionListener {
         }
         
         for(int i=0 ; i < CookAgent.NMARKETS ; i++) {
-	        g2.drawImage(mImage, MarketLocationX, MarketLocationY + (70*i), 50, 50, null);
+	        g2.drawImage(mImage, MarketLocationX, MarketLocationY + (70*i), MarketSizeX, MarketSizeY, null);
         }
         
-        g.drawImage(cImage, CookLocationX, CookLocationY, 30, 30, null);
-
+        g.drawImage(cImage, CookLocationX, CookLocationY, CookSizeX, CookSizeY, null);
+        g.drawImage(cashImage, CashierLocationX, CashierLocationY, CashierSizeX, CashierSizeY, null);
+        
         synchronized (guis) {
 	        for(Gui gui : guis) {
 	            if (gui.isPresent()) {

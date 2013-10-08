@@ -19,8 +19,8 @@ public class HostAgent extends Agent {
 	{Waiting, Serving};
 	public AgentState state = AgentState.Waiting;//The start state
 	
-	public List<WaiterAgent> waiters = new ArrayList<WaiterAgent>();
-	public List<CustomerAgent> waitingCustomers	= new ArrayList<CustomerAgent>();
+	public List<WaiterAgent> waiters = Collections.synchronizedList(new ArrayList<WaiterAgent>());
+	public List<CustomerAgent> waitingCustomers	= Collections.synchronizedList(new ArrayList<CustomerAgent>());
 	public CookAgent cook;
 	
 	//note that tables is typed with Collection semantics.
@@ -48,7 +48,9 @@ public class HostAgent extends Agent {
 	public void msgAddWaiter(WaiterAgent waiter) {
 		Do("New waiter " + waiter.getName() + " is added");				
 		
-		waiters.add(waiter);	
+		synchronized(waiters) {
+			waiters.add(waiter);
+		}
 		//waiterAdd.release();
 		//waiterBreak.release();
 		stateChanged();
@@ -56,7 +58,9 @@ public class HostAgent extends Agent {
 	
 	// 1: IWantFood(customer)
 	public void msgIWantFood(CustomerAgent cust) {
-		waitingCustomers.add(cust);
+		synchronized(waiters) {
+			waitingCustomers.add(cust);
+		}	
 		Do(cust + " is added to the waiting list");
 		//flag = true;
 		stateChanged();
@@ -89,23 +93,27 @@ public class HostAgent extends Agent {
 	protected boolean pickAndExecuteAnAction() {
 		for (Table table : tables) {
 			if (!table.isOccupied()) {
-				if (!waitingCustomers.isEmpty()) {
-					if(waiters.size() > 0) {
-						for(WaiterAgent w : waiters) {
-							if(!w.getGui().isBreak()) {
-								if(w.state == WaiterAgent.AgentState.Waiting){
-									tellWaiter(waitingCustomers.get(0), table);
-									return true;//return true to the abstract agent to reinvoke the scheduler.
+				synchronized(waitingCustomers) {
+					if (!waitingCustomers.isEmpty()) {
+						synchronized(waiters) {
+							if(waiters.size() > 0) {
+								for(WaiterAgent w : waiters) {
+									if(!w.getGui().isBreak()) {
+										if(w.state == WaiterAgent.AgentState.Waiting){
+											tellWaiter(waitingCustomers.get(0), table);
+											return true;//return true to the abstract agent to reinvoke the scheduler.
+										}
+									}	
 								}
-							}	
-						}
-						//Do("All waiters are serving customers");
-						return false;
+								Do("All waiters are serving customers");
+								return false;
+							}
+							else {
+								Do("There is no waiter");
+								return false;
+							}
+						}					
 					}
-					else {
-						Do("There is no waiter");
-						return false;
-					}					
 				}
 			}
 		}

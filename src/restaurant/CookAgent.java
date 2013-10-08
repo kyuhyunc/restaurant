@@ -31,8 +31,7 @@ public class CookAgent extends Agent {
 	
 	
 	/**
-	 * If I need to change foods list, all places I need to modify is here and the customerAgent's choose menu algorithm.
-	 * Besides these two places, other agents are using menu data by coping menu_list 
+	 * If I need to change foods list, all places I need to modify is here
 	 * food (foods) in cook is current food information for cook
 	 * food (inventory) in market is current food information for markets
 	 */
@@ -48,7 +47,7 @@ public class CookAgent extends Agent {
 		super();
 		this.name = name;
 		
-		menu_list.addAll(Arrays.asList("Stake","Chicken","Salad","Pizza"));
+		menu_list.addAll(Arrays.asList("Steak","Chicken","Salad","Pizza"));
 		
 		// setting up the menu
 		for(String s : menu_list) {
@@ -136,8 +135,7 @@ public class CookAgent extends Agent {
 			public void run() {
 				System.out.println("Cook: Done cooking, " + o.choice + " for " + o.customer.getName());
 				o.state = Order.OrderState.Cooked;
-				//o.waiter.getCook().stateChanged();
-				stateChanged();
+				//stateChanged();
 			}
 		},
 		(int) (foods.get(o.choice).getCookingTime()));
@@ -180,7 +178,7 @@ public class CookAgent extends Agent {
 		return name;
 	}
 	
-	public Map<String, Food> getMenu() {
+	public Map<String, Food> getFoods() {
 		return foods;
 	}
 	
@@ -223,7 +221,9 @@ public class CookAgent extends Agent {
 		int amount;
 		int batchSize; // amount of order
 		
-		double cookingTimeMultiplier = 2.5;
+		double price;
+		
+		double cookingTimeMultiplier = 5;
 		double eatingTimeMultiplier = 4;
 		
 		private ImageIcon foodImage;
@@ -232,21 +232,25 @@ public class CookAgent extends Agent {
 			this.name = name;
 			//amount = 3; // can set initial amount  depending on foods later
 			
-			if (name == "Stake") {
-				time = (int) (1000 * cookingTimeMultiplier);
-				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/stake.jpg");
+			if (name == "Steak") {
+				time = (int) 500;
+				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/steak.jpg");
+				price = 15.99;
 			}
 			else if (name == "Chicken") {
-				time = (int) (800 * cookingTimeMultiplier);
+				time = (int) 800;
 				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/chicken.jpg");
+				price = 10.99;
 			}
 			else if (name == "Salad") {
-				time = (int) (600 * cookingTimeMultiplier);
+				time = (int) 600;
 				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/salad.jpg");
+				price = 5.99;
 			}
 			else if (name == "Pizza") {
-				time = (int) (300 * cookingTimeMultiplier);
+				time = (int) 300;
 				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/pizza.jpg");
+				price = 8.99;
 			}
 			else {
 				time = 0;

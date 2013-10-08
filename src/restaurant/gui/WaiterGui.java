@@ -15,7 +15,7 @@ public class WaiterGui implements Gui {
     
     private int xPos = -20, yPos = -20;//default waiter position
     private int xDestination = -20, yDestination = -20;//default start position
-    private enum Command {noCommand, GoToTable, GoToCook, GoToHost, GoToHost2};
+    private enum Command {noCommand, GoToTable, GoToCook, GoToHost, GoToHost2, GoToCashier};
 	private Command command=Command.noCommand;
 	
     RestaurantGui gui;
@@ -53,6 +53,9 @@ public class WaiterGui implements Gui {
         	}
         	else if (command == Command.GoToCook) {
         		agent.msgArrivedToCook();
+        	}
+        	else if (command == Command.GoToCashier) {
+        		agent.msgArrivedToCashier();
         	}
         	command=Command.noCommand;
         }
@@ -96,6 +99,14 @@ public class WaiterGui implements Gui {
         yDestination = -20;
                 
         command = Command.GoToHost2;
+    }
+    
+    public void DoGoToCashier() {
+    	xDestination = AnimationPanel.CashierLocationX;
+    	yDestination = AnimationPanel.CashierLocationY + AnimationPanel.CashierSizeY;
+    	
+    	command = Command.GoToCashier;
+   
     }
     
     public void getReplyBreak(boolean breakPermission) {

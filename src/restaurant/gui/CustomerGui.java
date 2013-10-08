@@ -17,7 +17,7 @@ public class CustomerGui implements Gui{
 
 	private int xPos, yPos;
 	private int xDestination, yDestination;
-	private enum Command {noCommand, GoToSeat, LeaveRestaurant};
+	private enum Command {noCommand, GoToSeat, GoToCashier, LeaveRestaurant};
 	private Command command=Command.noCommand;
 
 	//public static final int xTable = 200;
@@ -48,6 +48,9 @@ public class CustomerGui implements Gui{
 
 		if (xPos == xDestination && yPos == yDestination) {
 			if (command==Command.GoToSeat) agent.msgAnimationFinishedGoToSeat();
+			else if (command==Command.GoToCashier) {
+				agent.msgArrivedAtCashier();
+			}
 			else if (command==Command.LeaveRestaurant) {
 				agent.msgAnimationFinishedLeaveRestaurant();
 				System.out.println("about to call gui.setCustomerEnabled(agent);");
@@ -90,6 +93,13 @@ public class CustomerGui implements Gui{
 		
 		yDestination = AnimationPanel.TableLocationY;
 		command = Command.GoToSeat;
+	}
+	
+	public void DoGoToCashier() {
+		xDestination = AnimationPanel.CashierLocationX;
+		yDestination = AnimationPanel.CashierLocationY + AnimationPanel.CashierSizeY;
+		
+		command = Command.GoToCashier;
 	}
 
 	public void DoExitRestaurant() {
