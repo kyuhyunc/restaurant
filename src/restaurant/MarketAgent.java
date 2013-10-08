@@ -9,14 +9,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Semaphore;
 
 import restaurant.CookAgent.Food;
+import restaurant.gui.FoodGui;
 
 /**
  * Restaurant market agent.
  */
 public class MarketAgent extends Agent {	
 	private String name;
+	private int marketNumber;
 	Timer timer = new Timer();
 		
 	//private List<Order> orders = new ArrayList<Order>();
@@ -26,8 +29,13 @@ public class MarketAgent extends Agent {
 	private List<String> food_list;
 	
 	private CookAgent cook;
+	private HostAgent host;
 	
-	private int deliveryTime = 5000;
+	private Semaphore atCook = new Semaphore(0,true);
+	
+	FoodGui deliveryFood;
+	
+	private int deliveryTime = 4000;
 		
 	/**
 	 * Constructor for MarketAgent class
@@ -54,18 +62,24 @@ public class MarketAgent extends Agent {
 		else {
 			print("received an procure order from cook");
 			procures.add(procure);
+			// minus stock level in advance
+			inventory.get(procure.food).amount -= procure.batchSize;
 			//print("stock level : " + inventory.get(procure.food).amount);
 			stateChanged();
 			return true;
 		}
 	}
 	
+	public void msgDeliveredToCook() {
+		atCook.release();
+	}
+	
 	/**
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
 	protected boolean pickAndExecuteAnAction() {
-		if (!procures.isEmpty()) {
-			synchronized (procures) {
+		synchronized (procures) {
+			if (!procures.isEmpty()) {
 				for(int i=0;i<procures.size();i++){
 					if(procures.get(i).state == Procure.ProcureState.Pending) {
 						procures.get(i).state = Procure.ProcureState.Delivering;
@@ -90,7 +104,7 @@ public class MarketAgent extends Agent {
 		print("Start Delivering");
 		
 		DoDeliver(procure);
-		inventory.get(procure.food).amount -= procure.batchSize;
+		//inventory.get(procure.food).amount -= procure.batchSize;
 		//print("stock level : " + inventory.get(procure.food).amount);
 	}
 	
@@ -98,19 +112,40 @@ public class MarketAgent extends Agent {
 		Timer timer = new Timer();
 		final Procure p = procure;
 		
+		deliveryFood = new FoodGui(marketNumber, inventory.get(procure.food));
+		host.gui.animationPanel.addGui(deliveryFood);
+			
 		timer.schedule(new TimerTask() {
 			public void run() {
-				//System.out.println(getName() + "Done delvering " + p.food + " to the cook");
-				p.state = Procure.ProcureState.Done;
-				stateChanged();
+				//p.state = Procure.ProcureState.Done;
+				//stateChanged();
+				DoDeliverGui(p);
 			}
 		},
-		(int) deliveryTime); // delivery will be done in deliveryTime
+		(int) deliveryTime); // delivery will be done in deliveryTime		
+	}
+	
+	public void DoDeliverGui(Procure p) {
+		deliveryFood.state = FoodGui.State.procurement;
+		deliveryFood.DoGoToCook(this);
+		try {
+			atCook.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+				
+		p.state = Procure.ProcureState.Done;
+		stateChanged();		
 	}
 		
 	// Accessors, etc.
 	public void setCook(CookAgent cook) {
 		this.cook = cook; 
+	}	
+	
+	public void setHost(HostAgent host) {
+		this.host = host; 
 	}	
 	
 	public void setMenuList(List<String> menu_list) {
@@ -120,7 +155,12 @@ public class MarketAgent extends Agent {
 		for(String s : food_list) {
 			inventory.put(s, new Food(s));
 			inventory.get(s).setAmount(2);
+			inventory.get(s).setBatchSize(2);			
 		}	
+	}
+	
+	public void setMarketNumber(int marketNumber) {
+		this.marketNumber = marketNumber;
 	}
 	
 	public String getName() {

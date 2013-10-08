@@ -12,6 +12,8 @@ public class CustomerGui implements Gui{
 	private boolean isPresent = false;
 	private boolean isHungry = false;
 
+	protected static int customerSize = 20;
+	
 	//private HostAgent host;
 	RestaurantGui gui;
 
@@ -65,7 +67,7 @@ public class CustomerGui implements Gui{
 		//g.setColor(Color.GREEN);
 		//g.fillRect(xPos, yPos, 20, 20);
 		g.setColor(Color.black);
-		g.drawImage(image, xPos, yPos, 20, 20, null);
+		g.drawImage(image, xPos, yPos, customerSize, customerSize, null);
 		g.drawString(agent.getName(), xPos, yPos);
 	}
 

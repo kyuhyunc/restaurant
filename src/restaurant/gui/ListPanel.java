@@ -88,12 +88,13 @@ public class ListPanel extends JPanel implements ActionListener {
         // Now, setup the info panel
         Dimension infoDim = new Dimension(WINDOWX, (int) (WINDOWY * 0.8));       
         infoPanel = new JPanel();
-        infoPanel.setBorder(BorderFactory.createTitledBorder(type + " List"));
+        //infoPanel.setBorder(BorderFactory.createTitledBorder(type + " List"));
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         
         pane.setPreferredSize(infoDim);
         pane.setViewportView(infoPanel);
         pane.setWheelScrollingEnabled(true);
+        pane.setBorder(BorderFactory.createTitledBorder(type + " List"));
         add(pane);
     }
 

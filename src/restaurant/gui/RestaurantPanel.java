@@ -50,6 +50,7 @@ public class RestaurantPanel extends JPanel {
         host.setCook(cook);
         host.startThread();
         
+        cook.setHost(host);
         cook.startThread();
         
         cashier.setCook(cook);

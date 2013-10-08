@@ -27,8 +27,9 @@ public class CookAgent extends Agent {
 	//private List<Order> orders = new ArrayList<Order>();
 	private List<Order> orders = Collections.synchronizedList(new ArrayList<Order>());
 
-	private List<MarketAgent> markets = new ArrayList<MarketAgent> ();
+	private List<MarketAgent> markets = Collections.synchronizedList(new ArrayList<MarketAgent> ());
 	
+	private HostAgent host;
 	
 	/**
 	 * If I need to change foods list, all places I need to modify is here
@@ -145,35 +146,39 @@ public class CookAgent extends Agent {
 		boolean marketAvailable = false;
 		boolean alreadyOrdered = false;
 		
-		for(MarketAgent m : markets) {
-			// return true if the food has already been ordered to the market
-			if(m.chkProcureInProcess(food)) {
-				alreadyOrdered = true;
-			}
-			break;
-		}
-		
-		if(!alreadyOrdered) {
+		synchronized(markets) {
 			for(MarketAgent m : markets) {
-				// msgBuyFood will return true if the market has a stock for the choice
-				if(m.msgBuyFood(new Procure(food, batchSize))) {
-					marketAvailable = true;
-					Do("Ordered " + food + " to " + m.getName());
-					break;
+				// return true if the food has already been ordered to the market
+				if(m.chkProcureInProcess(food)) {
+					alreadyOrdered = true;
 				}
+				break;
 			}
 			
-			if(!marketAvailable) {
-				Do("There is no market that has a stock for " + food);
+			if(!alreadyOrdered) {
+				for(MarketAgent m : markets) {
+					// msgBuyFood will return true if the market has a stock for the choice
+					if(m.msgBuyFood(new Procure(food, batchSize))) {
+						marketAvailable = true;
+						Do("Ordered " + food + " to " + m.getName());
+						break;
+					}
+				}
+				if(!marketAvailable) {
+					Do("There is no market that has a stock for " + food);
+				}
+			}	
+			else {
+				Do(food + " has been ordered already");
 			}
-		}	
-		else {
-			Do(food + " has been ordered already");
 		}
 	}
 	
 	// Accessors, etc.
-
+	public void setHost(HostAgent host) {
+		this.host = host;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -193,7 +198,9 @@ public class CookAgent extends Agent {
 	public void addMarketByGui() {
 		MarketAgent m = new MarketAgent("Market #" + NMARKETS);
 		m.setCook(this);
+		m.setHost(host);
 		m.setMenuList(menu_list); // this will set up the initial inventory level of the market
+		m.setMarketNumber(NMARKETS);
 		markets.add(m);
 		m.startThread();
 	}
@@ -264,6 +271,10 @@ public class CookAgent extends Agent {
 		
 		public void setBatchSize(int batchSize) {
 			this.batchSize = batchSize;
+		}
+		
+		public int getBatchSize() {
+			return batchSize;
 		}
 		
 		public int getEatingTime() {

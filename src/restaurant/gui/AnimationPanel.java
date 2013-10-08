@@ -24,18 +24,18 @@ public class AnimationPanel extends JPanel implements ActionListener {
     //static variables to replace magic numbers
     protected static int TableLocationX = 50;
     protected static int TableLocationY = 250;
-    private static int TableSizeX = 50;
-    private static int TableSizeY = 50;
+    protected static int TableSizeX = 50;
+    protected static int TableSizeY = 50;
     
-    protected static int CookLocationX = 300;
-    protected static int CookLocationY = 50;
-    private static int CookSizeX = 30;
-    private static int CookSizeY = 30;
+    protected static int CookLocationX = 400;
+    protected static int CookLocationY = 130;
+    protected static int CookSizeX = 30;
+    protected static int CookSizeY = 30;
     
     protected static int MarketLocationX = 550;
     protected static int MarketLocationY = 50;
-    private static int MarketSizeX = 50;
-    private static int MarketSizeY = 50;
+    protected static int MarketSizeX = 50;
+    protected static int MarketSizeY = 50;
     
     protected static int CashierLocationX = 50;
     protected static int CashierLocationY = 20;

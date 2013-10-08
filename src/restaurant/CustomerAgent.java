@@ -283,7 +283,7 @@ public class CustomerAgent extends Agent {
 		}
 		
 		wait.msgHereIsMyChoice(this, choice);
-		
+	
 		host.gui.animationPanel.addGui(foodGui);
 		foodGui.state = FoodGui.State.waiting;
 	}

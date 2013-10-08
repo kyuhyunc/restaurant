@@ -1,6 +1,7 @@
 package restaurant.gui;
 
 import restaurant.CookAgent.Food;
+import restaurant.MarketAgent;
 
 import java.awt.*;
 
@@ -12,8 +13,10 @@ public class FoodGui implements Gui{
 	private int xDestination, yDestination;
 	private boolean isPresent = false;
 	
+	MarketAgent market;
+	
 	public static enum State {noCommand, waiting, delivering, delivered,
-		doneEating, waitingCheck, deliveringCheck, goToCashier, reOrdering, done};
+		waitingCheck, deliveringCheck, goToCashier, reOrdering, done, procurement};
 	public State state=State.noCommand;
 
 	Food choice;
@@ -29,8 +32,8 @@ public class FoodGui implements Gui{
 	
 	public FoodGui(int t, Food choice){ //HostAgent m) {
 	
-		xPos = AnimationPanel.CookLocationX;
-		yPos = AnimationPanel.CookLocationY;
+		//xPos = AnimationPanel.CookLocationX;
+		//yPos = AnimationPanel.CookLocationY;
 		
 		tableNumber = t;
 		this.choice = choice;
@@ -41,7 +44,7 @@ public class FoodGui implements Gui{
 	}
 
 	public void updatePosition() {
-		if( state == State.delivering || state == State.deliveringCheck || state == State.goToCashier ) {
+		if( state == State.delivering || state == State.deliveringCheck || state == State.goToCashier || state == State.procurement) {
 			if (xPos < xDestination)
 				xPos++;
 			else if (xPos > xDestination)
@@ -59,6 +62,10 @@ public class FoodGui implements Gui{
 				else if(state == State.deliveringCheck) {
 					state = State.goToCashier;
 				}
+				else if(state == State.procurement) {
+					state = State.done;
+					market.msgDeliveredToCook();
+				}
 			}
 		}
 	}
@@ -73,7 +80,6 @@ public class FoodGui implements Gui{
 			g.drawImage(fImage, xPos, yPos, 20, 20, null);
 		}
 		
-		
 		// following if statements are for check animation
 		if ( state == State.waitingCheck || state == State.deliveringCheck ) {
 			g.drawImage(cImage, AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20, AnimationPanel.TableLocationY, 20, 20, null);
@@ -82,6 +88,13 @@ public class FoodGui implements Gui{
 		
 		if( state == State.deliveringCheck || state == State.goToCashier ) {
 			g.drawImage(cImage, xPos, yPos, 20, 20, null);
+		}
+		
+		// followings are for food gui from market to cook
+		if ( state == State.procurement) {
+			String batchSize = Integer.toString(choice.getBatchSize());
+			g.drawString(batchSize, xPos, yPos);
+			g.drawImage(fImage, xPos, yPos, 20, 20, null);
 		}
 	}
 
@@ -108,6 +121,16 @@ public class FoodGui implements Gui{
 		
 		xDestination = AnimationPanel.CashierLocationX + 20;
 		yDestination = AnimationPanel.CashierLocationY + AnimationPanel.CashierSizeY ;
+	}
+	
+	public void DoGoToCook (MarketAgent m) {
+		market = m;
+		
+		xPos = AnimationPanel.MarketLocationX;
+		yPos = AnimationPanel.MarketLocationY + 70*(tableNumber-1);
+		
+		xDestination = AnimationPanel.CookLocationX + AnimationPanel.CookSizeX;
+		yDestination = AnimationPanel.CookLocationY;
 	}
 
 	@Override
