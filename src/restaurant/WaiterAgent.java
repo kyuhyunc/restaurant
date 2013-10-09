@@ -82,8 +82,8 @@ public class WaiterAgent extends Agent {
 		synchronized (MyCustomers) {
 			for(int i=0; i < MyCustomers.size() ; i++) {
 				if(MyCustomers.get(i).c == customer) {
-					state = AgentState.Waiting;
 					MyCustomers.get(i).state = MyCustomer.CustState.readyToOrder;
+					state = AgentState.Waiting;
 					stateChanged();
 					break;
 				}
@@ -163,9 +163,9 @@ public class WaiterAgent extends Agent {
 		synchronized (MyCustomers) {
 			for(MyCustomer cust : MyCustomers) {
 				if(cust.c == check.customer) {
-					state = AgentState.Waiting;
 					cust.state = MyCustomer.CustState.checkIsReady;
 					cust.check = check;
+					state = AgentState.Waiting;
 					stateChanged();
 					break;
 				}
@@ -175,6 +175,7 @@ public class WaiterAgent extends Agent {
 	
 	// 10: IAmDone(customer)
 	public void msgLeavingTable(CustomerAgent customer) {
+		
 		synchronized (MyCustomers) {
 			for(MyCustomer cust : MyCustomers) {
 				if(cust.c == customer) {
@@ -253,10 +254,16 @@ public class WaiterAgent extends Agent {
 						HereIsCheck(customer);
 						return true;
 					}
-					else if (customer.state == MyCustomer.CustState.leaving) {
+					/**else if (customer.state == MyCustomer.CustState.leaving) {
 						TableIsCleared(customer);
 						return true;
-					}
+					}*/
+				}
+			}
+			for (MyCustomer customer : MyCustomers) {
+				if (customer.state == MyCustomer.CustState.leaving) {
+					TableIsCleared(customer);
+					return true;
 				}
 			}
 		}
@@ -454,11 +461,12 @@ public class WaiterAgent extends Agent {
 	
 	void TableIsCleared(MyCustomer customer) {
 		
+		host.msgTableIsCleared(customer.t);
+		
 		synchronized (MyCustomers) {
 			MyCustomers.remove(customer);
 		}
 		
-		host.msgTableIsCleared(customer.t);
 		//state = AgentState.Waiting;
 	}
 	

@@ -165,12 +165,13 @@ public class CustomerAgent extends Agent {
 			ChooseMenu();
 			return true;
 		}
-		else if (state == AgentState.Seated && event == AgentEvent.callWaiterToOrder){
+		/**else if (state == AgentState.Seated && event == AgentEvent.callWaiterToOrder){
 			state = AgentState.ReadyToOrder;
 			ReadyToOrder();
 			return true;
-		}
-		else if (state == AgentState.ReadyToOrder && event == AgentEvent.makeOrder){
+		}*/
+		//else if (state == AgentState.ReadyToOrder && event == AgentEvent.makeOrder){
+		else if (state == AgentState.Seated && event == AgentEvent.makeOrder){
 			state = AgentState.WaitingFood;
 			HereIsMyChoice(choice);
 			return true;
@@ -237,34 +238,47 @@ public class CustomerAgent extends Agent {
 		if(!(foodGui == null)){
 			foodGui.state = FoodGui.State.reOrdering;
 		}
-		
+
 		Do("Choosing menu");
 		
 		Random oRandom = new Random();
 		int randomNum;
 		
-		if(menu_list.size() > 0) {
-			randomNum = oRandom.nextInt(menu_list.size());
-			
-			choice = menu_list.get(randomNum);
-		}
-		else {
-			Do("There is nothing available");
-			
+		// non-norm #1: customer leaves if all food is too expensive
+		// 20% chance to leave the restaurant 
+		randomNum = oRandom.nextInt();
+		if(randomNum % 5 == 0) {
+			Do("All food is too expensive, I will come later again.");
 			wait.msgLeavingTable(this);
-			exitRestaurant();
 			state = AgentState.DoingNothing;
+			exitRestaurant();						
 		}
+		else{ // 75% chance to order food
+			// algorithm for choose what to order
+			if(menu_list.size() > 0) {
+				randomNum = oRandom.nextInt(menu_list.size());
 				
-		// algorithm for choose what to order
-		
-		
-		// this is temporary code for testing outofFood function
-		if(menu_list.contains(name)) {
-			System.out.println("Hack =) by Kyu");
-			choice = name;
+				choice = menu_list.get(randomNum);
+				
+				// hack!! for testing.
+				// customer's name will be his/her choice in case name matches with menu_list
+				if(menu_list.contains(name)) {
+					System.out.println("Hack =) by Kyu");
+					choice = name;
+				}
+				
+				ReadyToOrder();
+				//event = AgentEvent.callWaiterToOrder;
+				//stateChanged();
+			}
+			else {
+				Do("There is nothing available");
+				
+				wait.msgLeavingTable(this);
+				state = AgentState.DoingNothing;
+				exitRestaurant();			
+			}
 		}
-		event = AgentEvent.callWaiterToOrder;	
 	}
 	
 	private void ReadyToOrder() {
@@ -344,8 +358,8 @@ public class CustomerAgent extends Agent {
 		}
 		else {
 			Do("I am sorry, but I don't have enough money this time. Chao!");
-			exitRestaurant();
 			state = AgentState.DoingNothing;
+			exitRestaurant();			
 		}
 		
 		foodGui.state = FoodGui.State.done;
@@ -441,9 +455,7 @@ public class CustomerAgent extends Agent {
 				}
 				sum = calculateTotal(twenty, ten, five, one, coins);
 			}
-			
-			System.out.println("Cash --> " + sum);
-			
+						
 			twentyDollar -= twenty;
 			tenDollar -= ten;
 			fiveDollar -= five;
