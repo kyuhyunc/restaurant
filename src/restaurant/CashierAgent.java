@@ -1,4 +1,4 @@
-package restaurant;
+package restaurant; 
 
 import agent.Agent;
 
