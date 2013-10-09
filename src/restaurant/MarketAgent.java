@@ -33,7 +33,7 @@ public class MarketAgent extends Agent {
 	
 	private Semaphore atCook = new Semaphore(0,true);
 	
-	FoodGui deliveryFood;
+	
 	
 	private int deliveryTime = 4000;
 		
@@ -60,7 +60,7 @@ public class MarketAgent extends Agent {
 			return false;
 		}
 		else {
-			print("received an procure order from cook");
+			print("received an procure order for " + procure.food + " from cook ");
 			procures.add(procure);
 			// minus stock level in advance
 			inventory.get(procure.food).amount -= procure.batchSize;
@@ -112,22 +112,22 @@ public class MarketAgent extends Agent {
 		Timer timer = new Timer();
 		final Procure p = procure;
 		
-		deliveryFood = new FoodGui(marketNumber, inventory.get(procure.food));
+		final FoodGui deliveryFood = new FoodGui(marketNumber, inventory.get(procure.food));
 		host.gui.animationPanel.addGui(deliveryFood);
 			
 		timer.schedule(new TimerTask() {
 			public void run() {
 				//p.state = Procure.ProcureState.Done;
 				//stateChanged();
-				DoDeliverGui(p);
+				DoDeliverGui(p, deliveryFood);
 			}
 		},
 		(int) deliveryTime); // delivery will be done in deliveryTime		
 	}
 	
-	public void DoDeliverGui(Procure p) {
-		deliveryFood.state = FoodGui.State.procurement;
-		deliveryFood.DoGoToCook(this);
+	public void DoDeliverGui(Procure p, FoodGui f) {
+		f.state = FoodGui.State.procurement;
+		f.DoGoToCook(this);
 		try {
 			atCook.acquire(); // 
 		} catch (InterruptedException e) {
