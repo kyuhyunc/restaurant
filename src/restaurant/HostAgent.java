@@ -5,6 +5,7 @@ import restaurant.gui.RestaurantGui;
 import restaurant.WaiterAgent;
 
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 /**
  * Restaurant Host Agent
@@ -23,6 +24,8 @@ public class HostAgent extends Agent {
 	public List<CustomerAgent> waitingCustomers	= Collections.synchronizedList(new ArrayList<CustomerAgent>());
 	public CookAgent cook;
 	
+	private Semaphore askQuestion = new Semaphore(0,true);
+	
 	//note that tables is typed with Collection semantics.
 	//Later we will see how it is implemented	
 	public Collection<Table> tables;
@@ -30,6 +33,8 @@ public class HostAgent extends Agent {
 	public RestaurantGui gui;
 	
 	private String name;
+	
+	boolean tableAvailabe = true;
 	
 	public HostAgent(String name) {
 		super();
@@ -48,9 +53,8 @@ public class HostAgent extends Agent {
 	public void msgAddWaiter(WaiterAgent waiter) {
 		Do("New waiter " + waiter.getName() + " is added");				
 		
-		synchronized(waiters) {
-			waiters.add(waiter);
-		}
+
+		waiters.add(waiter);
 		//waiterAdd.release();
 		//waiterBreak.release();
 		stateChanged();
@@ -58,12 +62,36 @@ public class HostAgent extends Agent {
 	
 	// 1: IWantFood(customer)
 	public void msgIWantFood(CustomerAgent cust) {
-		synchronized(waiters) {
-			waitingCustomers.add(cust);
-		}	
+
+		waitingCustomers.add(cust);
+	
 		Do(cust + " is added to the waiting list");
 		//flag = true;
-		stateChanged();
+		
+		if(tableFull()) {
+			Do("Tables are full, ask customer whetehr wait or leave");
+			boolean decision = cust.msgWhetherLeave();
+			try {
+				askQuestion.acquire();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+			
+			// true is stay 
+			if(decision) {
+				stateChanged();
+			}
+			/**else {
+				waitingCustomers.remove(cust);
+			}*/
+		}
+		else
+			stateChanged();		
+	}
+	
+	public void msgDecision() {
+		askQuestion.release();
 	}
 
 	// 11: TableIsCleared(table)
@@ -97,16 +125,16 @@ public class HostAgent extends Agent {
 					if (!waitingCustomers.isEmpty()) {
 						synchronized(waiters) {
 							if(waiters.size() > 0) {
-								for(WaiterAgent w : waiters) {
-									if(!w.getGui().isBreak()) {
-										if(w.state == WaiterAgent.AgentState.Waiting){
+								//for(WaiterAgent w : waiters) {
+									//if(!w.getGui().isBreak()) {
+										//if(w.state == WaiterAgent.AgentState.Waiting){
 											tellWaiter(waitingCustomers.get(0), table);
 											return true;//return true to the abstract agent to reinvoke the scheduler.
-										}
-									}	
-								}
-								Do("All waiters are serving customers");
-								return false;
+										//}
+									//}	
+								//}
+								//Do("All waiters are serving customers");
+								//return false;
 							}
 							else {
 								Do("There is no waiter");
@@ -214,6 +242,18 @@ public class HostAgent extends Agent {
 		}
 		
 		return null;		
+	}
+	
+	public boolean tableFull() {
+		boolean TableFull = true;
+		
+		for(Table t : tables) {
+			if(!t.isOccupied()) {
+				TableFull = false;
+			}
+		}
+		
+		return TableFull;
 	}
 	
 	public class Table {

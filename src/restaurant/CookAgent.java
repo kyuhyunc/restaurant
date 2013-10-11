@@ -19,7 +19,7 @@ import restaurant.MarketAgent.Procure;
  * Restaurant cook agent.
  */
 public class CookAgent extends Agent {
-	static public int NMARKETS = 0;//a global for the number of markets
+	static public int NMARKETS = 3;//a global for the number of markets
 	
 	private String name;
 	Timer timer = new Timer();
@@ -187,12 +187,38 @@ public class CookAgent extends Agent {
 		return foods;
 	}
 	
+	public double getCheapestFood() {
+		double price;
+		
+		price = foods.get(menu_list.get(0)).price;
+	
+		for(String food : menu_list) {
+			if (price > foods.get(food).price) {
+				price = foods.get(food).price;
+			}
+		}
+		
+		return price;
+	}
+	
 	public List<String> getMenuList() {
 		return menu_list;
 	}
 
 	public String toString() {
 		return "cook " + getName();
+	}
+	
+	public void setDefaultMarkets() {
+		for(int i=0;i<NMARKETS;i++){
+			MarketAgent m = new MarketAgent("Market #" + (i+1));
+			m.setCook(this);
+			m.setHost(host);
+			m.setMenuList(menu_list); // this will set up the initial inventory level of the market
+			m.setMarketNumber(i+1);
+			markets.add(m);
+			m.startThread();	
+		}
 	}
 	
 	public void addMarketByGui() {

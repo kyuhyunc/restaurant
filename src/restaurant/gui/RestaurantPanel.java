@@ -51,12 +51,11 @@ public class RestaurantPanel extends JPanel {
         host.startThread();
         
         cook.setHost(host);
+        cook.setDefaultMarkets();
         cook.startThread();
         
         cashier.setCook(cook);
         cashier.startThread();
-        
-        
         
         setLayout(new GridLayout(1, 3, 10, 10));
 
@@ -188,7 +187,7 @@ public class RestaurantPanel extends JPanel {
     					customerPanel.getStateCB(i).setEnabled(false);
     		    	}
     				
-    				
+    				addMarket.setEnabled(false);
     				addTable.setEnabled(false);
     				customerPanel.disableButtons();
     				waiterPanel.disableButtons();
@@ -207,7 +206,7 @@ public class RestaurantPanel extends JPanel {
     					}
     		    	}
     				
-    				
+    				addMarket.setEnabled(true);
     				addTable.setEnabled(true);
     				customerPanel.enableButtons();
     				waiterPanel.enableButtons();

@@ -74,13 +74,6 @@ public class CustomerAgent extends Agent {
 		stateChanged();
 	}
 
-	// messages from gui
-	public void msgSitAtTable() {
-		print("Received msgSitAtTable");
-		event = AgentEvent.followHost;
-		stateChanged();
-	}
-	
 	// 3: FollowMe(menu)
 	public void msgFollowMe(List<String> menu_list) {
 		//this.menu_list = menu_list; // update menu with the full version one
@@ -135,6 +128,28 @@ public class CustomerAgent extends Agent {
 		cash.addChanges(cash);		
 		event = AgentEvent.leaveRestaurant;
 		stateChanged();
+	}
+	
+	public boolean msgWhetherLeave() {
+		Random oRandom = new Random();
+		int randomNum;
+		
+		// non-norm #3: 
+		// Customer comes to restaurant and restaurant is full, customer is told and waits.
+		// Customer comes to restaurant and restaurant is full, customer is told and leaves.
+		// 25% chance to leave the restaurant 
+		randomNum = oRandom.nextInt();
+		if(randomNum % 4 == 0) {
+			Do("Full? I will come next time then!");
+			exitRestaurant();
+			host.msgDecision();
+			return false;
+		}
+		else {
+			Do("Full? I can wait =) ");
+			host.msgDecision();
+			return true;
+		}
 	}
 	
 	// messages from gui
@@ -245,9 +260,9 @@ public class CustomerAgent extends Agent {
 		int randomNum;
 		
 		// non-norm #1: customer leaves if all food is too expensive
-		// 20% chance to leave the restaurant 
+		// 25% chance to leave the restaurant 
 		randomNum = oRandom.nextInt();
-		if(randomNum % 5 == 0) {
+		if(randomNum % 4 == 0) {
 			Do("All food is too expensive, I will come later again.");
 			wait.msgLeavingTable(this);
 			state = AgentState.DoingNothing;
@@ -255,29 +270,39 @@ public class CustomerAgent extends Agent {
 		}
 		else{ // 75% chance to order food
 			// algorithm for choose what to order
-			if(menu_list.size() > 0) {
-				randomNum = oRandom.nextInt(menu_list.size());
-				
-				choice = menu_list.get(randomNum);
-				
-				// hack!! for testing.
-				// customer's name will be his/her choice in case name matches with menu_list
-				if(menu_list.contains(name)) {
-					System.out.println("Hack =) by Kyu");
-					choice = name;
-				}
-				
-				ReadyToOrder();
-				//event = AgentEvent.callWaiterToOrder;
-				//stateChanged();
-			}
-			else {
-				Do("There is nothing available");
+			if(cash.totalAmount() < wait.getCheapestFood()) {
+				Do("I don't have enough money to buy anything");
 				
 				wait.msgLeavingTable(this);
 				state = AgentState.DoingNothing;
-				exitRestaurant();			
+				exitRestaurant();
 			}
+			else {
+				if(menu_list.size() > 0) {
+					randomNum = oRandom.nextInt(menu_list.size());
+					
+					choice = menu_list.get(randomNum);
+					
+					// hack!! for testing.
+					// customer's name will be his/her choice in case name matches with menu_list
+					if(menu_list.contains(name)) {
+						System.out.println("Hack =) by Kyu");
+						choice = name;
+					}
+					
+					ReadyToOrder();
+					//event = AgentEvent.callWaiterToOrder;
+					//stateChanged();
+				}
+				else {
+					Do("There is nothing available");
+					
+					wait.msgLeavingTable(this);
+					state = AgentState.DoingNothing;
+					exitRestaurant();			
+				}	
+			}
+			
 		}
 	}
 	

@@ -508,6 +508,10 @@ public class WaiterAgent extends Agent {
 		return cook.getFoods().get(choice);
 	}
 	
+	public double getCheapestFood() {
+		return cook.getCheapestFood();
+	}
+	
 	public int getNumberOfMenu() {
 		return numberOfMenu;
 	}
