@@ -4,6 +4,7 @@ import restaurant.CookAgent.Food;
 import restaurant.MarketAgent;
 
 import java.awt.*;
+import java.text.DecimalFormat;
 
 import javax.swing.ImageIcon;
 
@@ -13,9 +14,11 @@ public class FoodGui implements Gui{
 	private int xDestination, yDestination;
 	private boolean isPresent = false;
 	
+	private int gap = AnimationPanel.gap;
+	
 	MarketAgent market;
 	
-	public static enum State {noCommand, waiting, delivering, delivered,
+	public static enum State {noCommand, waiting, delivering, delivered, doneEating,
 		waitingCheck, deliveringCheck, goToCashier, reOrdering, done, procurement};
 	public State state=State.noCommand;
 
@@ -30,6 +33,11 @@ public class FoodGui implements Gui{
 	private Image fImage;
 	
 	int tableNumber;
+	
+	
+	
+	String pattern = ".##";
+	DecimalFormat dFormat = new DecimalFormat(pattern);
 	
 	public FoodGui(int t, Food choice){ //HostAgent m) {
 	
@@ -67,31 +75,39 @@ public class FoodGui implements Gui{
 					state = State.done;
 					market.msgDeliveredToCook();
 				}
-				state = State.noCommand;
+				else {
+					state = State.noCommand;
+				}
 			}
 		}
 	}
 
 	public void draw(Graphics2D g) {
+		// followings are for food gui for watier and customer
 		if( state == State.waiting || state == State.delivering ) {
-			g.drawImage(fImage, AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20, AnimationPanel.TableLocationY , 20, 20, null);
-			g.drawImage(qImage, AnimationPanel.TableLocationX + 70*(tableNumber-1) + 40, AnimationPanel.TableLocationY, 10, 20, null);
+			g.drawImage(fImage, AnimationPanel.TableLocationX + gap*(tableNumber-1) + 20, AnimationPanel.TableLocationY , 20, 20, null);
+			g.drawImage(qImage, AnimationPanel.TableLocationX + gap*(tableNumber-1) + 40, AnimationPanel.TableLocationY, 10, 20, null);
 		}		
 		
 		if( state == State.delivering || state == State.delivered ) {
 			g.drawImage(fImage, xPos, yPos, 20, 20, null);
 		}
 		
-		// following if statements are for check animation
+		// following if statements are for check animation for waiter and customers
 		if ( state == State.waitingCheck || state == State.deliveringCheck ) {
-			g.drawImage(cImage, AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20, AnimationPanel.TableLocationY, 20, 20, null);
-			g.drawImage(qImage, AnimationPanel.TableLocationX + 70*(tableNumber-1) + 40, AnimationPanel.TableLocationY, 10, 20, null);
+			g.drawImage(cImage, AnimationPanel.TableLocationX + gap*(tableNumber-1) + 20, AnimationPanel.TableLocationY, 20, 20, null);
+			g.drawImage(qImage, AnimationPanel.TableLocationX + gap*(tableNumber-1) + 40, AnimationPanel.TableLocationY, 10, 20, null);
 		}
 		
 		if( state == State.deliveringCheck || state == State.goToCashier ) {
 			g.drawImage(cImage, xPos, yPos, 20, 20, null);
-			if ( state == State.goToCashier ) {
-				g.drawString(price, xPos, yPos + 30);
+			//if ( state == State.goToCashier && price != null) {
+			if (state == State.goToCashier) {
+				if ( price == null) {
+					System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+				}
+				else	
+					g.drawString(price, xPos, yPos + 30);
 			}
 		}
 		
@@ -101,40 +117,44 @@ public class FoodGui implements Gui{
 			g.drawString(batchSize, xPos, yPos);
 			g.drawImage(fImage, xPos, yPos, 20, 20, null);
 		}
+
 	}
 
+	// from either cook or cashier to table
 	public void DoGoToTable () {//later you will map seat number to table coordinates.
 		if (state == State.delivering) { // delivering food to Table
 			xPos = AnimationPanel.CookLocationX;
 			yPos = AnimationPanel.CookLocationY;
 			
-			xDestination = AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20;
+			xDestination = AnimationPanel.TableLocationX + gap*(tableNumber-1) + 20;
 			yDestination = AnimationPanel.TableLocationY;
 		}
 		else if (state == State.deliveringCheck) { // delivering check to table
 			xPos = AnimationPanel.CashierLocationX;
 			yPos = AnimationPanel.CashierLocationY + AnimationPanel.CashierSizeY - 20;
 			
-			xDestination = AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20;
+			xDestination = AnimationPanel.TableLocationX + gap*(tableNumber-1) + 20;
 			yDestination = AnimationPanel.TableLocationY;
 		}
 	}
 
+	// from table to cashier
 	public void DoGoToCashier () {
-		price = Double.toString(choice.getPrice());
+		price = dFormat.format(choice.getPrice());
 		
-		xPos = AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20;
+		xPos = AnimationPanel.TableLocationX + gap*(tableNumber-1) + 20;
 		yPos = AnimationPanel.TableLocationY;
 		
 		xDestination = AnimationPanel.CashierLocationX + 20;
 		yDestination = AnimationPanel.CashierLocationY + AnimationPanel.CashierSizeY ;
 	}
 	
+	// from market to cook
 	public void DoGoToCook (MarketAgent m) {
 		market = m;
 		
 		xPos = AnimationPanel.MarketLocationX;
-		yPos = AnimationPanel.MarketLocationY + 70*(tableNumber-1);
+		yPos = AnimationPanel.MarketLocationY + gap*(tableNumber-1);
 		
 		xDestination = AnimationPanel.CookLocationX + AnimationPanel.CookSizeX;
 		yDestination = AnimationPanel.CookLocationY;

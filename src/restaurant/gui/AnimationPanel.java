@@ -27,7 +27,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
     protected static int TableSizeX = 50;
     protected static int TableSizeY = 50;
     
-    protected static int CookLocationX = 400;
+    protected static int CookLocationX = 450;
     protected static int CookLocationY = 130;
     protected static int CookSizeX = 30;
     protected static int CookSizeY = 30;
@@ -41,6 +41,8 @@ public class AnimationPanel extends JPanel implements ActionListener {
     protected static int CashierLocationY = 20;
     protected static int CashierSizeX = 40;
     protected static int CashierSizeY = 40;
+    
+    protected static int gap = 80;
     
     protected Timer timer;
     private final int timerSpeed = 10;
@@ -82,11 +84,11 @@ public class AnimationPanel extends JPanel implements ActionListener {
         //Here is the table
         for(int i=0 ; i < HostAgent.NTABLES ; i++) {
 	        g2.setColor(Color.ORANGE);
-	        g2.fillRect(TableLocationX + (70*i), TableLocationY, TableSizeX, TableSizeY);//200 and 250 need to be table params
+	        g2.fillRect(TableLocationX + (gap*i), TableLocationY, TableSizeX, TableSizeY);//200 and 250 need to be table params
         }
         
         for(int i=0 ; i < CookAgent.NMARKETS ; i++) {
-	        g2.drawImage(mImage, MarketLocationX, MarketLocationY + (70*i), MarketSizeX, MarketSizeY, null);
+	        g2.drawImage(mImage, MarketLocationX, MarketLocationY + (gap*i), MarketSizeX, MarketSizeY, null);
         }
         
         g.drawImage(cImage, CookLocationX, CookLocationY, CookSizeX, CookSizeY, null);

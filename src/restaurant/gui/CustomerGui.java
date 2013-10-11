@@ -3,6 +3,7 @@ package restaurant.gui;
 import restaurant.CustomerAgent;
 
 import java.awt.*;
+import java.text.DecimalFormat;
 
 import javax.swing.ImageIcon;
 
@@ -14,6 +15,8 @@ public class CustomerGui implements Gui{
 
 	protected static int customerSize = 20;
 	
+	private int gap = AnimationPanel.gap;
+		
 	//private HostAgent host;
 	RestaurantGui gui;
 
@@ -27,6 +30,9 @@ public class CustomerGui implements Gui{
 	
 	private ImageIcon custImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/C for customer.jpg");
 	private Image image = custImage.getImage();
+	
+	String pattern = ".00";
+	DecimalFormat dFormat = new DecimalFormat(pattern);
 
 	public CustomerGui(CustomerAgent c, RestaurantGui gui){ //HostAgent m) {
 		agent = c;
@@ -68,10 +74,11 @@ public class CustomerGui implements Gui{
 		//g.fillRect(xPos, yPos, 20, 20);
 		g.setColor(Color.black);
 		g.drawImage(image, xPos, yPos, customerSize, customerSize, null);
-		g.drawString("name:"+agent.getName(), xPos, yPos - 11);
+		g.drawString("name:"+agent.getName(), xPos, yPos - 21);
 		if(agent.getWaiter() != null) {
-			g.drawString("waiter:"+agent.getWaiter().getName(), xPos, yPos-1);
+			g.drawString("waiter:"+agent.getWaiter().getName(), xPos, yPos-11);
 		}
+		g.drawString("$:"+agent.getCurrentCash(), xPos, yPos-1);
 	}
 
 	public void setPresent(boolean p) {
@@ -94,7 +101,7 @@ public class CustomerGui implements Gui{
 
 	public void DoGoToSeat(int tableNumber) {//later you will map seat number to table coordinates.
 		
-		xDestination = AnimationPanel.TableLocationX + 70*(tableNumber-1);
+		xDestination = AnimationPanel.TableLocationX + gap*(tableNumber-1);
 		
 		yDestination = AnimationPanel.TableLocationY;
 		command = Command.GoToSeat;

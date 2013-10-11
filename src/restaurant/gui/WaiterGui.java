@@ -13,6 +13,8 @@ public class WaiterGui implements Gui {
     private WaiterAgent agent = null;
     private boolean isBreak = false;
     
+    private int gap = AnimationPanel.gap;
+    
     private int xPos = -20, yPos = -20;//default waiter position
     private int xDestination = -20, yDestination = -20;//default start position
     private enum Command {noCommand, GoToTable, GoToCook, GoToHost, GoToHost2, GoToCashier};
@@ -72,7 +74,7 @@ public class WaiterGui implements Gui {
     }
 
     public void DoGoToTable(CustomerAgent customer, int tableNumber) {
-        xDestination = AnimationPanel.TableLocationX + ((tableNumber-1)*70) + 20;
+        xDestination = AnimationPanel.TableLocationX + ((tableNumber-1)*gap) + 20;
         yDestination = AnimationPanel.TableLocationY - 20;
         
         command = Command.GoToTable;

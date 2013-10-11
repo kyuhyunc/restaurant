@@ -12,7 +12,9 @@ import restaurant.CookAgent;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -40,9 +42,8 @@ public class WaiterAgent extends Agent {
 	private Semaphore atHost = new Semaphore(0,true);
 	private Semaphore atCashier = new Semaphore(0,true);
 		
-	//public Map<String, Food> menu = new HashMap<String, Food> ();
-	//public List<String> menu_list = new ArrayList<String> ();
 	private List<String> menu_list = new ArrayList<String> ();
+	private Map<String, Double> menu = new HashMap<String, Double> ();
 	
 	/**
 	 * Constructor for WaiterAgent class
@@ -82,7 +83,7 @@ public class WaiterAgent extends Agent {
 			for(int i=0; i < MyCustomers.size() ; i++) {
 				if(MyCustomers.get(i).c == customer) {
 					MyCustomers.get(i).state = MyCustomer.CustState.readyToOrder;
-					state = AgentState.Waiting;
+					//state = AgentState.Waiting;
 					stateChanged();
 					break;
 				}
@@ -97,7 +98,7 @@ public class WaiterAgent extends Agent {
 				if(MyCustomers.get(i).c == customer) {
 					MyCustomers.get(i).state = MyCustomer.CustState.waitingFood1;
 					MyCustomers.get(i).choice = choice;
-					state = AgentState.Waiting;
+					//state = AgentState.Waiting;
 					stateChanged();
 					break;
 				}
@@ -114,8 +115,9 @@ public class WaiterAgent extends Agent {
 		// the food that is out of stock will be erased from the menu list 
 		// and will be passed to the customer when the waiter ask the customer again.
 		// However, this menu list will be reseted when the waiter sits the customer down.
-	
+				
 		menu_list.remove(order.choice);
+		menu.remove(order.choice);
 
 		synchronized (MyCustomers) {
 			for(MyCustomer cust : MyCustomers) {
@@ -164,7 +166,7 @@ public class WaiterAgent extends Agent {
 				if(cust.c == check.customer) {
 					cust.state = MyCustomer.CustState.checkIsReady;
 					cust.check = check;
-					state = AgentState.Waiting;
+					//state = AgentState.Waiting;
 					stateChanged();
 					break;
 				}
@@ -277,12 +279,17 @@ public class WaiterAgent extends Agent {
 		}	
 		
 		// initializing menu list
-		//menu_list = cook.getMenuList(); 
 		menu_list.clear();
+		menu.clear();
+		
 		menu_list.addAll(cook.getMenuList());
 		
+		for(int i=0;i<cook.getMenuList().size();i++) {
+			menu.put(menu_list.get(i), cook.getPrice(menu_list.get(i)));
+		}
+		
 		// giving a full menu to customer
-		customer.c.msgFollowMe(menu_list, customer.t.tableNumber);
+		customer.c.msgFollowMe(menu_list, menu, customer.t.tableNumber);
 		DoSeatCustomer(customer);
 		try {
 			atTable.acquire(); // 
@@ -313,7 +320,7 @@ public class WaiterAgent extends Agent {
 		}
 			
 		Do("asking what would you like to " + customer.c);
-		//state = AgentState.Waiting;
+		state = AgentState.Waiting;
 		customer.state = MyCustomer.CustState.askedForOrder;
 		customer.c.msgWhatWouldYouLike();
 	}
@@ -335,7 +342,7 @@ public class WaiterAgent extends Agent {
 		Do("Here is an order " + customer.choice + " from " + customer.c);
 		cook.msgHereIsAnOrder(new Order(waiter, customer.c, customer.choice));
 		
-		stateChanged();		
+		//stateChanged();		
 	}
 	
 	void DoGoToCook() {
@@ -355,12 +362,11 @@ public class WaiterAgent extends Agent {
 		
 		customer.state = MyCustomer.CustState.reOrdering;
 		
-		//state = AgentState.Waiting;
-		//host.msgReadyToServe();
+		state = AgentState.Waiting;
 		waiterGui.DoGoBackToHost2();
 		
 		// update the menu of customer;
-		customer.c.msgAskForOrderAgain(menu_list);
+		customer.c.msgAskForOrderAgain(menu_list, menu);
 				
 		//stateChanged();
 	}
@@ -393,7 +399,7 @@ public class WaiterAgent extends Agent {
 		customer.c.msgHereIsYourOrder();
 		customer.state = MyCustomer.CustState.eating;
 	
-		stateChanged();
+		//stateChanged();
 	}
 	
 	void AskForCheck(MyCustomer c) {
@@ -417,6 +423,9 @@ public class WaiterAgent extends Agent {
 		}	
 				
 		cashier.msgComputeBill(c.choice, c.c, this, c.t.tableNumber);		
+		
+		state = AgentState.Waiting;
+		waiterGui.DoGoBackToHost2();
 		
 		/**state = AgentState.Waiting;
 		host.msgReadyToServe();
@@ -452,7 +461,7 @@ public class WaiterAgent extends Agent {
 		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		
-		stateChanged();
+		//stateChanged();
 	}
 	
 	void TableIsCleared(MyCustomer customer) {
@@ -505,10 +514,6 @@ public class WaiterAgent extends Agent {
 	
 	public Food getFood(String choice){
 		return cook.getFoods().get(choice);
-	}
-	
-	public double getCheapestFood() {
-		return cook.getCheapestFood();
 	}
 	
 	public String toString() {

@@ -19,7 +19,7 @@ import restaurant.MarketAgent.Procure;
  * Restaurant cook agent.
  */
 public class CookAgent extends Agent {
-	static public int NMARKETS = 3;//a global for the number of markets
+	static public int NMARKETS = 0;//a global for the number of markets
 	
 	private String name;
 	Timer timer = new Timer();
@@ -187,18 +187,8 @@ public class CookAgent extends Agent {
 		return foods;
 	}
 	
-	public double getCheapestFood() {
-		double price;
-		
-		price = foods.get(menu_list.get(0)).price;
-	
-		for(String food : menu_list) {
-			if (price > foods.get(food).price) {
-				price = foods.get(food).price;
-			}
-		}
-		
-		return price;
+	public double getPrice(String food) {
+		return foods.get(food).price;
 	}
 	
 	public List<String> getMenuList() {
@@ -256,8 +246,8 @@ public class CookAgent extends Agent {
 		
 		double price;
 		
-		double cookingTimeMultiplier = 5;
-		double eatingTimeMultiplier = 4;
+		double cookingTimeMultiplier = 8;
+		double eatingTimeMultiplier = 7;
 		
 		private ImageIcon foodImage;
 		
@@ -266,22 +256,22 @@ public class CookAgent extends Agent {
 			//amount = 3; // can set initial amount  depending on foods later
 			
 			if (name == "Steak") {
-				time = (int) 500;
+				time = (int) 800;
 				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/steak.jpg");
 				price = 15.99;
 			}
 			else if (name == "Chicken") {
-				time = (int) 800;
+				time = (int) 600;
 				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/chicken.jpg");
 				price = 10.99;
 			}
 			else if (name == "Salad") {
-				time = (int) 600;
+				time = (int) 400;
 				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/salad.jpg");
 				price = 5.99;
 			}
 			else if (name == "Pizza") {
-				time = (int) 300;
+				time = (int) 500;
 				foodImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/pizza.jpg");
 				price = 8.99;
 			}

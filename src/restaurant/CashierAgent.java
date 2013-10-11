@@ -24,6 +24,9 @@ public class CashierAgent extends Agent {
 	
 	private Map<String, Food> foods;
 	
+	public String pattern = ".00";
+	public DecimalFormat dFormat = new DecimalFormat(pattern);
+	
 	/**
 	 * Constructor for CashierAgent class
 	 *
@@ -52,7 +55,8 @@ public class CashierAgent extends Agent {
 	public void msgPayment(Check check, Cash cash) {
 		for(Check c : checks) {
 			if(c == check) {
-				c.cash = cash;
+				c.cash = new Cash(cash.twentyDollar, cash.tenDollar, cash.fiveDollar, cash.oneDollar, cash.coins);
+				//c.cash = cash;
 				c.state = Check.CheckState.receivedCash;
 				break;
 			}
@@ -105,10 +109,8 @@ public class CashierAgent extends Agent {
 		int oneDollar = 0;
 		int coins = 0;
 		
-		DecimalFormat df2 = new DecimalFormat("###.##");
-		
 		double change = c.cash.totalAmount() - c.price;
-		Do("Change is " + df2.format(change));
+		Cash Change;
 				
 		twentyDollar = (int) change/20;
 		change -= 20*twentyDollar;
@@ -121,10 +123,14 @@ public class CashierAgent extends Agent {
 		
 		oneDollar = (int) change/1;
 		change -= 1*oneDollar;
+				
+		coins = (int) (100*((double)(change)+0.0001));
 		
-		coins = (int) (100*change);
-		 
-		c.customer.msgChange(new Cash(twentyDollar, tenDollar, fiveDollar, oneDollar, coins));		
+		Change = new Cash(twentyDollar, tenDollar, fiveDollar, oneDollar, coins);
+			
+		Do("Change is " + dFormat.format(Change.totalAmount()));
+		
+		c.customer.msgChange(Change);		
 	}
 	
 	// Accessors, etc.
