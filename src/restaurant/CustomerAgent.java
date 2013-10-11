@@ -278,22 +278,7 @@ public class CustomerAgent extends Agent {
 		int randomNum;
 		
 		orderCount ++;
-		
-		// Customers who have only enough money to order the cheapest item will leave if that item is out of stock
-		if ( orderCount > 1) {
-			//if(cash.totalAmount() >= FirstCheapestFood() && cash.totalAmount() < SecondCheapestFood()) {
-			if(cash.totalAmount() < FirstCheapestFood()) {
-				if((!menu_list.contains(choice))) { 
-					Do("I have only enough money to order the cheapest food, but if there is no stock I will leave");
-					wait.msgLeavingTable(this);
-					state = AgentState.DoingNothing;
-					exitRestaurant();
-					
-					return;
-				}
-			}
-		}
-		
+			
 		Do("Choosing menu");
 		
 		if(menu.size() == 0) {
@@ -304,6 +289,22 @@ public class CustomerAgent extends Agent {
 			exitRestaurant();		
 		}
 		else {			
+			/**
+			// Customers who have only enough money to order the cheapest item will leave if that item is out of stock
+			if ( orderCount > 1) {
+				//if(cash.totalAmount() >= FirstCheapestFood() && cash.totalAmount() < SecondCheapestFood()) {
+				if(cash.totalAmount() < FirstCheapestFood()) {
+					if((!menu_list.contains(choice))) { 
+						Do("I have only enough money to order the cheapest food, but if there is no stock I will leave");
+						wait.msgLeavingTable(this);
+						state = AgentState.DoingNothing;
+						exitRestaurant();
+						
+						return;
+					}
+				}
+			}*/		
+			
 			// non-norm #1: customer leaves if all food is too expensive 
 			// 25% chance to leave the restaurant --> disabled as it is not a requirement according to the rubric 
 			randomNum = oRandom.nextInt();
@@ -360,8 +361,13 @@ public class CustomerAgent extends Agent {
 					}
 					
 					// Customers who have only enough money to order the cheapest item will order the cheapest food
-					if(cash.totalAmount() >= FirstCheapestFood() && cash.totalAmount() < SecondCheapestFood()) {
+					if(menu_list.size() == 1) {
 						Do(choice + " is the cheapest food I can order out of " + menu_list.size() + " foods");
+					}
+					else {
+						if(cash.totalAmount() >= FirstCheapestFood() && cash.totalAmount() < SecondCheapestFood()) {
+							Do(choice + " is the cheapest food I can order out of " + menu_list.size() + " foods");
+						}
 					}
 										
 					ReadyToOrder();
@@ -419,10 +425,9 @@ public class CustomerAgent extends Agent {
 		wait.msgLeavingTable(this);
 		
 		foodGui.DoGoToCashier();
-		foodGui.state = FoodGui.State.goToCashier;
-		
-		
 		customerGui.DoGoToCashier();
+		
+		foodGui.state = FoodGui.State.goToCashier;
 	}
 	
 	private void Payment() {
