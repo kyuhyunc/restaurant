@@ -68,9 +68,9 @@ public class CustomerGui implements Gui{
 		//g.fillRect(xPos, yPos, 20, 20);
 		g.setColor(Color.black);
 		g.drawImage(image, xPos, yPos, customerSize, customerSize, null);
-		g.drawString("name:"+agent.getName(), xPos, yPos);
+		g.drawString("name:"+agent.getName(), xPos, yPos - 11);
 		if(agent.getWaiter() != null) {
-			g.drawString("waiter:"+agent.getWaiter().getName(), xPos, yPos + customerSize+10);
+			g.drawString("waiter:"+agent.getWaiter().getName(), xPos, yPos-1);
 		}
 	}
 

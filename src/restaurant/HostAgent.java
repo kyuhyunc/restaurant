@@ -51,8 +51,7 @@ public class HostAgent extends Agent {
 	// 0:
 	public void msgAddWaiter(WaiterAgent waiter) {
 		Do("New waiter " + waiter.getName() + " is added");				
-		
-
+	
 		waiters.add(waiter);
 		//waiterAdd.release();
 		//waiterBreak.release();
@@ -80,11 +79,6 @@ public class HostAgent extends Agent {
 		stateChanged(); // so that when a customer leaves, host will check availability of tables again
 	}
 	
-	// receiving msg when waiter's state becomes waiting
-	public void msgReadyToServe() {
-		stateChanged();
-	}
-
 	// msg from waiter
 	public void msgCanIBreak(WaiterAgent w) {
 		chkIfWaiterCanBreak(w);		

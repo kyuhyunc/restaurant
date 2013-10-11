@@ -253,10 +253,6 @@ public class WaiterAgent extends Agent {
 						HereIsCheck(customer);
 						return true;
 					}
-					/**else if (customer.state == MyCustomer.CustState.leaving) {
-						TableIsCleared(customer);
-						return true;
-					}*/
 				}
 			}
 			for (MyCustomer customer : MyCustomers) {
@@ -286,7 +282,7 @@ public class WaiterAgent extends Agent {
 		menu_list.addAll(cook.getMenuList());
 		
 		// giving a full menu to customer
-		customer.c.msgFollowMe(menu_list);
+		customer.c.msgFollowMe(menu_list, customer.t.tableNumber);
 		DoSeatCustomer(customer);
 		try {
 			atTable.acquire(); // 
@@ -317,6 +313,8 @@ public class WaiterAgent extends Agent {
 		}
 			
 		Do("asking what would you like to " + customer.c);
+		//state = AgentState.Waiting;
+		customer.state = MyCustomer.CustState.askedForOrder;
 		customer.c.msgWhatWouldYouLike();
 	}
 		
@@ -331,7 +329,7 @@ public class WaiterAgent extends Agent {
 		customer.state = MyCustomer.CustState.waitingFood2;
 		
 		state = AgentState.Waiting;
-		host.msgReadyToServe();
+		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		
 		Do("Here is an order " + customer.choice + " from " + customer.c);
@@ -388,7 +386,7 @@ public class WaiterAgent extends Agent {
 		}	
 		
 		state = AgentState.Waiting;
-		host.msgReadyToServe();
+		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		
 		Do("Here is an order " + customer.choice + " for you, " + customer.c);
@@ -451,7 +449,7 @@ public class WaiterAgent extends Agent {
 		c.c.msgHereIsYourCheck(c.check);
 		
 		state = AgentState.Waiting;
-		host.msgReadyToServe();
+		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		
 		stateChanged();
@@ -460,9 +458,8 @@ public class WaiterAgent extends Agent {
 	void TableIsCleared(MyCustomer customer) {
 		
 		host.msgTableIsCleared(customer.t);
-		
-
 		MyCustomers.remove(customer);
+		
 		numberOfCustomers --;
 		
 		//state = AgentState.Waiting;
@@ -525,7 +522,7 @@ public class WaiterAgent extends Agent {
 		Check check;
 
 		public enum CustState
-		{Waiting, seated, readyToOrder, waitingFood1, waitingFood2, foodIsReady, 
+		{Waiting, seated, readyToOrder, askedForOrder, waitingFood1, waitingFood2, foodIsReady, 
 		eating, askingForCheck, waitingForCheck, checkIsReady, getTheCheck, leaving,
 		reOrder, reOrdering};
 		CustState state = CustState.Waiting;//The start state

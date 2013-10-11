@@ -26,6 +26,7 @@ public class CustomerAgent extends Agent {
 	private HostAgent host;
 	private WaiterAgent wait;
 	private CashierAgent cashier;
+	private int tableNumber;
 	
 	//Map<String, Food> menu;
 	private List<String> menu_list = new ArrayList<String> ();
@@ -77,9 +78,10 @@ public class CustomerAgent extends Agent {
 	}
 
 	// 3: FollowMe(menu)
-	public void msgFollowMe(List<String> menu_list) {
+	public void msgFollowMe(List<String> menu_list, int tableNumber) {
 		//this.menu_list = menu_list; // update menu with the full version one
 		this.menu_list.addAll(menu_list);
+		this.tableNumber = tableNumber;
 		event = AgentEvent.followHost;
 		stateChanged();
 	}
@@ -251,12 +253,8 @@ public class CustomerAgent extends Agent {
 	
 	private void SitDown() {
 		Do("Being seated. Going to table");
-		for(WaiterAgent.MyCustomer myC : wait.getMyCustomers()) {
-			if(myC.c == this) {
-				customerGui.DoGoToSeat(myC.t.tableNumber);	
-				break;
-			}		
-		}	
+	
+		customerGui.DoGoToSeat(tableNumber);		
 	}
 	
 	private void ChooseMenu() {
@@ -325,17 +323,11 @@ public class CustomerAgent extends Agent {
 	private void HereIsMyChoice(String choice) {
 		Do("Here Is My Choice : " + choice);
 		
-		for(WaiterAgent.MyCustomer myC : wait.getMyCustomers()) {
-			if(myC.c == this) {
-				foodGui = new FoodGui(myC.t.tableNumber, wait.getFood(choice));
-				break;
-			}		
-		}
-		
-		wait.msgHereIsMyChoice(this, choice);
-	
+		foodGui = new FoodGui(tableNumber, wait.getFood(choice));
 		host.gui.animationPanel.addGui(foodGui);
 		foodGui.state = FoodGui.State.waiting;
+		
+		wait.msgHereIsMyChoice(this, choice);
 	}
 
 	private void EatFood() {
