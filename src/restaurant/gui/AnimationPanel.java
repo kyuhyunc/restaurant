@@ -43,7 +43,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
     protected static int CashierSizeY = 40;
     
     protected Timer timer;
-    private final int timerSpeed = 15;
+    private final int timerSpeed = 10;
     
     public static boolean pauseFlag = false;
 

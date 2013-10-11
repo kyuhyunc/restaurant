@@ -299,6 +299,10 @@ public class CookAgent extends Agent {
 			this.batchSize = batchSize;
 		}
 		
+		public double getPrice() {
+			return price;
+		}
+		
 		public int getBatchSize() {
 			return batchSize;
 		}

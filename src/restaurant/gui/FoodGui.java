@@ -20,6 +20,7 @@ public class FoodGui implements Gui{
 	public State state=State.noCommand;
 
 	Food choice;
+	String price;
 	
 	private ImageIcon questionMark = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/question.jpg");
 	private ImageIcon checkImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/check.jpg");
@@ -66,6 +67,7 @@ public class FoodGui implements Gui{
 					state = State.done;
 					market.msgDeliveredToCook();
 				}
+				state = State.noCommand;
 			}
 		}
 	}
@@ -88,6 +90,9 @@ public class FoodGui implements Gui{
 		
 		if( state == State.deliveringCheck || state == State.goToCashier ) {
 			g.drawImage(cImage, xPos, yPos, 20, 20, null);
+			if ( state == State.goToCashier ) {
+				g.drawString(price, xPos, yPos + 30);
+			}
 		}
 		
 		// followings are for food gui from market to cook
@@ -116,6 +121,8 @@ public class FoodGui implements Gui{
 	}
 
 	public void DoGoToCashier () {
+		price = Double.toString(choice.getPrice());
+		
 		xPos = AnimationPanel.TableLocationX + 70*(tableNumber-1) + 20;
 		yPos = AnimationPanel.TableLocationY;
 		

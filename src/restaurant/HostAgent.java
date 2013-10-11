@@ -5,13 +5,12 @@ import restaurant.gui.RestaurantGui;
 import restaurant.WaiterAgent;
 
 import java.util.*;
-import java.util.concurrent.Semaphore;
 
 /**
  * Restaurant Host Agent
  */
 public class HostAgent extends Agent {
-	static public int NTABLES = 3;//a global for the number of tables.
+	static public int NTABLES = 1;//a global for the number of tables.
 	//static public int NWAITERS = 1;
 	//Notice that we implement waitingCustomers using ArrayList, but type it
 	//with List semantics.
@@ -24,7 +23,7 @@ public class HostAgent extends Agent {
 	public List<CustomerAgent> waitingCustomers	= Collections.synchronizedList(new ArrayList<CustomerAgent>());
 	public CookAgent cook;
 	
-	private Semaphore askQuestion = new Semaphore(0,true);
+	//private Semaphore askQuestion = new Semaphore(0,true);
 	
 	//note that tables is typed with Collection semantics.
 	//Later we will see how it is implemented	
@@ -34,7 +33,7 @@ public class HostAgent extends Agent {
 	
 	private String name;
 	
-	boolean tableAvailabe = true;
+	boolean tableAvailable = true;
 	
 	public HostAgent(String name) {
 		super();
@@ -42,7 +41,7 @@ public class HostAgent extends Agent {
 		this.name = name;
 		
 		// make some tables
-		tables = new ArrayList<Table>(NTABLES);
+		tables = new ArrayList<Table>();
 		for (int ix = 1; ix <= NTABLES; ix++) {
 			tables.add(new Table(ix)); //how you add to a collections			
 		}		
@@ -64,34 +63,14 @@ public class HostAgent extends Agent {
 	public void msgIWantFood(CustomerAgent cust) {
 
 		waitingCustomers.add(cust);
-	
 		Do(cust + " is added to the waiting list");
-		//flag = true;
-		
-		if(tableFull()) {
-			Do("Tables are full, ask customer whetehr wait or leave");
-			boolean decision = cust.msgWhetherLeave();
-			try {
-				askQuestion.acquire();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	
-			
-			// true is stay 
-			if(decision) {
-				stateChanged();
-			}
-			/**else {
-				waitingCustomers.remove(cust);
-			}*/
-		}
-		else
-			stateChanged();		
+		stateChanged();
 	}
 	
-	public void msgDecision() {
-		askQuestion.release();
+	public void msgDecision(CustomerAgent customer) {
+		if(!customer.waitWhenTableFull) {
+			waitingCustomers.remove(customer);
+		}
 	}
 
 	// 11: TableIsCleared(table)
@@ -119,36 +98,41 @@ public class HostAgent extends Agent {
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
 	protected boolean pickAndExecuteAnAction() {
-		for (Table table : tables) {
-			if (!table.isOccupied()) {
-				synchronized(waitingCustomers) {
-					if (!waitingCustomers.isEmpty()) {
-						synchronized(waiters) {
-							if(waiters.size() > 0) {
-								//for(WaiterAgent w : waiters) {
-									//if(!w.getGui().isBreak()) {
-										//if(w.state == WaiterAgent.AgentState.Waiting){
-											tellWaiter(waitingCustomers.get(0), table);
-											return true;//return true to the abstract agent to reinvoke the scheduler.
-										//}
-									//}	
-								//}
-								//Do("All waiters are serving customers");
-								//return false;
-							}
-							else {
-								Do("There is no waiter");
-								return false;
-							}
-						}					
-					}
+		if (!waitingCustomers.isEmpty()) {
+			if(waiters.size() > 0) {
+				for (Table table : tables) {
+					tableAvailable = true;
+					if (!table.isOccupied()) {
+						tellWaiter(waitingCustomers.get(0), table);
+						return true;//return true to the abstract agent to reinvoke the scheduler.
+					}					
 				}
+				Do("There is no table available");
+				tableAvailable = false;
 			}
+			else {
+				Do("There is no waiter");
+				return false;
+			}
+		}
+		// if tables are full, ask customer whether they would wait or leave
+		if (!tableAvailable) {
+			askCustomerWhenFull();
 		}
 		return false;
 	}
 
 	// Actions
+	
+	private void askCustomerWhenFull() {
+		Do("Tables are full, ask customer whether wait or leave");
+		
+		for(CustomerAgent c : waitingCustomers) {
+			if(!c.waitWhenTableFull)	c.msgWhetherLeave();
+		}
+	}
+	
+	
 	private void tellWaiter(CustomerAgent customer, Table table) {
 
 		WaiterAgent w;
@@ -217,33 +201,36 @@ public class HostAgent extends Agent {
 	}
 	
 	public WaiterAgent getTheMostFreeWaiter() {
-		List<WaiterAgent> availableWaiters = new ArrayList<WaiterAgent>(); 
+		List<WaiterAgent> availableWaiters = Collections.synchronizedList(new ArrayList<WaiterAgent>()); 
 		int numberOfCustomers = -1;
 		int waiterNumber = -1;
 		
 		// this for loop is for saving the first customersize and waiternumber to compare with others
-		for(int i=0;i<waiters.size();i++) {
-			if(!waiters.get(i).getGui().isBreak()) {
-				if(waiters.get(i).state == WaiterAgent.AgentState.Waiting) {
+		synchronized(waiters) {
+			for(int i=0;i<waiters.size();i++) {
+				if(!waiters.get(i).getGui().isBreak()) {
 					availableWaiters.add(waiters.get(i));
 				}
 			}
 		}
 		
-		if(!availableWaiters.isEmpty()) {
-			numberOfCustomers = availableWaiters.get(0).getMyCustomers().size();
-			waiterNumber = 0;
-			for(int i=0; i < availableWaiters.size() ; i++) {
-				if( numberOfCustomers >= availableWaiters.get(i).getMyCustomers().size()) {
-					waiterNumber = i; 
-				}				
+		synchronized(availableWaiters) {
+			if(!availableWaiters.isEmpty()) {
+				numberOfCustomers = availableWaiters.get(0).getNumberOfCustomers();
+				waiterNumber = 0;
+				for(int i=0; i < availableWaiters.size() ; i++) {
+					if( numberOfCustomers >= availableWaiters.get(i).getNumberOfCustomers()) {
+						numberOfCustomers = availableWaiters.get(i).getNumberOfCustomers();
+						waiterNumber = i; 
+					}				
+				}
+				return availableWaiters.get(waiterNumber);
 			}
-			return availableWaiters.get(waiterNumber);
-		}
-		
-		return null;		
+			return null;
+		}				
 	}
 	
+	/**
 	public boolean tableFull() {
 		boolean TableFull = true;
 		
@@ -254,7 +241,7 @@ public class HostAgent extends Agent {
 		}
 		
 		return TableFull;
-	}
+	}*/
 	
 	public class Table {
 		CustomerAgent occupiedBy;

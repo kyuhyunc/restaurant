@@ -31,6 +31,7 @@ public class WaiterAgent extends Agent {
 	public AgentState state = AgentState.Waiting;//The start state
 
 	private List<MyCustomer> MyCustomers = Collections.synchronizedList(new ArrayList<MyCustomer>());
+	int numberOfCustomers = 0;
 	
 	public WaiterGui waiterGui = null;
 	public int CurrentTableNumber = 0;
@@ -42,7 +43,6 @@ public class WaiterAgent extends Agent {
 	//public Map<String, Food> menu = new HashMap<String, Food> ();
 	//public List<String> menu_list = new ArrayList<String> ();
 	private List<String> menu_list = new ArrayList<String> ();
-	private int numberOfMenu;
 	
 	/**
 	 * Constructor for WaiterAgent class
@@ -61,9 +61,8 @@ public class WaiterAgent extends Agent {
 		//state = AgentState.Serving;
 		//state = AgentState.Waiting;
 		print("Received msgSitAtTable from the host");
-		synchronized (MyCustomers) {
-			MyCustomers.add(new MyCustomer(customer, table));
-		}
+		numberOfCustomers ++;
+		MyCustomers.add(new MyCustomer(customer, table));
 		stateChanged();
 	}
 	
@@ -285,7 +284,6 @@ public class WaiterAgent extends Agent {
 		//menu_list = cook.getMenuList(); 
 		menu_list.clear();
 		menu_list.addAll(cook.getMenuList());
-		numberOfMenu = menu_list.size();
 		
 		// giving a full menu to customer
 		customer.c.msgFollowMe(menu_list);
@@ -298,7 +296,7 @@ public class WaiterAgent extends Agent {
 		}
 		customer.state = MyCustomer.CustState.seated;
 		
-		//state = AgentState.Waiting;
+		state = AgentState.Waiting;
 		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		//stateChanged();
@@ -317,7 +315,7 @@ public class WaiterAgent extends Agent {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-				
+			
 		Do("asking what would you like to " + customer.c);
 		customer.c.msgWhatWouldYouLike();
 	}
@@ -463,9 +461,9 @@ public class WaiterAgent extends Agent {
 		
 		host.msgTableIsCleared(customer.t);
 		
-		synchronized (MyCustomers) {
-			MyCustomers.remove(customer);
-		}
+
+		MyCustomers.remove(customer);
+		numberOfCustomers --;
 		
 		//state = AgentState.Waiting;
 	}
@@ -500,6 +498,10 @@ public class WaiterAgent extends Agent {
 		return MyCustomers;
 	}
 	
+	public int getNumberOfCustomers() {
+		return numberOfCustomers;		
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -511,11 +513,6 @@ public class WaiterAgent extends Agent {
 	public double getCheapestFood() {
 		return cook.getCheapestFood();
 	}
-	
-	public int getNumberOfMenu() {
-		return numberOfMenu;
-	}
-	
 	
 	public String toString() {
 		return "waiter " + getName();

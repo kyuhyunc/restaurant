@@ -36,16 +36,18 @@ public class CustomerAgent extends Agent {
 	//private Semaphore atCashier = new Semaphore(0,true);
 	
 	public enum AgentState
-	{DoingNothing, WaitingInRestaurant, BeingSeated, Seated, ReadyToOrder
+	{DoingNothing, WaitingInRestaurant, TableFull, BeingSeated, Seated, ReadyToOrder
 	, WaitingFood, Eating, DoneEating, LeavingTable, DonePayment, LeavingRestaurant};
 	private AgentState state = AgentState.DoingNothing;//The start state
 
 	public enum AgentEvent 
-	{none, gotHungry, followHost, seated, callWaiterToOrder, makeOrder
+	{none, gotHungry, tableFull, decidedToWait, followHost, seated, callWaiterToOrder, makeOrder
 	, getFood, doneEating, askForCheck, getCheck, payment, leaveRestaurant
 	, doneLeaving, reOrder};
 	AgentEvent event = AgentEvent.none;
 
+	boolean waitWhenTableFull = false;;
+	
 	/**
 	 * Constructor for CustomerAgent class
 	 *
@@ -55,7 +57,7 @@ public class CustomerAgent extends Agent {
 	public CustomerAgent(String name){
 		super();
 		this.name = name;
-		
+	
 		// hack if you want to change budget of customer
 		cash = new Cash(1,1,1,1,0);
 	}
@@ -130,31 +132,16 @@ public class CustomerAgent extends Agent {
 		stateChanged();
 	}
 	
-	public boolean msgWhetherLeave() {
-		Random oRandom = new Random();
-		int randomNum;
-		
-		// non-norm #3: 
-		// Customer comes to restaurant and restaurant is full, customer is told and waits.
-		// Customer comes to restaurant and restaurant is full, customer is told and leaves.
-		// 25% chance to leave the restaurant 
-		randomNum = oRandom.nextInt();
-		if(randomNum % 4 == 0) {
-			Do("Full? I will come next time then!");
-			exitRestaurant();
-			host.msgDecision();
-			return false;
-		}
-		else {
-			Do("Full? I can wait =) ");
-			host.msgDecision();
-			return true;
-		}
+	public void msgWhetherLeave() {
+		event = AgentEvent.tableFull;
+		stateChanged();
 	}
 	
 	// messages from gui
 	public void msgAnimationFinishedLeaveRestaurant() {
 		//from animation
+		waitWhenTableFull = false;
+		state = AgentState.DoingNothing;
 		event = AgentEvent.doneLeaving;
 		stateChanged();
 	}
@@ -170,6 +157,11 @@ public class CustomerAgent extends Agent {
 			goToRestaurant();
 			return true;
 		}
+		else if (state == AgentState.WaitingInRestaurant && event == AgentEvent.tableFull ){
+			state = AgentState.TableFull;
+			thinkWhetherLeave();
+			return true;			
+		}		
 		else if (state == AgentState.WaitingInRestaurant && event == AgentEvent.followHost ){
 			state = AgentState.BeingSeated;
 			SitDown();
@@ -223,11 +215,7 @@ public class CustomerAgent extends Agent {
 			exitRestaurant();
 			return true;
 		}		
-		else if (state == AgentState.LeavingRestaurant && event == AgentEvent.doneLeaving){
-			state = AgentState.DoingNothing;
-			return false;					
-		}
-		
+
 		return false;
 	}
 
@@ -238,6 +226,29 @@ public class CustomerAgent extends Agent {
 		host.msgIWantFood(this); //send our instance, so he can respond to us
 	}
 
+	private void thinkWhetherLeave() {
+		Random oRandom = new Random();
+		int randomNum;
+		
+		// non-norm #3: 
+		// Customer comes to restaurant and restaurant is full, customer is told and waits.
+		// Customer comes to restaurant and restaurant is full, customer is told and leaves.
+		// 25% chance to leave the restaurant 
+		randomNum = oRandom.nextInt();
+		if(randomNum % 4 == 0) {
+			Do("Full? I will come next time then!");
+			exitRestaurant();
+			waitWhenTableFull = false;
+		}
+		else {
+			Do("Full? I can wait =) ");
+			waitWhenTableFull = true;
+			state = AgentState.WaitingInRestaurant;
+			event = AgentEvent.decidedToWait;
+		}
+		host.msgDecision(this);
+	}
+	
 	private void SitDown() {
 		Do("Being seated. Going to table");
 		for(WaiterAgent.MyCustomer myC : wait.getMyCustomers()) {
@@ -260,9 +271,9 @@ public class CustomerAgent extends Agent {
 		int randomNum;
 		
 		// non-norm #1: customer leaves if all food is too expensive
-		// 25% chance to leave the restaurant 
+		// 20% chance to leave the restaurant 
 		randomNum = oRandom.nextInt();
-		if(randomNum % 4 == 0) {
+		if(randomNum % 5 == 0) {
 			Do("All food is too expensive, I will come later again.");
 			wait.msgLeavingTable(this);
 			state = AgentState.DoingNothing;
@@ -364,12 +375,6 @@ public class CustomerAgent extends Agent {
 		foodGui.DoGoToCashier();
 		
 		customerGui.DoGoToCashier();
-		/**try {
-			atCashier.acquire(); // 
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/		
 	}
 	
 	private void Payment() {
@@ -402,6 +407,10 @@ public class CustomerAgent extends Agent {
 
 	public void setWaiter(WaiterAgent waiter) {
 		this.wait = waiter;
+	}
+	
+	public WaiterAgent getWaiter() {
+		return wait;
 	}
 	
 	public void setCashier(CashierAgent cashier) {
