@@ -45,11 +45,12 @@ public class AnimationPanel extends JPanel implements ActionListener {
     protected static int gap = 80;
     
     protected Timer timer;
-    private final int timerSpeed = 10;
+    private final int timerSpeed = 5;
     
     public static boolean pauseFlag = false;
 
-	private ImageIcon cookImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/Cook.jpg");
+	private CookAgent cook;
+    private ImageIcon cookImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/Cook.jpg");
 	private Image cImage = cookImage.getImage();
 	
 	private ImageIcon MarketImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/market.jpg");
@@ -91,7 +92,14 @@ public class AnimationPanel extends JPanel implements ActionListener {
 	        g2.drawImage(mImage, MarketLocationX, MarketLocationY + (gap*i), MarketSizeX, MarketSizeY, null);
         }
         
+        int i=0;
         g.drawImage(cImage, CookLocationX, CookLocationY, CookSizeX, CookSizeY, null);
+        for(String food : cook.getMenuList()) {
+        	g2.setColor(Color.black);
+        	g2.drawString(food + ": " + cook.getFoods().get(food).getStock(), CookLocationX, CookLocationY+CookSizeY+11+i*11);
+        	i++;
+        }
+        
         g.drawImage(cashImage, CashierLocationX, CashierLocationY, CashierSizeX, CashierSizeY, null);
         
         synchronized (guis) {
@@ -122,5 +130,9 @@ public class AnimationPanel extends JPanel implements ActionListener {
     
     public void addGui(FoodGui gui) {
         guis.add(gui);
+    }
+    
+    public void setCook(CookAgent cook) {
+    	this.cook = cook;
     }
 }

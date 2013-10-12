@@ -308,6 +308,10 @@ public class CookAgent extends Agent {
 		public ImageIcon getImageIcon() {
 			return foodImage;
 		}	
+		
+		public int getStock() {
+			return amount;
+		}
 	}
 }
 

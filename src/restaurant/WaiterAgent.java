@@ -117,7 +117,7 @@ public class WaiterAgent extends Agent {
 		// However, this menu list will be reseted when the waiter sits the customer down.
 				
 		menu_list.remove(order.choice);
-		menu.remove(order.choice);
+		//menu.remove(order.choice);
 
 		synchronized (MyCustomers) {
 			for(MyCustomer cust : MyCustomers) {
@@ -366,7 +366,7 @@ public class WaiterAgent extends Agent {
 		waiterGui.DoGoBackToHost2();
 		
 		// update the menu of customer;
-		customer.c.msgAskForOrderAgain(menu_list, menu);
+		customer.c.msgAskForOrderAgain(menu_list);
 				
 		//stateChanged();
 	}

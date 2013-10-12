@@ -57,6 +57,8 @@ public class RestaurantPanel extends JPanel {
         cashier.setCook(cook);
         cashier.startThread();
         
+        gui.animationPanel.setCook(cook);
+        
         setLayout(new GridLayout(1, 3, 10, 10));
 
         initRestLabel();

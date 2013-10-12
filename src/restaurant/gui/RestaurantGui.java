@@ -9,19 +9,19 @@ import java.awt.*;
  * Contains the main frame and subsequent panels
  */
 public class RestaurantGui extends JFrame{
-    /* restPanel holds 2 panels
+    /* The GUI has two frames, the control frame (in variable gui) 
+     * and the animation frame, (in variable animationFrame within gui)
+     */
+	public AnimationPanel animationPanel = new AnimationPanel();
+    
+	/* restPanel holds 2 panels
      * 1) the staff listing, menu, and lists of current customers all constructed
      *    in RestaurantPanel()
      * 2) listPanel of customers
      * 3) listPanel of waiters
      */    
     private RestaurantPanel restPanel = new RestaurantPanel(this);
-
-    /* The GUI has two frames, the control frame (in variable gui) 
-     * and the animation frame, (in variable animationFrame within gui)
-     */
-	public AnimationPanel animationPanel = new AnimationPanel();
-     
+	
     private JPanel sub_infoPanel; //for adding my name
     private JLabel sub_infoLabel;
 
@@ -64,8 +64,6 @@ public class RestaurantGui extends JFrame{
         sub_infoLabel.setText("<html><pre><i>Developed by Kyu Chang</i></pre></html>");
         
         sub_infoPanel.add(sub_infoLabel);                     
-        
- 
         
         add(sub_infoPanel);
         

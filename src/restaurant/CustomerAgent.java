@@ -88,6 +88,8 @@ public class CustomerAgent extends Agent {
 
 	// 3: FollowMe(menu)
 	public void msgFollowMe(List<String> menu_list, Map<String, Double> menu, int tableNumber) {
+		this.menu_list.clear();
+		this.menu.clear();		
 		this.menu_list.addAll(menu_list);
 		this.menu.putAll(menu);
 		this.tableNumber = tableNumber;
@@ -108,12 +110,12 @@ public class CustomerAgent extends Agent {
 		stateChanged();
 	}
 	
-	public void msgAskForOrderAgain(List<String> menu_list, Map<String, Double> menu) {
+	public void msgAskForOrderAgain(List<String> menu_list) {
 		//this.menu_list = menu_list; // update menu that out of stocked food is not included
 		this.menu_list.clear();
 		this.menu_list.addAll(menu_list);
-		this.menu.clear();
-		this.menu.putAll(menu);
+		//this.menu.clear();
+		//this.menu.putAll(menu);
 		
 		// check menu list
 		event = AgentEvent.reOrder;
@@ -278,6 +280,32 @@ public class CustomerAgent extends Agent {
 		int randomNum;
 		
 		orderCount ++;
+				
+		// Customers who have only enough money to order the cheapest item will leave if that item is out of stock
+		if ( orderCount > 1) {
+			if(menu.size() == 0) {
+				if(cash.totalAmount() >= menu.get(choice)) {
+					Do("I have only enough money to order the cheapest food, but if there is no stock I will leave");
+					wait.msgLeavingTable(this);
+					state = AgentState.DoingNothing;
+					exitRestaurant();
+					
+					return;
+				}
+			}
+			else {
+				if((!menu_list.contains(choice))) {
+					if((cash.totalAmount() < FirstCheapestFood()) && cash.totalAmount() >= menu.get(choice)) {
+						Do("I have only enough money to order the cheapest food, but if there is no stock I will leave");
+						wait.msgLeavingTable(this);
+						state = AgentState.DoingNothing;
+						exitRestaurant();
+						
+						return;
+					}
+				}
+			}			
+		}	
 			
 		Do("Choosing menu");
 		
@@ -288,23 +316,7 @@ public class CustomerAgent extends Agent {
 			state = AgentState.DoingNothing;
 			exitRestaurant();		
 		}
-		else {			
-			/**
-			// Customers who have only enough money to order the cheapest item will leave if that item is out of stock
-			if ( orderCount > 1) {
-				//if(cash.totalAmount() >= FirstCheapestFood() && cash.totalAmount() < SecondCheapestFood()) {
-				if(cash.totalAmount() < FirstCheapestFood()) {
-					if((!menu_list.contains(choice))) { 
-						Do("I have only enough money to order the cheapest food, but if there is no stock I will leave");
-						wait.msgLeavingTable(this);
-						state = AgentState.DoingNothing;
-						exitRestaurant();
-						
-						return;
-					}
-				}
-			}*/		
-			
+		else {						
 			// non-norm #1: customer leaves if all food is too expensive 
 			// 25% chance to leave the restaurant --> disabled as it is not a requirement according to the rubric 
 			randomNum = oRandom.nextInt();
@@ -319,7 +331,7 @@ public class CustomerAgent extends Agent {
 				if((cash.totalAmount() < FirstCheapestFood())) {
 					randomNum = oRandom.nextInt();
 					// sometimes choose to leave. (40%)
-					if((randomNum % 3 == 0 || randomNum % 3 == 1)) {
+					if((randomNum % 3 >= -1 || randomNum % 3 <= 0)) {
 						Do("I don't have enough money to buy anything");
 						
 						wait.msgLeavingTable(this);
