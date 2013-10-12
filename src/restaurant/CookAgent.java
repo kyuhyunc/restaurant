@@ -19,7 +19,7 @@ import restaurant.MarketAgent.Procure;
  * Restaurant cook agent.
  */
 public class CookAgent extends Agent {
-	static public int NMARKETS = 0;//a global for the number of markets
+	static public int NMARKETS = 1;//a global for the number of markets
 	
 	private String name;
 	Timer timer = new Timer();
@@ -57,12 +57,7 @@ public class CookAgent extends Agent {
 			foods.get(s).setAmount(2);
 		}		
 	}
-	
-
-	/**
-	 * hack to establish connection to Host agent.
-	 */
-	
+		
 	// Messages
 	// 7: HereIsAnOrder(order);
 	public void msgHereIsAnOrder(Order order) {
@@ -71,6 +66,7 @@ public class CookAgent extends Agent {
 		stateChanged();
 	}
 	
+	// 
 	public void msgOrderFulfillment(Procure procure) {
 		foods.get(procure.getFood()).amount += foods.get(procure.getFood()).batchSize; 
 	}
@@ -79,8 +75,8 @@ public class CookAgent extends Agent {
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
 	protected boolean pickAndExecuteAnAction() {
-		if (!orders.isEmpty()) {
-			synchronized (orders) {
+		synchronized (orders) {
+			if (!orders.isEmpty()) {			
 				for(int i=0;i<orders.size();i++){
 					if(orders.get(i).state == Order.OrderState.Pending) {
 						orders.get(i).state = Order.OrderState.Cooking;
@@ -100,7 +96,7 @@ public class CookAgent extends Agent {
 						return true;
 					}
 				}
-				return true; // return true when state is cooking, so that cook can wait
+				return true; // return true when state is cooking
 			}
 		}
 		return false;
@@ -111,7 +107,6 @@ public class CookAgent extends Agent {
 		if(foods.get(order.choice).amount > 0) {
 			Do("Start cooking");
 			DoCooking(order);
-			//order.choice.amount --; // decreasing stock by 1
 			foods.get(order.choice).amount --;
 			if (foods.get(order.choice).amount == 1 || foods.get(order.choice).amount == 0) {
 				Do("There is only " + foods.get(order.choice).amount + " stock left for the food " + order.choice);
@@ -124,7 +119,6 @@ public class CookAgent extends Agent {
 			Do(order.choice + " is out of stock right now");			
 			order.state = Order.OrderState.outOfStock;
 			BuyFood(order.choice, foods.get(order.choice).batchSize);
-			//stateChanged();
 		}
 	}
 	
@@ -151,10 +145,10 @@ public class CookAgent extends Agent {
 				// return true if the food has already been ordered to the market
 				if(m.chkProcureInProcess(food)) {
 					alreadyOrdered = true;
+					break;
 				}
-				break;
 			}
-			
+
 			if(!alreadyOrdered) {
 				for(MarketAgent m : markets) {
 					// msgBuyFood will return true if the market has a stock for the choice
@@ -221,6 +215,10 @@ public class CookAgent extends Agent {
 		m.startThread();
 	}
 	
+	public List<MarketAgent> getMarkets() {
+		return markets;
+	}
+	
 	public static class Order {
 		WaiterAgent waiter;
 		CustomerAgent customer;
@@ -241,13 +239,13 @@ public class CookAgent extends Agent {
 		String name;
 		
 		int time; // for setting timer differently
-		int amount;
+		int amount; // stock level
 		int batchSize; // amount of order
 		
 		double price;
 		
-		double cookingTimeMultiplier = 8;
-		double eatingTimeMultiplier = 7;
+		double cookingTimeMultiplier = 7;
+		double eatingTimeMultiplier = 5;
 		
 		private ImageIcon foodImage;
 		

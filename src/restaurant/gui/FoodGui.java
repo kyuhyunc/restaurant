@@ -104,7 +104,7 @@ public class FoodGui implements Gui{
 			//if ( state == State.goToCashier && price != null) {
 			if (state == State.goToCashier) {
 				if ( price == null) {
-					System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+					//System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 				}
 				else	
 					g.drawString(price, xPos, yPos + 30);
@@ -140,7 +140,7 @@ public class FoodGui implements Gui{
 
 	// from table to cashier
 	public void DoGoToCashier () {
-		price = dFormat.format(choice.getPrice());
+		//price = dFormat.format(choice.getPrice());
 		
 		xPos = AnimationPanel.TableLocationX + gap*(tableNumber-1) + 20;
 		yPos = AnimationPanel.TableLocationY;
@@ -169,4 +169,9 @@ public class FoodGui implements Gui{
 	public void setPresent(boolean p) {
 		isPresent = p;
 	}
+	
+	public void setPrice(double price) {
+		this.price = dFormat.format(price);
+	}
+	
 }

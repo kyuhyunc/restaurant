@@ -83,7 +83,6 @@ public class CashierAgent extends Agent {
 						return true;
 					}
 				}
-				//return true; // return true when state is cooking, so that cook can wait
 			}
 		}
 		return false;

@@ -4,6 +4,7 @@ import javax.swing.*;
 
 import restaurant.CookAgent;
 import restaurant.HostAgent;
+import restaurant.MarketAgent;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -92,6 +93,19 @@ public class AnimationPanel extends JPanel implements ActionListener {
 	        g2.drawImage(mImage, MarketLocationX, MarketLocationY + (gap*i), MarketSizeX, MarketSizeY, null);
         }
         
+        int m=0;
+        int n=0;
+        for(MarketAgent M : cook.getMarkets()) {
+        	n=0;
+        	for(String food : cook.getMenuList()) {
+        		g2.setColor(Color.black);
+            	g2.drawString(food + ": " + M.getInventory().get(food).getStock(), 
+            			MarketLocationX+MarketSizeX+1, MarketLocationY + 10 + (gap*m) + (n*11));
+            	n++;
+        	}
+        	m++;
+        }
+        
         int i=0;
         g.drawImage(cImage, CookLocationX, CookLocationY, CookSizeX, CookSizeY, null);
         for(String food : cook.getMenuList()) {
@@ -99,6 +113,8 @@ public class AnimationPanel extends JPanel implements ActionListener {
         	g2.drawString(food + ": " + cook.getFoods().get(food).getStock(), CookLocationX, CookLocationY+CookSizeY+11+i*11);
         	i++;
         }
+        
+        
         
         g.drawImage(cashImage, CashierLocationX, CashierLocationY, CashierSizeX, CashierSizeY, null);
         

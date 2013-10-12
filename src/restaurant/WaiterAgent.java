@@ -166,7 +166,6 @@ public class WaiterAgent extends Agent {
 				if(cust.c == check.customer) {
 					cust.state = MyCustomer.CustState.checkIsReady;
 					cust.check = check;
-					//state = AgentState.Waiting;
 					stateChanged();
 					break;
 				}
@@ -191,7 +190,6 @@ public class WaiterAgent extends Agent {
 	// msg from gui
 	public void msgOnBreak() {
 		Do("Can I have a break?");
-		//host.msgOffBreak();
 		// need to ask for permission to Host
 		host.msgCanIBreak(this);
 	}
@@ -300,9 +298,7 @@ public class WaiterAgent extends Agent {
 		customer.state = MyCustomer.CustState.seated;
 		
 		state = AgentState.Waiting;
-		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
-		//stateChanged();
 	}
 	
 	void DoSeatCustomer(MyCustomer customer) {
@@ -336,13 +332,10 @@ public class WaiterAgent extends Agent {
 		customer.state = MyCustomer.CustState.waitingFood2;
 		
 		state = AgentState.Waiting;
-		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		
 		Do("Here is an order " + customer.choice + " from " + customer.c);
 		cook.msgHereIsAnOrder(new Order(waiter, customer.c, customer.choice));
-		
-		//stateChanged();		
 	}
 	
 	void DoGoToCook() {
@@ -367,8 +360,6 @@ public class WaiterAgent extends Agent {
 		
 		// update the menu of customer;
 		customer.c.msgAskForOrderAgain(menu_list);
-				
-		//stateChanged();
 	}
 	
 	void HereIsYourOrder(MyCustomer customer) {
@@ -392,14 +383,11 @@ public class WaiterAgent extends Agent {
 		}	
 		
 		state = AgentState.Waiting;
-		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
 		
 		Do("Here is an order " + customer.choice + " for you, " + customer.c);
 		customer.c.msgHereIsYourOrder();
 		customer.state = MyCustomer.CustState.eating;
-	
-		//stateChanged();
 	}
 	
 	void AskForCheck(MyCustomer c) {
@@ -426,12 +414,6 @@ public class WaiterAgent extends Agent {
 		
 		state = AgentState.Waiting;
 		waiterGui.DoGoBackToHost2();
-		
-		/**state = AgentState.Waiting;
-		host.msgReadyToServe();
-		waiterGui.DoGoBackToHost2();
-		
-		stateChanged();*/
 	}
 
 	void HereIsCheck(MyCustomer c) {
@@ -458,10 +440,7 @@ public class WaiterAgent extends Agent {
 		c.c.msgHereIsYourCheck(c.check);
 		
 		state = AgentState.Waiting;
-		//host.msgReadyToServe();
 		waiterGui.DoGoBackToHost2();
-		
-		//stateChanged();
 	}
 	
 	void TableIsCleared(MyCustomer customer) {
@@ -470,8 +449,6 @@ public class WaiterAgent extends Agent {
 		MyCustomers.remove(customer);
 		
 		numberOfCustomers --;
-		
-		//state = AgentState.Waiting;
 	}
 	
 	// Accessors, etc.

@@ -38,16 +38,14 @@ public class CustomerAgent extends Agent {
 	private Check check;
 	private Cash cash;
 	
-	//private Semaphore atCashier = new Semaphore(0,true);
-	
 	public enum AgentState
-	{DoingNothing, WaitingInRestaurant, TableFull, BeingSeated, Seated, ReadyToOrder
-	, WaitingFood, Eating, DoneEating, LeavingTable, DonePayment, LeavingRestaurant};
+	{DoingNothing, WaitingInRestaurant, TableFull, BeingSeated, Seated, 
+		WaitingFood, Eating, DoneEating, LeavingTable, DonePayment, LeavingRestaurant};
 	private AgentState state = AgentState.DoingNothing;//The start state
 
 	public enum AgentEvent 
-	{none, gotHungry, tableFull, decidedToWait, followHost, seated, callWaiterToOrder, makeOrder
-	, getFood, doneEating, askForCheck, getCheck, payment, leaveRestaurant
+	{none, gotHungry, tableFull, decidedToWait, followHost, seated, callWaiterToOrder, 
+	makeOrder, getFood, doneEating, askForCheck, getCheck, payment, leaveRestaurant
 	, doneLeaving, reOrder};
 	AgentEvent event = AgentEvent.none;
 
@@ -71,11 +69,6 @@ public class CustomerAgent extends Agent {
 		cash = new Cash(1,1,1,1,0);
 	}
 
-	/**
-	 * hack to establish connection to Host agent.
-	 */
-
-	
 	// Messages
 
 	// 0: IamHungry()
@@ -111,11 +104,9 @@ public class CustomerAgent extends Agent {
 	}
 	
 	public void msgAskForOrderAgain(List<String> menu_list) {
-		//this.menu_list = menu_list; // update menu that out of stocked food is not included
+		// update menu that out of stocked food is not included
 		this.menu_list.clear();
-		this.menu_list.addAll(menu_list);
-		//this.menu.clear();
-		//this.menu.putAll(menu);
+		this.menu_list.addAll(menu_list); // deep copy
 		
 		// check menu list
 		event = AgentEvent.reOrder;
@@ -131,12 +122,12 @@ public class CustomerAgent extends Agent {
 	public void msgHereIsYourCheck(Check check) {
 		event = AgentEvent.getCheck;
 		this.check = check;
+		foodGui.setPrice(check.price);
 		stateChanged();
 	}
 	
 	// message from gui
 	public void msgArrivedAtCashier() {
-		//atCashier.release();
 		event = AgentEvent.payment;
 		stateChanged();
 	}
@@ -187,12 +178,6 @@ public class CustomerAgent extends Agent {
 			ChooseMenu();
 			return true;
 		}
-		/**else if (state == AgentState.Seated && event == AgentEvent.callWaiterToOrder){
-			state = AgentState.ReadyToOrder;
-			ReadyToOrder();
-			return true;
-		}*/
-		//else if (state == AgentState.ReadyToOrder && event == AgentEvent.makeOrder){
 		else if (state == AgentState.Seated && event == AgentEvent.makeOrder){
 			state = AgentState.WaitingFood;
 			HereIsMyChoice(choice);
@@ -210,7 +195,6 @@ public class CustomerAgent extends Agent {
 			return true;
 		}
 		else if (state == AgentState.Eating && event == AgentEvent.doneEating){
-			//state = AgentState.Leaving;
 			state = AgentState.DoneEating;
 			ReadyForCheck();
 			return true;
@@ -249,8 +233,8 @@ public class CustomerAgent extends Agent {
 		// Customer comes to restaurant and restaurant is full, customer is told and waits.
 		// Customer comes to restaurant and restaurant is full, customer is told and leaves.
 		// 25% chance to leave the restaurant 
-		randomNum = oRandom.nextInt();
-		if(randomNum % 4 == 0) {
+		randomNum = oRandom.nextInt(5);
+		if(randomNum == 0 || randomNum == 2) {
 			Do("Full? I will come next time then!");
 			exitRestaurant();
 			waitWhenTableFull = false;
@@ -283,17 +267,7 @@ public class CustomerAgent extends Agent {
 				
 		// Customers who have only enough money to order the cheapest item will leave if that item is out of stock
 		if ( orderCount > 1) {
-			if(menu.size() == 0) {
-				if(cash.totalAmount() >= menu.get(choice)) {
-					Do("I have only enough money to order the cheapest food, but if there is no stock I will leave");
-					wait.msgLeavingTable(this);
-					state = AgentState.DoingNothing;
-					exitRestaurant();
-					
-					return;
-				}
-			}
-			else {
+			if(menu_list.size() >= 1) {
 				if((!menu_list.contains(choice))) {
 					if((cash.totalAmount() < FirstCheapestFood()) && cash.totalAmount() >= menu.get(choice)) {
 						Do("I have only enough money to order the cheapest food, but if there is no stock I will leave");
@@ -309,7 +283,7 @@ public class CustomerAgent extends Agent {
 			
 		Do("Choosing menu");
 		
-		if(menu.size() == 0) {
+		if(menu_list.size() == 0) {
 			Do("There is nothing available");
 			
 			wait.msgLeavingTable(this);
@@ -318,20 +292,20 @@ public class CustomerAgent extends Agent {
 		}
 		else {						
 			// non-norm #1: customer leaves if all food is too expensive 
-			// 25% chance to leave the restaurant --> disabled as it is not a requirement according to the rubric 
-			randomNum = oRandom.nextInt();
-			if(randomNum % 4 == 4 && orderCount == 1) {
+			// 250 chance to leave the restaurant --> disabled as it is not a requirement according to the rubric 
+			randomNum = oRandom.nextInt(5);
+			if(randomNum == -1) {
 				Do("All food is too expensive, I will come later again.");
 				wait.msgLeavingTable(this);
 				state = AgentState.DoingNothing;
 				exitRestaurant();						
 			}
-			else { // 75% chance to order food
+			else { // 80% chance to order food
 				// Customers who have no money to order anything:
 				if((cash.totalAmount() < FirstCheapestFood())) {
-					randomNum = oRandom.nextInt();
+					randomNum = oRandom.nextInt(5);
 					// sometimes choose to leave. (40%)
-					if((randomNum % 3 >= -1 || randomNum % 3 <= 0)) {
+					if((randomNum == 0 || randomNum == orderCount%5)) {
 						Do("I don't have enough money to buy anything");
 						
 						wait.msgLeavingTable(this);
@@ -358,7 +332,7 @@ public class CustomerAgent extends Agent {
 				else {					
 					do {
 						// algorithm for choose what to order
-						randomNum = oRandom.nextInt(menu_list.size());				
+						randomNum = oRandom.nextInt(menu_list.size());	
 						choice = menu_list.get(randomNum);
 					// Customers who have only enough money to order the cheapest item will order the cheapest food
 					} while( cash.totalAmount() < menu.get(choice) );
@@ -367,7 +341,7 @@ public class CustomerAgent extends Agent {
 					// customer's name will be his/her choice in case name matches with menu_list
 					if(menu_list.contains(name)) {
 						if(cash.totalAmount() >= menu.get(name)) {
-							System.out.println("Hack =) by Kyu");
+							System.out.println("***** Hack!!! (by Q)");
 							choice = name;
 						}
 					}
@@ -432,11 +406,10 @@ public class CustomerAgent extends Agent {
 	}
 
 	private void leaveTable() {
-		Do("Leaving.");
-		
-		wait.msgLeavingTable(this);
-		
 		foodGui.DoGoToCashier();
+		
+		Do("Leaving.");
+		wait.msgLeavingTable(this);
 		customerGui.DoGoToCashier();
 		
 		foodGui.state = FoodGui.State.goToCashier;
@@ -463,7 +436,6 @@ public class CustomerAgent extends Agent {
 		customerGui.DoExitRestaurant();
 	}
 	
-
 	// Accessors, etc.
 	public void setHost(HostAgent host) {
 		this.host = host;

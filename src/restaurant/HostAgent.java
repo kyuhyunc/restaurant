@@ -10,10 +10,7 @@ import java.util.*;
  * Restaurant Host Agent
  */
 public class HostAgent extends Agent {
-	static public int NTABLES = 1;//a global for the number of tables.
-	//static public int NWAITERS = 1;
-	//Notice that we implement waitingCustomers using ArrayList, but type it
-	//with List semantics.
+	static public int NTABLES = 3;//a global for the number of tables.
 	
 	public enum AgentState
 	{Waiting, Serving};
@@ -22,9 +19,7 @@ public class HostAgent extends Agent {
 	public List<WaiterAgent> waiters = Collections.synchronizedList(new ArrayList<WaiterAgent>());
 	public List<CustomerAgent> waitingCustomers	= Collections.synchronizedList(new ArrayList<CustomerAgent>());
 	public CookAgent cook;
-	
-	//private Semaphore askQuestion = new Semaphore(0,true);
-	
+		
 	//note that tables is typed with Collection semantics.
 	//Later we will see how it is implemented	
 	public Collection<Table> tables;
@@ -53,8 +48,6 @@ public class HostAgent extends Agent {
 		Do("New waiter " + waiter.getName() + " is added");				
 	
 		waiters.add(waiter);
-		//waiterAdd.release();
-		//waiterBreak.release();
 		stateChanged();
 	}
 	
@@ -146,7 +139,8 @@ public class HostAgent extends Agent {
 	public void chkIfWaiterCanBreak(WaiterAgent w) {
 		boolean breakPermission;
 		
-		int numberOfNoBreakWaiters = 1;
+		// when the last non break waiter is clicked, count will be zero --> default = 1
+		int numberOfNoBreakWaiters = 1; 
 		
 		for(WaiterAgent wait : waiters){
 			if(!wait.getGui().isBreak()){
@@ -156,12 +150,6 @@ public class HostAgent extends Agent {
 		
 		if( (waitingCustomers.isEmpty()) && (numberOfNoBreakWaiters > 1)) {
 			breakPermission = true;
-			/**try{
-				waiterBreak.acquire();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}*/
 		}
 		else {
 			breakPermission = false;
@@ -223,19 +211,6 @@ public class HostAgent extends Agent {
 			return null;
 		}				
 	}
-	
-	/**
-	public boolean tableFull() {
-		boolean TableFull = true;
-		
-		for(Table t : tables) {
-			if(!t.isOccupied()) {
-				TableFull = false;
-			}
-		}
-		
-		return TableFull;
-	}*/
 	
 	public class Table {
 		CustomerAgent occupiedBy;

@@ -21,11 +21,10 @@ public class MarketAgent extends Agent {
 	private String name;
 	private int marketNumber;
 	Timer timer = new Timer();
-		
-	//private List<Order> orders = new ArrayList<Order>();
+
 	private List<Procure> procures = Collections.synchronizedList(new ArrayList<Procure>());
 	
-	private Map<String, Food> inventory = new HashMap<String, Food> ();
+	private Map<String, Food> inventory = Collections.synchronizedMap(new HashMap<String, Food> ());
 	private List<String> food_list;
 	
 	private CookAgent cook;
@@ -46,14 +45,8 @@ public class MarketAgent extends Agent {
 		super();
 		this.name = name;
 	}
-	
-
-	/**
-	 * hack to establish connection to Host agent.
-	 */
-	
+		
 	// Messages
-
 	public boolean msgBuyFood(Procure procure) {
 		// check availability for the procure order
 		if(inventory.get(procure.food).amount < procure.batchSize) {
@@ -64,7 +57,6 @@ public class MarketAgent extends Agent {
 			procures.add(procure);
 			// minus stock level in advance
 			inventory.get(procure.food).amount -= procure.batchSize;
-			//print("stock level : " + inventory.get(procure.food).amount);
 			stateChanged();
 			return true;
 		}
@@ -104,8 +96,6 @@ public class MarketAgent extends Agent {
 		print("Start Delivering");
 		
 		DoDeliver(procure);
-		//inventory.get(procure.food).amount -= procure.batchSize;
-		//print("stock level : " + inventory.get(procure.food).amount);
 	}
 	
 	public void DoDeliver(Procure procure) {
@@ -117,8 +107,6 @@ public class MarketAgent extends Agent {
 			
 		timer.schedule(new TimerTask() {
 			public void run() {
-				//p.state = Procure.ProcureState.Done;
-				//stateChanged();
 				DoDeliverGui(p, deliveryFood);
 			}
 		},
@@ -163,17 +151,23 @@ public class MarketAgent extends Agent {
 		this.marketNumber = marketNumber;
 	}
 	
+	public Map<String, Food> getInventory() {
+		return inventory;
+	}
+	
 	public String getName() {
 		return name;
 	}
 	
 	public boolean chkProcureInProcess(String food) {
-		for(Procure p : procures) {
-			if(p.food.equals(food)) {
-				return true;		
+		synchronized(procures) {
+			for(Procure p : procures) {
+				if(p.food.equals(food)) {
+					return true;		
+				}
 			}
+			return false;
 		}
-		return false;		
 	}
 	
 	public String toString() {
