@@ -204,27 +204,31 @@ public class ListPanel extends JPanel implements ActionListener {
      */
     class custChkBox implements ActionListener {
     	public void actionPerformed(ActionEvent e) {
-    		for(int i = 0; i < stateCBs.size() ; i++){
-    	    	if (e.getSource() == stateCBs.get(i)) {
-    	    		if( restPanel.getCustomerAgent(i) instanceof CustomerAgent) {
+    		synchronized(stateCBs) {
+	    		for(int i = 0; i < stateCBs.size() ; i++){
+	    	    	if (e.getSource() == stateCBs.get(i)) {
     	    			restPanel.getCustomerAgent(i).getGui().setHungry();
     	    			stateCBs.get(i).setEnabled(false);
-    	    		}
-    	    	}
-    	   	}
+    	    			break;
+	    	    	}
+	    	   	}
+    		}
 	    }
     }
     
     class waitChkBox implements ActionListener {
     	public void actionPerformed(ActionEvent e) {
-    		for(int i = 0; i < stateCBs.size() ; i++){
-    	    	if (e.getSource() == stateCBs.get(i)) {
-    	    		if( restPanel.getWaiterAgent(i) instanceof WaiterAgent) {
-    	    			restPanel.getWaiterAgent(i).getGui().setBreak();
-    	    			//stateCBs.get(i).setEnabled(false);
-    	    		}
-    	    	}
-    	   	}
+    		synchronized(stateCBs) {
+	    		for(int i = 0; i < stateCBs.size() ; i++){
+	    	    	if (e.getSource() == stateCBs.get(i)) {
+	    	    		restPanel.getWaiterAgent(i).getGui().setBreak();
+    	    			if(stateCBs.get(i).isSelected()) {
+    	    				stateCBs.get(i).setEnabled(false);
+    	    			}
+    	    			break;
+	    	    	}
+	    	   	}
+    		}
 	    }
     }
     
@@ -235,28 +239,36 @@ public class ListPanel extends JPanel implements ActionListener {
      * @param c reference to the customer
      */
     public void setCustomerEnabled(CustomerAgent c) {
-    	for(int i = 0; i < stateCBs.size() ; i++) {
-			if(restPanel.getCustomerAgent(i) == c) {
-				stateCBs.get(i).setEnabled(true);
-				stateCBs.get(i).setSelected(false);
-			}
-    	}	
+    	synchronized(stateCBs) {
+	    	for(int i = 0; i < stateCBs.size() ; i++) {
+				if(restPanel.getCustomerAgent(i) == c) {
+					stateCBs.get(i).setEnabled(true);
+					stateCBs.get(i).setSelected(false);
+					break;
+				}
+	    	}
+    	}
     }
     
     public void setWaiterEnabled(WaiterAgent w, boolean breakPermission) {
-    	for(int i = 0; i < stateCBs.size() ; i++) {
-			if(restPanel.getWaiterAgent(i) == w) {
-				if(!breakPermission) { // if the waiter cannot be on break, uncheck the box 
-					stateCBs.get(i).setSelected(false);
-					restPanel.getWaiterAgent(i).getGui().setBreakFalse();
+    	synchronized(stateCBs) {
+	    	for(int i = 0; i < stateCBs.size() ; i++) {
+				if(restPanel.getWaiterAgent(i) == w) {
+					stateCBs.get(i).setEnabled(true);
+					if(!breakPermission) { // if the waiter cannot be on break, uncheck the box 
+						stateCBs.get(i).setSelected(false);
+						restPanel.getWaiterAgent(i).getGui().setBreakFalse();
+					}
+					break;
 				}
-				stateCBs.get(i).setEnabled(true);
-			}
-    	}	
+	    	}
+    	}
     }
     
     public JCheckBox getStateCB(int i) {
-    	return stateCBs.get(i);
+    	synchronized(stateCBs) {
+    		return stateCBs.get(i);
+    	}
     }
     
     public void disableButtons() {

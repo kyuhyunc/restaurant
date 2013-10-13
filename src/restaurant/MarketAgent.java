@@ -55,8 +55,7 @@ public class MarketAgent extends Agent {
 		else {
 			print("received an procure order for " + procure.food + " from cook ");
 			procures.add(procure);
-			// minus stock level in advance
-			inventory.get(procure.food).amount -= procure.batchSize;
+			inventory.get(procure.food).amount -= procure.batchSize; // minus stock level in advance
 			stateChanged();
 			return true;
 		}

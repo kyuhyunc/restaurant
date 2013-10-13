@@ -19,7 +19,7 @@ import restaurant.MarketAgent.Procure;
  * Restaurant cook agent.
  */
 public class CookAgent extends Agent {
-	static public int NMARKETS = 1;//a global for the number of markets
+	static public int NMARKETS = 3;//a global for the number of markets
 	
 	private String name;
 	Timer timer = new Timer();
@@ -96,9 +96,9 @@ public class CookAgent extends Agent {
 						return true;
 					}
 				}
-				return true; // return true when state is cooking
+				//return true; // return true when state is cooking
 			}
-		}
+		}	
 		return false;
 	}
 
@@ -119,6 +119,7 @@ public class CookAgent extends Agent {
 			Do(order.choice + " is out of stock right now");			
 			order.state = Order.OrderState.outOfStock;
 			BuyFood(order.choice, foods.get(order.choice).batchSize);
+			stateChanged();
 		}
 	}
 	
@@ -130,7 +131,7 @@ public class CookAgent extends Agent {
 			public void run() {
 				System.out.println("Cook: Done cooking, " + o.choice + " for " + o.customer.getName());
 				o.state = Order.OrderState.Cooked;
-				//stateChanged();
+				stateChanged();
 			}
 		},
 		(int) (foods.get(o.choice).getCookingTime()));

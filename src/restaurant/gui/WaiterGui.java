@@ -118,10 +118,10 @@ public class WaiterGui implements Gui {
 	public void setBreak() {
 		isBreak = !isBreak;
 		
-		if(!isBreak) {
+		if(isBreak == false) {
 			agent.msgOffBreak();
 		}
-		else if(isBreak){
+		else if(isBreak == true) {
 			agent.msgOnBreak();
 		}
 	}

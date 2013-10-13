@@ -406,13 +406,13 @@ public class CustomerAgent extends Agent {
 	}
 
 	private void leaveTable() {
+		
+		foodGui.state = FoodGui.State.goToCashier;
 		foodGui.DoGoToCashier();
+		customerGui.DoGoToCashier();
 		
 		Do("Leaving.");
 		wait.msgLeavingTable(this);
-		customerGui.DoGoToCashier();
-		
-		foodGui.state = FoodGui.State.goToCashier;
 	}
 	
 	private void Payment() {

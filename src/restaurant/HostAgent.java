@@ -67,14 +67,16 @@ public class HostAgent extends Agent {
 
 	// 11: TableIsCleared(table)
 	public void msgTableIsCleared(Table table) {
-		print("table #" + table.tableNumber + " is cleared");
+		Do("table #" + table.tableNumber + " is cleared");
 		table.setUnoccupied();
 		stateChanged(); // so that when a customer leaves, host will check availability of tables again
 	}
 	
-	// msg from waiter
+	// msg from waiter on break
 	public void msgCanIBreak(WaiterAgent w) {
-		chkIfWaiterCanBreak(w);		
+		Do("Negotiation on break is going on for " + w.getName());
+		
+		stateChanged();		
 	}
 	
 	public void msgOffBreak() {
@@ -85,6 +87,14 @@ public class HostAgent extends Agent {
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
 	protected boolean pickAndExecuteAnAction() {
+		synchronized(waiters) {
+			for(WaiterAgent w : waiters) {
+				if(w.Break == WaiterAgent.AgentBreak.waitingForAnswer) {
+					chkIfWaiterCanBreak(w);
+					return true;
+				}
+			}
+		}		
 		if (!waitingCustomers.isEmpty()) {
 			if(waiters.size() > 0) {
 				for (Table table : tables) {
@@ -101,11 +111,13 @@ public class HostAgent extends Agent {
 				Do("There is no waiter");
 				return false;
 			}
+			// if tables are full, ask customer whether they would wait or leave
+			if (!tableAvailable) {
+				askCustomerWhenFull();
+				return false;
+			}
 		}
-		// if tables are full, ask customer whether they would wait or leave
-		if (!tableAvailable) {
-			askCustomerWhenFull();
-		}
+		
 		return false;
 	}
 
@@ -119,7 +131,6 @@ public class HostAgent extends Agent {
 		}
 	}
 	
-	
 	private void tellWaiter(CustomerAgent customer, Table table) {
 
 		WaiterAgent w;
@@ -132,8 +143,8 @@ public class HostAgent extends Agent {
 			customer.setWaiter(w);
 			waitingCustomers.remove(customer);
 		}
-		else
-			Do("No waiter available");
+		/**else
+			Do("No waiter available");*/
 	}
 	
 	public void chkIfWaiterCanBreak(WaiterAgent w) {
@@ -142,9 +153,11 @@ public class HostAgent extends Agent {
 		// when the last non break waiter is clicked, count will be zero --> default = 1
 		int numberOfNoBreakWaiters = 1; 
 		
-		for(WaiterAgent wait : waiters){
-			if(!wait.getGui().isBreak()){
-				numberOfNoBreakWaiters ++;
+		synchronized(waiters) {
+			for(WaiterAgent wait : waiters){
+				if(!wait.getGui().isBreak()){
+					numberOfNoBreakWaiters ++;
+				}
 			}
 		}
 		

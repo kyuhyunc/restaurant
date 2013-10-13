@@ -31,6 +31,10 @@ public class WaiterAgent extends Agent {
 	public enum AgentState
 	{Waiting, Serving};
 	public AgentState state = AgentState.Waiting;//The start state
+	
+	public enum AgentBreak
+	{none, askForBreak, waitingForAnswer, onBreak, offBreak};
+	public AgentBreak Break = AgentBreak.none;//The start state
 
 	private List<MyCustomer> MyCustomers = Collections.synchronizedList(new ArrayList<MyCustomer>());
 	int numberOfCustomers = 0;
@@ -166,6 +170,7 @@ public class WaiterAgent extends Agent {
 				if(cust.c == check.customer) {
 					cust.state = MyCustomer.CustState.checkIsReady;
 					cust.check = check;
+					state = AgentState.Waiting;
 					stateChanged();
 					break;
 				}
@@ -189,25 +194,33 @@ public class WaiterAgent extends Agent {
 	
 	// msg from gui
 	public void msgOnBreak() {
-		Do("Can I have a break?");
-		// need to ask for permission to Host
-		host.msgCanIBreak(this);
+		Break = AgentBreak.askForBreak;
+		stateChanged();
 	}
 	
 	public void msgReplyBreak(boolean breakPermission) {
 		
+		// if waiter can break, then break permission is true
 		waiterGui.getReplyBreak(breakPermission);
-		
+	
 		if(breakPermission) {
+			Break = AgentBreak.onBreak;
 			Do("I am on break");
 		}
-		else
+		else {
+			Break = AgentBreak.none;
 			Do("I can't be on break T.T...");
+		}
+			
+		stateChanged();
 	}
 	
 	public void msgOffBreak() {
+		
+		Break = AgentBreak.offBreak;
 		Do("I am off break");
-		host.msgOffBreak();
+		
+		stateChanged();
 	}
 
 	/**
@@ -254,6 +267,14 @@ public class WaiterAgent extends Agent {
 						return true;
 					}
 				}
+			}
+			if(Break == AgentBreak.askForBreak) {
+				AskForBreak();
+				return true;
+			}
+			else if(Break == AgentBreak.offBreak) {
+				OffBreak();
+				return true;
 			}
 			for (MyCustomer customer : MyCustomers) {
 				if (customer.state == MyCustomer.CustState.leaving) {
@@ -412,7 +433,7 @@ public class WaiterAgent extends Agent {
 				
 		cashier.msgComputeBill(c.choice, c.c, this, c.t.tableNumber);		
 		
-		state = AgentState.Waiting;
+		//state = AgentState.Waiting;
 		waiterGui.DoGoBackToHost2();
 	}
 
@@ -451,6 +472,17 @@ public class WaiterAgent extends Agent {
 		numberOfCustomers --;
 	}
 	
+	void AskForBreak() {
+		Do("Can I have a break?");
+		// need to ask for permission to Host
+		Break = AgentBreak.waitingForAnswer;
+		host.msgCanIBreak(this);
+	}
+	
+	void OffBreak() {
+		Break = AgentBreak.none;
+		host.msgOffBreak();		
+	}
 	// Accessors, etc.
 	
 	public void setHost(HostAgent host) {

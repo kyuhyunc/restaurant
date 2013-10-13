@@ -32,18 +32,13 @@ public class FoodGui implements Gui{
 	private Image cImage = checkImage.getImage();
 	private Image fImage;
 	
-	int tableNumber;
-	
-	
+	int tableNumber; // for market ant table
 	
 	String pattern = ".##";
 	DecimalFormat dFormat = new DecimalFormat(pattern);
 	
 	public FoodGui(int t, Food choice){ //HostAgent m) {
-	
-		//xPos = AnimationPanel.CookLocationX;
-		//yPos = AnimationPanel.CookLocationY;
-		
+			
 		tableNumber = t;
 		this.choice = choice;
 		
@@ -107,7 +102,7 @@ public class FoodGui implements Gui{
 					//System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 				}
 				else	
-					g.drawString(price, xPos, yPos + 30);
+					g.drawString("$:"+price, xPos-9, yPos + 30);
 			}
 		}
 		
