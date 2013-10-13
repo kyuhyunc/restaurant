@@ -40,7 +40,6 @@ public class WaiterAgent extends Agent {
 	int numberOfCustomers = 0;
 	
 	public WaiterGui waiterGui = null;
-	public int CurrentTableNumber = 0;
 	private Semaphore atTable = new Semaphore(0,true);
 	private Semaphore atCook = new Semaphore(0,true);
 	private Semaphore atHost = new Semaphore(0,true);
@@ -63,8 +62,6 @@ public class WaiterAgent extends Agent {
 	
 	// 2: SitAtTable(customer, table)
 	public void msgSitAtTable(CustomerAgent customer, Table table) {
-		//state = AgentState.Serving;
-		//state = AgentState.Waiting;
 		print("Received msgSitAtTable from the host");
 		numberOfCustomers ++;
 		MyCustomers.add(new MyCustomer(customer, table));
@@ -124,7 +121,6 @@ public class WaiterAgent extends Agent {
 		// However, this menu list will be reseted when the waiter sits the customer down.
 				
 		menu_list.remove(order.choice);
-		//menu.remove(order.choice);
 
 		synchronized (MyCustomers) {
 			for(MyCustomer cust : MyCustomers) {
@@ -175,7 +171,7 @@ public class WaiterAgent extends Agent {
 				if(cust.c == check.customer) {
 					cust.state = MyCustomer.CustState.checkIsReady;
 					cust.check = check;
-					state = AgentState.Waiting;
+					//state = AgentState.Waiting;
 					stateChanged();
 					break;
 				}
@@ -186,7 +182,6 @@ public class WaiterAgent extends Agent {
 	// 10: IAmDone(customer)
 	// Cashier 3: LeaveTable
 	public void msgLeavingTable(CustomerAgent customer) {
-		
 		synchronized (MyCustomers) {
 			for(MyCustomer cust : MyCustomers) {
 				if(cust.c == customer) {
@@ -224,7 +219,6 @@ public class WaiterAgent extends Agent {
 	
 	// WaiterOnBreak 0: message from gui when break box is unchecked (off break)
 	public void msgOffBreak() {
-		
 		Break = AgentBreak.offBreak;
 		Do("I am off break");
 		
@@ -251,7 +245,7 @@ public class WaiterAgent extends Agent {
 					}
 					else if (customer.state == MyCustomer.CustState.waitingFood1) {
 						state = AgentState.Serving;
-						HereIsAnOrder(this, customer);
+						HereIsAnOrder(customer);
 						return true;
 					}
 					else if (customer.state == MyCustomer.CustState.reOrder) {
@@ -350,7 +344,7 @@ public class WaiterAgent extends Agent {
 		customer.c.msgWhatWouldYouLike();
 	}
 		
-	void HereIsAnOrder(WaiterAgent waiter, MyCustomer customer) {
+	void HereIsAnOrder(MyCustomer customer) {
 		DoGoToCook();
 		try {
 			atCook.acquire();
@@ -364,7 +358,7 @@ public class WaiterAgent extends Agent {
 		waiterGui.DoGoBackToHost2();
 		
 		Do("Here is an order " + customer.choice + " from " + customer.c);
-		cook.msgHereIsAnOrder(new Order(waiter, customer.c, customer.choice));
+		cook.msgHereIsAnOrder(new Order(this, customer.c, customer.choice));
 	}
 	
 	void DoGoToCook() {
@@ -441,7 +435,7 @@ public class WaiterAgent extends Agent {
 				
 		cashier.msgComputeBill(c.choice, c.c, this, c.t.tableNumber, menu);		
 		
-		//state = AgentState.Waiting;
+		state = AgentState.Waiting;
 		waiterGui.DoGoBackToHost2();
 	}
 
@@ -491,8 +485,8 @@ public class WaiterAgent extends Agent {
 		Break = AgentBreak.none;
 		host.msgOffBreak();		
 	}
-	// Accessors, etc.
 	
+	// Accessors, etc.
 	public void setHost(HostAgent host) {
 		this.host = host;
 	}

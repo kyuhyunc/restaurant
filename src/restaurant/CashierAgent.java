@@ -16,7 +16,6 @@ import restaurant.CustomerAgent.Cash;
 public class CashierAgent extends Agent {
 	private String name;
 	
-	//private List<Order> orders = new ArrayList<Order>();
 	private List<Check> checks = Collections.synchronizedList(new ArrayList<Check>());
 	
 	private Map<String, Double> menu;
@@ -45,18 +44,19 @@ public class CashierAgent extends Agent {
 		
 		checks.add(new Check(choice, c, w, tableNumber));
 		this.menu = menu;
-		
+	
 		stateChanged();
 	}
 	
 	// Cashier 4: Payment
-	public void msgPayment(Check check, Cash cash) {
-		for(Check c : checks) {
-			if(c == check) {
-				c.cash = new Cash(cash.twentyDollar, cash.tenDollar, cash.fiveDollar, cash.oneDollar, cash.coins);
-				//c.cash = cash;
-				c.state = Check.CheckState.receivedCash;
-				break;
+	public void msgPayment(Check check, Cash cash) {		
+		synchronized(checks) {
+			for(Check c : checks) {
+				if(c == check) {
+					c.cash = new Cash(cash.twentyDollar, cash.tenDollar, cash.fiveDollar, cash.oneDollar, cash.coins);
+					c.state = Check.CheckState.receivedCash;
+					break;
+				}
 			}
 		}
 		stateChanged();	
@@ -66,8 +66,8 @@ public class CashierAgent extends Agent {
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
 	protected boolean pickAndExecuteAnAction() {
-		if (!checks.isEmpty()) {
-			synchronized (checks) {
+		synchronized (checks) {
+			if (!checks.isEmpty()) {			
 				for(int i=0;i<checks.size();i++){
 					if(checks.get(i).state == Check.CheckState.nothing) {
 						checks.get(i).state = Check.CheckState.waitingToBePaid;
@@ -88,11 +88,14 @@ public class CashierAgent extends Agent {
 
 	// Actions
 	private void ComputeBill(Check c) {
-		for(Check check : checks) {
-			if(check == c) {
-				check.setPrice(menu.get(c.choice));
+		/**synchronized(checks) {
+			for(Check check : checks) {
+				if(check == c) {
+					check.setPrice(menu.get(c.choice));
+				}
 			}
-		}
+		}*/
+		c.setPrice(menu.get(c.choice));
 		
 		Do("Price is " + c.price);
 		

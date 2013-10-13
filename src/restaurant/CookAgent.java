@@ -19,7 +19,7 @@ import restaurant.MarketAgent.Procure;
  * Restaurant cook agent.
  */
 public class CookAgent extends Agent {
-	static public int NMARKETS = 3;//a global for the number of markets
+	static public int NMARKETS = 0;//a global for the number of markets
 	
 	private String name;
 	Timer timer = new Timer();
@@ -122,17 +122,24 @@ public class CookAgent extends Agent {
 	
 	private void DoCooking(Order order) {
 		Timer timer = new Timer();
-		final Order o = order;
 		
-		timer.schedule(new TimerTask() {
+		class MyTimerTask extends TimerTask {
+			Order order;
+			
+			MyTimerTask(Order order) {
+				this.order = order;
+			}
+			// Override
 			public void run() {
-				System.out.println("Cook: Done cooking, " + o.choice + " for " + o.customer.getName());
-				o.state = Order.OrderState.Cooked;
+				Do("Done cooking, " + order.choice + " for " + order.customer.getName());
+				order.state = Order.OrderState.Cooked;
 				stateChanged();
 			}
-		},
-		(int) (foods.get(o.choice).getCookingTime()));
+		}
+		
+		timer.schedule(new MyTimerTask(order), (int) (foods.get(order.choice).getCookingTime()));	
 	}
+	
 	
 	private void OrderIsReady(Order order) {
 		order.waiter.msgOrderIsReady(order);
@@ -248,10 +255,10 @@ public class CookAgent extends Agent {
 	public static class Food {
 		String name;
 		
-		int time; // for setting timer differently
 		int amount; // stock level
 		int batchSize; // amount of order
 		
+		int time; // for setting timer differently	
 		double price;
 		
 		double cookingTimeMultiplier = 7;

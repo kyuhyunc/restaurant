@@ -16,10 +16,13 @@ public class HostAgent extends Agent {
 	{Waiting, Serving};
 	public AgentState state = AgentState.Waiting;//The start state
 	
-	public List<WaiterAgent> waiters = Collections.synchronizedList(new ArrayList<WaiterAgent>());
-	public List<CustomerAgent> waitingCustomers	= Collections.synchronizedList(new ArrayList<CustomerAgent>());
-	public CookAgent cook;
-		
+	private List<WaiterAgent> waiters = Collections.synchronizedList(new ArrayList<WaiterAgent>());
+	private List<CustomerAgent> waitingCustomers	= Collections.synchronizedList(new ArrayList<CustomerAgent>());
+	private CookAgent cook;
+	
+	private int numberOfWaiters = 0;
+	private int numberOfOnBreakWaiters = 0;
+	
 	//note that tables is typed with Collection semantics.
 	//Later we will see how it is implemented	
 	public Collection<Table> tables;
@@ -46,7 +49,7 @@ public class HostAgent extends Agent {
 	// message from gui to add waiter
 	public void msgAddWaiterByGui(WaiterAgent waiter) {
 		Do("New waiter " + waiter.getName() + " is added");				
-	
+		numberOfWaiters ++;
 		waiters.add(waiter);
 		stateChanged();
 	}
@@ -82,6 +85,7 @@ public class HostAgent extends Agent {
 	
 	// WaiterGoOnBreak 2: OffBreak
 	public void msgOffBreak() {
+		numberOfOnBreakWaiters --;
 		stateChanged();
 	}
 	
@@ -127,9 +131,10 @@ public class HostAgent extends Agent {
 	
 	private void askCustomerWhenFull() {
 		Do("Tables are full, ask customer whether wait or leave");
-		
-		for(CustomerAgent c : waitingCustomers) {
-			if(!c.waitWhenTableFull)	c.msgWhetherLeave();
+		synchronized(waitingCustomers) {
+			for(CustomerAgent c : waitingCustomers) {
+				if(!c.waitWhenTableFull)	c.msgWhetherLeave();
+			}
 		}
 	}
 	
@@ -151,19 +156,23 @@ public class HostAgent extends Agent {
 	
 	public void chkIfWaiterCanBreak(WaiterAgent w) {
 		boolean breakPermission;
+		int numberOfOffBreakWaiters;
 		
 		// when the last non break waiter is clicked, count will be zero --> default = 1
-		int numberOfNoBreakWaiters = 1; 
-		
+		/**int numberOfOffBreakWaiters = 1; 
 		synchronized(waiters) {
 			for(WaiterAgent wait : waiters){
 				if(!wait.getGui().isBreak()){
 					numberOfNoBreakWaiters ++;
 				}
 			}
-		}
+		}*/
 		
-		if( (waitingCustomers.isEmpty()) && (numberOfNoBreakWaiters > 1)) {
+		numberOfOffBreakWaiters = numberOfWaiters - numberOfOnBreakWaiters;
+		
+				
+		if( (waitingCustomers.isEmpty()) && (numberOfOffBreakWaiters > 1)) {
+			numberOfOnBreakWaiters ++;
 			breakPermission = true;
 		}
 		else {

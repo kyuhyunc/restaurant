@@ -98,20 +98,28 @@ public class MarketAgent extends Agent {
 	
 	private void DoDeliver(Procure procure) {
 		Timer timer = new Timer();
-		final Procure p = procure;
-		
-		final FoodGui deliveryFood = new FoodGui(marketNumber, inventory.get(procure.food));
+		FoodGui deliveryFood = new FoodGui(marketNumber, inventory.get(procure.food));
 		host.gui.animationPanel.addGui(deliveryFood);
-			
-		timer.schedule(new TimerTask() {
-			public void run() {
-				DoDeliverGui(p, deliveryFood);
+		
+		class MyTimerTask extends TimerTask {
+			Procure procure;
+			FoodGui deliveryFood;
+			MyTimerTask (Procure procure, FoodGui deliveryFood) {
+				this.procure = procure;
+				this.deliveryFood = deliveryFood;
 			}
-		},
-		(int) deliveryTime); // delivery will be done in deliveryTime		
+			
+			public void run() {
+				DoDeliveryGui(procure, deliveryFood);
+			}
+			
+		}
+			
+		// delivery will be done in deliveryTime
+		timer.schedule(new MyTimerTask(procure, deliveryFood),(int) deliveryTime); 		
 	}
 	
-	private void DoDeliverGui(Procure p, FoodGui f) {
+	private void DoDeliveryGui(Procure p, FoodGui f) {
 		f.state = FoodGui.State.procurement;
 		f.DoGoToCook(this);
 		try {

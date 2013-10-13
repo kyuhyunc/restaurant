@@ -162,7 +162,6 @@ public class CustomerAgent extends Agent {
 	 */
 	protected boolean pickAndExecuteAnAction() {
 		//	CustomerAgent is a finite state machine
-
 		if (state == AgentState.DoingNothing && event == AgentEvent.gotHungry ){
 			state = AgentState.WaitingInRestaurant;
 			goToRestaurant();
@@ -219,12 +218,10 @@ public class CustomerAgent extends Agent {
 			exitRestaurant();
 			return true;
 		}		
-
 		return false;
 	}
 
 	// Actions
-
 	private void goToRestaurant() {
 		Do("Going to restaurant");
 		host.msgIWantFood(this); //send our instance, so he can respond to us
@@ -237,7 +234,7 @@ public class CustomerAgent extends Agent {
 		// non-norm #3: 
 		// Customer comes to restaurant and restaurant is full, customer is told and waits.
 		// Customer comes to restaurant and restaurant is full, customer is told and leaves.
-		// 25% chance to leave the restaurant 
+		// 40% chance to leave the restaurant 
 		randomNum = oRandom.nextInt(5);
 		if(randomNum == 0 || randomNum == 2) {
 			Do("Full? I will come next time then!");
@@ -392,7 +389,7 @@ public class CustomerAgent extends Agent {
 		//Since Java does not all us to pass functions, only objects.
 		//So, we use Java syntactic mechanism to create an
 		//anonymous inner class that has the public method run() in it.
-		
+			
 		timer.schedule(new TimerTask() {
 			public void run() {
 				print("Done eating, " + choice);
