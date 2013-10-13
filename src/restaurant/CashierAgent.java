@@ -67,11 +67,16 @@ public class CashierAgent extends Agent {
 	 */
 	protected boolean pickAndExecuteAnAction() {
 		synchronized (checks) {
-			if (!checks.isEmpty()) {			
+			if (!checks.isEmpty()) {
 				for(int i=0;i<checks.size();i++){
 					if(checks.get(i).state == Check.CheckState.nothing) {
-						checks.get(i).state = Check.CheckState.waitingToBePaid;
+						checks.get(i).state = Check.CheckState.computing;
 						ComputeBill(checks.get(i));
+						return true;
+					}
+					else if(checks.get(i).state == Check.CheckState.doneComputing) {
+						checks.get(i).state = Check.CheckState.waitingToBePaid;
+						giveCheckToWaiter(checks.get(i));
 						return true;
 					}
 					else if(checks.get(i).state == Check.CheckState.receivedCash) {						
@@ -79,7 +84,7 @@ public class CashierAgent extends Agent {
 						returnChange(checks.get(i));
 						//checks.remove(i);
 						return true;
-					}
+					}	
 				}
 			}
 		}
@@ -95,11 +100,17 @@ public class CashierAgent extends Agent {
 				}
 			}
 		}*/
+		
+		// should here have timer for setting the price..?
 		c.setPrice(menu.get(c.choice));
+		c.state = Check.CheckState.doneComputing;
 		
 		Do("Price is " + c.price);
-		
-		c.waiter.msgHereIsCheck(c);		
+	
+	}
+	
+	private void giveCheckToWaiter(Check c) {
+		c.waiter.msgHereIsCheck(c);
 	}
 	
 	private void returnChange(Check c) {
@@ -161,7 +172,7 @@ public class CashierAgent extends Agent {
 		}
 		
 		public enum CheckState
-		{nothing, waitingToBePaid, receivedCash, paid};
+		{nothing, computing, doneComputing, waitingToBePaid, receivedCash, paid};
 		CheckState state = CheckState.nothing;
 		
 		public void setPrice(double price) {

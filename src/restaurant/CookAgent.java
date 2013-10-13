@@ -19,7 +19,7 @@ import restaurant.MarketAgent.Procure;
  * Restaurant cook agent.
  */
 public class CookAgent extends Agent {
-	static public int NMARKETS = 0;//a global for the number of markets
+	static public int NMARKETS = 3;//a global for the number of markets
 	
 	private String name;
 	Timer timer = new Timer();
