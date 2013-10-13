@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import restaurant.CookAgent.Food;
 import restaurant.CustomerAgent.Cash;
 
 /**
@@ -17,12 +16,10 @@ import restaurant.CustomerAgent.Cash;
 public class CashierAgent extends Agent {
 	private String name;
 	
-	private CookAgent cook;
-			
 	//private List<Order> orders = new ArrayList<Order>();
 	private List<Check> checks = Collections.synchronizedList(new ArrayList<Check>());
 	
-	private Map<String, Food> foods;
+	private Map<String, Double> menu;
 	
 	public String pattern = ".00";
 	public DecimalFormat dFormat = new DecimalFormat(pattern);
@@ -42,16 +39,17 @@ public class CashierAgent extends Agent {
 	 */
 	
 	// Messages
-	// 
-	public void msgComputeBill(String choice, CustomerAgent c, WaiterAgent w, int tableNumber) {
+	// Cashier 1a: ComputeBill
+	public void msgComputeBill(String choice, CustomerAgent c, WaiterAgent w, int tableNumber, Map<String, Double> menu) {
 		print("Calculating bill");
 		
 		checks.add(new Check(choice, c, w, tableNumber));
+		this.menu = menu;
 		
 		stateChanged();
 	}
 	
-	//
+	// Cashier 4: Payment
 	public void msgPayment(Check check, Cash cash) {
 		for(Check c : checks) {
 			if(c == check) {
@@ -79,7 +77,7 @@ public class CashierAgent extends Agent {
 					else if(checks.get(i).state == Check.CheckState.receivedCash) {						
 						checks.get(i).state = Check.CheckState.paid;
 						returnChange(checks.get(i));
-						checks.remove(i);
+						//checks.remove(i);
 						return true;
 					}
 				}
@@ -92,7 +90,7 @@ public class CashierAgent extends Agent {
 	private void ComputeBill(Check c) {
 		for(Check check : checks) {
 			if(check == c) {
-				check.setPrice(foods.get(c.choice).price);
+				check.setPrice(menu.get(c.choice));
 			}
 		}
 		
@@ -129,6 +127,7 @@ public class CashierAgent extends Agent {
 			
 		Do("Change is " + dFormat.format(Change.totalAmount()));
 		
+		checks.remove(c);
 		c.customer.msgChange(Change);		
 	}
 	
@@ -140,12 +139,6 @@ public class CashierAgent extends Agent {
 
 	public String toString() {
 		return "cook " + getName();
-	}
-	
-	public void setCook(CookAgent cook) {
-		this.cook = cook;
-		
-		foods = cook.getFoods();
 	}
 	
 	public static class Check {

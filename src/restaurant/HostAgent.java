@@ -43,8 +43,8 @@ public class HostAgent extends Agent {
 	}
 
 	// Messages
-	// 0:
-	public void msgAddWaiter(WaiterAgent waiter) {
+	// message from gui to add waiter
+	public void msgAddWaiterByGui(WaiterAgent waiter) {
 		Do("New waiter " + waiter.getName() + " is added");				
 	
 		waiters.add(waiter);
@@ -59,6 +59,7 @@ public class HostAgent extends Agent {
 		stateChanged();
 	}
 	
+	// message when tables are full from customer
 	public void msgDecision(CustomerAgent customer) {
 		if(!customer.waitWhenTableFull) {
 			waitingCustomers.remove(customer);
@@ -72,13 +73,14 @@ public class HostAgent extends Agent {
 		stateChanged(); // so that when a customer leaves, host will check availability of tables again
 	}
 	
-	// msg from waiter on break
+	// WaiterGoOnBreak 0: CanIHaveBreak
 	public void msgCanIBreak(WaiterAgent w) {
 		Do("Negotiation on break is going on for " + w.getName());
 		
 		stateChanged();		
 	}
 	
+	// WaiterGoOnBreak 2: OffBreak
 	public void msgOffBreak() {
 		stateChanged();
 	}

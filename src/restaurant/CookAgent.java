@@ -59,14 +59,15 @@ public class CookAgent extends Agent {
 	}
 		
 	// Messages
-	// 7: HereIsAnOrder(order);
+	// OutOFFood 2: HereIsAnOrder(order);
+	// TheMarketAndCook 0: HereIsAnOrder
 	public void msgHereIsAnOrder(Order order) {
 		print("received an order");
 		orders.add(order);
 		stateChanged();
 	}
 	
-	// 
+	// TheMarketAndCook 3: OrderFulfillment
 	public void msgOrderFulfillment(Procure procure) {
 		foods.get(procure.getFood()).amount += foods.get(procure.getFood()).batchSize; 
 	}
@@ -84,15 +85,11 @@ public class CookAgent extends Agent {
 						return true;
 					}
 					else if(orders.get(i).state == Order.OrderState.Cooked) {
-						orders.get(i).waiter.msgOrderIsReady(orders.get(i));
-						Do("Order for " + orders.get(i).customer + " is ready : " + orders.get(i).choice);
-						orders.remove(i);
+						OrderIsReady(orders.get(i));
 						return true;
 					}
 					else if(orders.get(i).state == Order.OrderState.outOfStock) {
-						orders.get(i).waiter.msgOrderIsOutOfStock(orders.get(i));
-						Do("Order for " + orders.get(i).customer + " is out of stock : " + orders.get(i).choice);
-						orders.remove(i);
+						OrderIsOutOfStock(orders.get(i));
 						return true;
 					}
 				}
@@ -103,7 +100,7 @@ public class CookAgent extends Agent {
 	}
 
 	// Actions
-	void CookOrder(Order order) {
+	private void CookOrder(Order order) {
 		if(foods.get(order.choice).amount > 0) {
 			Do("Start cooking");
 			DoCooking(order);
@@ -123,7 +120,7 @@ public class CookAgent extends Agent {
 		}
 	}
 	
-	public void DoCooking(Order order) {
+	private void DoCooking(Order order) {
 		Timer timer = new Timer();
 		final Order o = order;
 		
@@ -135,6 +132,18 @@ public class CookAgent extends Agent {
 			}
 		},
 		(int) (foods.get(o.choice).getCookingTime()));
+	}
+	
+	private void OrderIsReady(Order order) {
+		order.waiter.msgOrderIsReady(order);
+		Do("Order for " + order.customer + " is ready : " + order.choice);
+		orders.remove(order);
+	}
+	
+	private void OrderIsOutOfStock(Order order) {
+		order.waiter.msgOrderIsOutOfStock(order);
+		Do("Order for " + order.customer + " is out of stock : " + order.choice);
+		orders.remove(order);
 	}
 	
 	void BuyFood(String food, int batchSize) {

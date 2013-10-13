@@ -54,7 +54,6 @@ public class RestaurantPanel extends JPanel {
         cook.setDefaultMarkets();
         cook.startThread();
         
-        cashier.setCook(cook);
         cashier.startThread();
         
         gui.animationPanel.setCook(cook);
@@ -153,7 +152,7 @@ public class RestaurantPanel extends JPanel {
 	    		waiters.add(w);
 	    		w.startThread();
 	    		
-	    		host.msgAddWaiter(w);
+	    		host.msgAddWaiterByGui(w);
 	    		
 	    		waiterPanel.updateInfoPanel(w);
     		}

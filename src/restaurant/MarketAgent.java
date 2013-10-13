@@ -32,8 +32,7 @@ public class MarketAgent extends Agent {
 	
 	private Semaphore atCook = new Semaphore(0,true);
 	
-	
-	
+
 	private int deliveryTime = 4000;
 		
 	/**
@@ -47,6 +46,7 @@ public class MarketAgent extends Agent {
 	}
 		
 	// Messages
+	// TheMarketAndCook 2: BuyFood()
 	public boolean msgBuyFood(Procure procure) {
 		// check availability for the procure order
 		if(inventory.get(procure.food).amount < procure.batchSize) {
@@ -61,6 +61,7 @@ public class MarketAgent extends Agent {
 		}
 	}
 	
+	// TheMarketAndCook 0: message from gui when food arrived to cook
 	public void msgDeliveredToCook() {
 		atCook.release();
 	}
@@ -78,9 +79,7 @@ public class MarketAgent extends Agent {
 						return true;
 					}
 					else if(procures.get(i).state == Procure.ProcureState.Done) {
-						cook.msgOrderFulfillment(procures.get(i));
-						Do("Done delivering " + procures.get(i).food + " to the cook");
-						procures.remove(i);
+						OrderFulfillment(procures.get(i));
 						return true;
 					}
 				}
@@ -91,13 +90,13 @@ public class MarketAgent extends Agent {
 	}
 
 	// Actions
-	void DeliverOrder(Procure procure) {
+	private void DeliverOrder(Procure procure) {
 		print("Start Delivering");
 		
 		DoDeliver(procure);
 	}
 	
-	public void DoDeliver(Procure procure) {
+	private void DoDeliver(Procure procure) {
 		Timer timer = new Timer();
 		final Procure p = procure;
 		
@@ -112,7 +111,7 @@ public class MarketAgent extends Agent {
 		(int) deliveryTime); // delivery will be done in deliveryTime		
 	}
 	
-	public void DoDeliverGui(Procure p, FoodGui f) {
+	private void DoDeliverGui(Procure p, FoodGui f) {
 		f.state = FoodGui.State.procurement;
 		f.DoGoToCook(this);
 		try {
@@ -124,6 +123,12 @@ public class MarketAgent extends Agent {
 				
 		p.state = Procure.ProcureState.Done;
 		stateChanged();		
+	}
+	
+	private void OrderFulfillment(Procure procure) {
+		cook.msgOrderFulfillment(procure);
+		Do("Done delivering " + procure.food + " to the cook");
+		procures.remove(procure);
 	}
 		
 	// Accessors, etc.

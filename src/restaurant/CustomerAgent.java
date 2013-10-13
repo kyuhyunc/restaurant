@@ -79,6 +79,12 @@ public class CustomerAgent extends Agent {
 		stateChanged();
 	}
 
+	// message when tables are full from host
+	public void msgWhetherLeave() {
+		event = AgentEvent.tableFull;
+		stateChanged();
+	}
+		
 	// 3: FollowMe(menu)
 	public void msgFollowMe(List<String> menu_list, Map<String, Double> menu, int tableNumber) {
 		this.menu_list.clear();
@@ -98,11 +104,13 @@ public class CustomerAgent extends Agent {
 	}
 	
 	// 5: WhatWouldYouLike()
+	// OutOfFood 0: WhatWouldYouLike
 	public void msgWhatWouldYouLike() {
 		event = AgentEvent.makeOrder;
 		stateChanged();
 	}
 	
+	// OutOfFood 4:WhatWouldYouLikeAgain
 	public void msgAskForOrderAgain(List<String> menu_list) {
 		// update menu that out of stocked food is not included
 		this.menu_list.clear();
@@ -119,6 +127,7 @@ public class CustomerAgent extends Agent {
 		stateChanged();
 	}
 	
+	// Cashier 2: HereIsCheck
 	public void msgHereIsYourCheck(Check check) {
 		event = AgentEvent.getCheck;
 		this.check = check;
@@ -132,14 +141,10 @@ public class CustomerAgent extends Agent {
 		stateChanged();
 	}
 	
+	// Cashier 5: Change
 	public void msgChange(Cash cash) {
 		this.cash.addChanges(cash);		
 		event = AgentEvent.leaveRestaurant;
-		stateChanged();
-	}
-	
-	public void msgWhetherLeave() {
-		event = AgentEvent.tableFull;
 		stateChanged();
 	}
 	
@@ -401,12 +406,10 @@ public class CustomerAgent extends Agent {
 	
 	private void ReadyForCheck() {
 		Do("Ask for check to waiter");
-		//foodGui.state = FoodGui.State.waitingCheck;
 		wait.msgReadyForCheck(this);
 	}
 
 	private void leaveTable() {
-		
 		foodGui.state = FoodGui.State.goToCashier;
 		foodGui.DoGoToCashier();
 		customerGui.DoGoToCashier();

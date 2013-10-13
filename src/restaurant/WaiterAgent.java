@@ -96,6 +96,7 @@ public class WaiterAgent extends Agent {
 	}
 	
 	// 6: HereIsMyChoice(customer, choice)
+	// OutOfFood 1: HereIsMyChoice
 	public void msgHereIsMyChoice(CustomerAgent customer, String choice) {
 		synchronized (MyCustomers) {
 			for(int i=0; i < MyCustomers.size() ; i++) {
@@ -115,6 +116,8 @@ public class WaiterAgent extends Agent {
 		atCook.release();
 	}
 
+	// OutOfFood 3: OutOfFood()
+	// TheMarketAndCook 1: OutOfFood()
 	public void msgOrderIsOutOfStock(Order order) {
 		// the food that is out of stock will be erased from the menu list 
 		// and will be passed to the customer when the waiter ask the customer again.
@@ -147,6 +150,7 @@ public class WaiterAgent extends Agent {
 		}
 	}
 	
+	// Cashier 0: ReadyForcheck
 	public void msgReadyForCheck(CustomerAgent customer) {
 		synchronized (MyCustomers) {
 			for(MyCustomer cust : MyCustomers) {
@@ -158,12 +162,13 @@ public class WaiterAgent extends Agent {
 			}
 		}
 	}
-	
+
+	// Cashier : message from gui when waiter arrives at cashier
 	public void msgArrivedToCashier() {
 		atCashier.release();
 	}
 	
-	// 
+	// Cashier 1b: HereIsCheck
 	public void msgHereIsCheck(Check check) {
 		synchronized (MyCustomers) {
 			for(MyCustomer cust : MyCustomers) {
@@ -179,6 +184,7 @@ public class WaiterAgent extends Agent {
 	}
 	
 	// 10: IAmDone(customer)
+	// Cashier 3: LeaveTable
 	public void msgLeavingTable(CustomerAgent customer) {
 		
 		synchronized (MyCustomers) {
@@ -192,12 +198,13 @@ public class WaiterAgent extends Agent {
 		}
 	}
 	
-	// msg from gui
+	// WaiterOnBreak 0: message from gui when break box is checked (on break)
 	public void msgOnBreak() {
 		Break = AgentBreak.askForBreak;
 		stateChanged();
 	}
 	
+	// WaiterOnBreak 2: ReplyBreak
 	public void msgReplyBreak(boolean breakPermission) {
 		
 		// if waiter can break, then break permission is true
@@ -215,6 +222,7 @@ public class WaiterAgent extends Agent {
 		stateChanged();
 	}
 	
+	// WaiterOnBreak 0: message from gui when break box is unchecked (off break)
 	public void msgOffBreak() {
 		
 		Break = AgentBreak.offBreak;
@@ -431,7 +439,7 @@ public class WaiterAgent extends Agent {
 			e.printStackTrace();
 		}	
 				
-		cashier.msgComputeBill(c.choice, c.c, this, c.t.tableNumber);		
+		cashier.msgComputeBill(c.choice, c.c, this, c.t.tableNumber, menu);		
 		
 		//state = AgentState.Waiting;
 		waiterGui.DoGoBackToHost2();
