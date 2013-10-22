@@ -171,7 +171,7 @@ public class WaiterAgent extends Agent {
 				if(cust.c == check.customer) {
 					cust.state = MyCustomer.CustState.checkIsReady;
 					cust.check = check;
-					state = AgentState.Waiting;
+					//state = AgentState.Waiting;
 					stateChanged();
 					break;
 				}
@@ -435,7 +435,7 @@ public class WaiterAgent extends Agent {
 				
 		cashier.msgComputeBill(c.choice, c.c, this, c.t.tableNumber, menu);		
 		
-		//state = AgentState.Waiting;
+		state = AgentState.Waiting;
 		waiterGui.DoGoBackToHost2();
 	}
 

@@ -75,7 +75,6 @@ public class CashierAgent extends Agent {
 						return true;
 					}
 					else if(checks.get(i).state == Check.CheckState.doneComputing) {
-						checks.get(i).state = Check.CheckState.waitingToBePaid;
 						giveCheckToWaiter(checks.get(i));
 						return true;
 					}
@@ -109,8 +108,11 @@ public class CashierAgent extends Agent {
 	
 	}
 	
-	private void giveCheckToWaiter(Check c) {
-		c.waiter.msgHereIsCheck(c);
+	private void giveCheckToWaiter(Check check) {
+		if(check.waiter.state == WaiterAgent.AgentState.Waiting) {
+			check.waiter.msgHereIsCheck(check);
+			check.state = Check.CheckState.waitingToBePaid;
+		}
 	}
 	
 	private void returnChange(Check c) {

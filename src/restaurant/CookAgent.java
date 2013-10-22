@@ -69,6 +69,7 @@ public class CookAgent extends Agent {
 	
 	// TheMarketAndCook 3: OrderFulfillment
 	public void msgOrderFulfillment(Procure procure) {
+		// better to make another method to do this
 		foods.get(procure.getFood()).amount += foods.get(procure.getFood()).batchSize; 
 	}
 	
