@@ -24,12 +24,9 @@ public class CookAgent extends Agent {
 	private String name;
 	Timer timer = new Timer();
 		
-	public enum AgentState
-	{Waiting, Busy};
-	public AgentState state = AgentState.Waiting;//The start state
-	
 	//private List<Order> orders = new ArrayList<Order>();
 	private List<Order> orders = Collections.synchronizedList(new ArrayList<Order>());
+	private List<Order> pendingOrders = Collections.synchronizedList(new ArrayList<Order>());
 
 	private List<MarketAgent> markets = Collections.synchronizedList(new ArrayList<MarketAgent> ());
 	
@@ -66,8 +63,21 @@ public class CookAgent extends Agent {
 	// OutOFFood 2: HereIsAnOrder(order);
 	// TheMarketAndCook 0: HereIsAnOrder
 	public void msgHereIsAnOrder(Order order) {
+		boolean callWaiterToPickUpOrder = false;
+		
 		print("received an order");
-		orders.add(order);
+		for(Order o : orders){
+			if(o.state != Order.OrderState.Pending) {
+				callWaiterToPickUpOrder = true;
+			}
+		}
+		
+		if(callWaiterToPickUpOrder) {
+			pendingOrders.add(order);
+		}
+		else {
+			orders.add(order);
+		}
 		stateChanged();
 	}
 	
@@ -82,30 +92,34 @@ public class CookAgent extends Agent {
 	 */
 	protected boolean pickAndExecuteAnAction() {
 		synchronized (orders) {
-			if(state == AgentState.Waiting) {
-				if (!orders.isEmpty()) {			
-					for(int i=0;i<orders.size();i++){
-						if(orders.get(i).state == Order.OrderState.Pending) {
-							state = AgentState.Busy;
-							orders.get(i).state = Order.OrderState.Cooking;
-							CookOrder(orders.get(i));
-							return true;
-						}
-						else if(orders.get(i).state == Order.OrderState.Cooked) {
-							state = AgentState.Busy;
-							OrderIsReady(orders.get(i));
-							return true;
-						}
-						else if(orders.get(i).state == Order.OrderState.outOfStock) {
-							state = AgentState.Busy;
-							OrderIsOutOfStock(orders.get(i));
-							return true;
-						}
+			if (!orders.isEmpty()) {			
+				for(int i=0;i<orders.size();i++){
+					if(orders.get(i).state == Order.OrderState.Pending) {
+						orders.get(i).state = Order.OrderState.Cooking;
+						CookOrder(orders.get(i));
+						return true;
 					}
-					//return true; // return true when state is cooking
+					else if(orders.get(i).state == Order.OrderState.Cooked) {
+						OrderIsReady(orders.get(i));
+						return true;
+					}
+					else if(orders.get(i).state == Order.OrderState.outOfStock) {
+						OrderIsOutOfStock(orders.get(i));
+						return true;
+					}
 				}
+				//return true; // return true when state is cooking
 			}
-		}	
+		}		
+		synchronized (pendingOrders) {
+			if(!pendingOrders.isEmpty()) {
+				for(Order po : pendingOrders) {
+					orders.add(po);
+				}		
+				pendingOrders.clear();
+				return true;
+			}
+		}
 		return false;
 	}
 
@@ -126,7 +140,6 @@ public class CookAgent extends Agent {
 			Do(order.choice + " is out of stock right now");			
 			order.state = Order.OrderState.outOfStock;
 			BuyFood(order.choice, foods.get(order.choice).batchSize);
-			state = AgentState.Waiting;
 			stateChanged();
 		}
 	}
@@ -144,7 +157,6 @@ public class CookAgent extends Agent {
 			public void run() {
 				Do("Done cooking, " + order.choice + " for " + order.customer.getName());
 				order.state = Order.OrderState.Cooked;
-				state = AgentState.Waiting;
 				stateChanged();
 			}
 		}
@@ -154,17 +166,15 @@ public class CookAgent extends Agent {
 	
 	
 	private void OrderIsReady(Order order) {
-		order.waiter.msgOrderIsReady(order);
 		Do("Order for " + order.customer + " is ready : " + order.choice);
+		order.waiter.msgOrderIsReady(order);
 		orders.remove(order);
-		state = AgentState.Waiting;
 	}
 	
 	private void OrderIsOutOfStock(Order order) {
 		order.waiter.msgOrderIsOutOfStock(order);
 		Do("Order for " + order.customer + " is out of stock : " + order.choice);
 		orders.remove(order);
-		state = AgentState.Waiting;
 	}
 	
 	void BuyFood(String food, int batchSize) {

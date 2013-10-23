@@ -9,5 +9,4 @@ import restaurant.CashierAgent.Check;
 public interface Waiter {
 	
 	public abstract void msgHereIsCheck(Check check);
-
 }

@@ -40,6 +40,9 @@ public class WaiterAgent extends Agent implements Waiter{
 	private List<MyCustomer> MyCustomers = Collections.synchronizedList(new ArrayList<MyCustomer>());
 	int numberOfCustomers = 0;
 	
+	//private List<Check> checkToPick = Collections.synchronizedList(new ArrayList<Check>());
+	//private List<Order> orderToPick = Collections.synchronizedList(new ArrayList<Order>());
+	
 	public WaiterGui waiterGui = null;
 	private Semaphore atTable = new Semaphore(0,true);
 	private Semaphore atCook = new Semaphore(0,true);
@@ -140,6 +143,8 @@ public class WaiterAgent extends Agent implements Waiter{
 			for(MyCustomer cust : MyCustomers) {
 				if(cust.c == order.customer) {
 					cust.state = MyCustomer.CustState.foodIsReady;
+					cust.order = order;
+					//orderToPick.add(order);
 					stateChanged();
 					break;
 				}
@@ -172,6 +177,7 @@ public class WaiterAgent extends Agent implements Waiter{
 				if(cust.c == check.customer) {
 					cust.state = MyCustomer.CustState.checkIsReady;
 					cust.check = check;
+					//checkToPick.add(check);
 					//state = AgentState.Waiting;
 					stateChanged();
 					break;
@@ -244,6 +250,7 @@ public class WaiterAgent extends Agent implements Waiter{
 						WhatWouldYouLike(customer);
 						return true;
 					}
+					//else if (orderToPick.isEmpty() && customer.state == MyCustomer.CustState.waitingFood1) {
 					else if (customer.state == MyCustomer.CustState.waitingFood1) {
 						state = AgentState.Serving;
 						HereIsAnOrder(customer);
@@ -259,6 +266,7 @@ public class WaiterAgent extends Agent implements Waiter{
 						HereIsYourOrder(customer);
 						return true;
 					}
+					//else if (checkToPick.isEmpty() && customer.state == MyCustomer.CustState.askingForCheck) {
 					else if (customer.state == MyCustomer.CustState.askingForCheck) {
 						state = AgentState.Serving;
 						AskForCheck(customer);
@@ -406,6 +414,7 @@ public class WaiterAgent extends Agent implements Waiter{
 			e.printStackTrace();
 		}	
 		
+		//orderToPick.remove(customer.order);
 		state = AgentState.Waiting;
 		waiterGui.DoGoBackToHost2();
 		
@@ -439,6 +448,8 @@ public class WaiterAgent extends Agent implements Waiter{
 		state = AgentState.Waiting;
 		waiterGui.DoGoBackToHost2();
 	}
+	
+
 
 	void HereIsCheck(MyCustomer c) {
 		waiterGui.DoGoToCashier();
@@ -467,6 +478,7 @@ public class WaiterAgent extends Agent implements Waiter{
 		
 		//c.c.msgHereIsYourCheck(c.check);
 		c.c.msgHereIsYourCheck(cpCheck);
+		//checkToPick.remove(c.check);
 		
 		state = AgentState.Waiting;
 		waiterGui.DoGoBackToHost2();
@@ -542,6 +554,7 @@ public class WaiterAgent extends Agent implements Waiter{
 		Table t;
 		String choice;
 		Check check;
+		Order order;
 
 		public enum CustState
 		{Waiting, seated, readyToOrder, askedForOrder, waitingFood1, waitingFood2, foodIsReady, 

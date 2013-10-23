@@ -22,15 +22,12 @@ public class CashierAgent extends Agent implements Cashier {
 
 	// changed from private to public for unit testing
 	public List<Check> checks = Collections.synchronizedList(new ArrayList<Check>());
+	public List<Check> pendingChecks = Collections.synchronizedList(new ArrayList<Check>());
 
 	private Map<String, Double> menu;
 	
 	public String pattern = ".00";
 	public DecimalFormat dFormat = new DecimalFormat(pattern);
-	
-	public enum AgentState
-	{Waiting, Busy};
-	public AgentState state = AgentState.Waiting;//The start state
 	
 	/**
 	 * Constructor for CashierAgent class
@@ -52,7 +49,20 @@ public class CashierAgent extends Agent implements Cashier {
 	public void msgComputeBill(String choice, Customer c, Waiter w, int tableNumber, Map<String, Double> menu) {
 		print("Calculating bill");
 		
-		checks.add(new Check(choice, c, w, tableNumber));
+		boolean askWaiterToPickUpCheck = false;
+		
+		for(Check chk : checks) {
+			if(chk.state != Check.CheckState.nothing) {
+				askWaiterToPickUpCheck = true;
+			}
+		}
+		
+		if(askWaiterToPickUpCheck) {
+			pendingChecks.add(new Check(choice, c, w, tableNumber));
+		}
+		else {
+			checks.add(new Check(choice, c, w, tableNumber));
+		}
 		this.menu = menu;
 	
 		stateChanged();
@@ -81,24 +91,30 @@ public class CashierAgent extends Agent implements Cashier {
 			if (!checks.isEmpty()) {
 				for(int i=0;i<checks.size();i++){
 					if(checks.get(i).state == Check.CheckState.nothing) {
-						state = AgentState.Busy;
 						checks.get(i).state = Check.CheckState.computing;
 						ComputeBill(checks.get(i));
 						return true;
 					}
 					else if(checks.get(i).state == Check.CheckState.doneComputing) {
-						state = AgentState.Busy;
 						giveCheckToWaiter(checks.get(i));
 						return true;
 					}
-					else if(checks.get(i).state == Check.CheckState.receivedCash) {						
-						state = AgentState.Busy;
-						checks.get(i).state = Check.CheckState.paid;
+					else if(checks.get(i).state == Check.CheckState.receivedCash) {												checks.get(i).state = Check.CheckState.paid;
 						returnChange(checks.get(i));
 						//checks.remove(i);
 						return true;
 					}	
 				}
+			}
+		}
+		
+		synchronized(pendingChecks) {
+			if(!pendingChecks.isEmpty()) {
+				for(Check chk : pendingChecks) {
+					checks.add(chk);
+				}
+				pendingChecks.clear();
+				return true;
 			}
 		}
 		return false;
@@ -119,8 +135,6 @@ public class CashierAgent extends Agent implements Cashier {
 		c.state = Check.CheckState.doneComputing;
 		
 		Do("Price is " + c.price);
-		
-		state = AgentState.Waiting;	
 	}
 	
 	// private to public for testing
@@ -129,11 +143,8 @@ public class CashierAgent extends Agent implements Cashier {
 		Check cpCheck = new Check(check.choice, check.customer, check.waiter, check.tableNumber);
 		cpCheck.copyCheck(check);
 		
-		//if(check.waiter.state == WaiterAgent.AgentState.Waiting) {
-			check.state = Check.CheckState.waitingToBePaid;	
-			check.waiter.msgHereIsCheck(cpCheck);
-		//}
-		state = AgentState.Waiting;
+		check.state = Check.CheckState.waitingToBePaid;	
+		check.waiter.msgHereIsCheck(cpCheck);		
 	}
 	
 	private void returnChange(Check c) {
@@ -165,8 +176,7 @@ public class CashierAgent extends Agent implements Cashier {
 		Do("Change is " + dFormat.format(Change.totalAmount()));
 		
 		checks.remove(c);
-		c.customer.msgChange(Change);		
-		state = AgentState.Waiting;
+		c.customer.msgChange(Change);
 	}
 	
 	// Accessors, etc.
