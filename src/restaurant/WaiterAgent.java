@@ -3,6 +3,7 @@ package restaurant;
 import restaurant.HostAgent.Table;
 import restaurant.gui.FoodGui;
 import restaurant.gui.WaiterGui;
+import restaurant.interfaces.Waiter;
 import agent.Agent;
 import restaurant.CashierAgent.Check;
 import restaurant.CookAgent.Food;
@@ -20,7 +21,7 @@ import java.util.concurrent.Semaphore;
 /**
  * Restaurant customer agent.
  */
-public class WaiterAgent extends Agent {
+public class WaiterAgent extends Agent implements Waiter{
 	private String name;
 	
 	// agent correspondents
@@ -132,7 +133,7 @@ public class WaiterAgent extends Agent {
 			}
 		}
 	}
-	
+		
 	// 8: OrderIsReady(order)
 	public void msgOrderIsReady(Order order) {
 		synchronized (MyCustomers) {
@@ -164,7 +165,7 @@ public class WaiterAgent extends Agent {
 		atCashier.release();
 	}
 	
-	// Cashier 1b: HereIsCheck
+	// Cashier 1b: HereIsCheck (from cashier)
 	public void msgHereIsCheck(Check check) {
 		synchronized (MyCustomers) {
 			for(MyCustomer cust : MyCustomers) {
@@ -460,7 +461,12 @@ public class WaiterAgent extends Agent {
 		
 		c.state = MyCustomer.CustState.getTheCheck;
 		
-		c.c.msgHereIsYourCheck(c.check);
+		Check chk = c.check;
+		Check cpCheck = new Check(chk.choice, chk.customer, chk.waiter, chk.tableNumber);
+		cpCheck.copyCheck(chk);
+		
+		//c.c.msgHereIsYourCheck(c.check);
+		c.c.msgHereIsYourCheck(cpCheck);
 		
 		state = AgentState.Waiting;
 		waiterGui.DoGoBackToHost2();

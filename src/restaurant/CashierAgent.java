@@ -9,19 +9,28 @@ import java.util.List;
 import java.util.Map;
 
 import restaurant.CustomerAgent.Cash;
+import restaurant.interfaces.Cashier;
+import restaurant.interfaces.Customer;
+import restaurant.interfaces.Waiter;
+import restaurant.test.mock.LoggedEvent;
 
 /**
  * Restaurant cashier agent.
  */
-public class CashierAgent extends Agent {
+public class CashierAgent extends Agent implements Cashier {
 	private String name;
-	
-	private List<Check> checks = Collections.synchronizedList(new ArrayList<Check>());
-	
+
+	// changed from private to public for unit testing
+	public List<Check> checks = Collections.synchronizedList(new ArrayList<Check>());
+
 	private Map<String, Double> menu;
 	
 	public String pattern = ".00";
 	public DecimalFormat dFormat = new DecimalFormat(pattern);
+	
+	public enum AgentState
+	{Waiting, Busy};
+	public AgentState state = AgentState.Waiting;//The start state
 	
 	/**
 	 * Constructor for CashierAgent class
@@ -39,7 +48,8 @@ public class CashierAgent extends Agent {
 	
 	// Messages
 	// Cashier 1a: ComputeBill
-	public void msgComputeBill(String choice, CustomerAgent c, WaiterAgent w, int tableNumber, Map<String, Double> menu) {
+	//public void msgComputeBill(String choice, CustomerAgent c, WaiterAgent w, int tableNumber, Map<String, Double> menu) {
+	public void msgComputeBill(String choice, Customer c, Waiter w, int tableNumber, Map<String, Double> menu) {
 		print("Calculating bill");
 		
 		checks.add(new Check(choice, c, w, tableNumber));
@@ -49,12 +59,13 @@ public class CashierAgent extends Agent {
 	}
 	
 	// Cashier 4: Payment
-	public void msgPayment(Check check, Cash cash) {		
+	public void msgPayment(Customer customer, Cash cash) {		
 		synchronized(checks) {
 			for(Check c : checks) {
-				if(c == check) {
+				if(c.customer == customer) {
 					c.cash = new Cash(cash.twentyDollar, cash.tenDollar, cash.fiveDollar, cash.oneDollar, cash.coins);
 					c.state = Check.CheckState.receivedCash;
+					log.add(new LoggedEvent("Received msgPayment"));
 					break;
 				}
 			}
@@ -65,20 +76,23 @@ public class CashierAgent extends Agent {
 	/**
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
-	protected boolean pickAndExecuteAnAction() {
+	public boolean pickAndExecuteAnAction() {
 		synchronized (checks) {
 			if (!checks.isEmpty()) {
 				for(int i=0;i<checks.size();i++){
 					if(checks.get(i).state == Check.CheckState.nothing) {
+						state = AgentState.Busy;
 						checks.get(i).state = Check.CheckState.computing;
 						ComputeBill(checks.get(i));
 						return true;
 					}
 					else if(checks.get(i).state == Check.CheckState.doneComputing) {
+						state = AgentState.Busy;
 						giveCheckToWaiter(checks.get(i));
 						return true;
 					}
 					else if(checks.get(i).state == Check.CheckState.receivedCash) {						
+						state = AgentState.Busy;
 						checks.get(i).state = Check.CheckState.paid;
 						returnChange(checks.get(i));
 						//checks.remove(i);
@@ -91,7 +105,7 @@ public class CashierAgent extends Agent {
 	}
 
 	// Actions
-	private void ComputeBill(Check c) {
+	public void ComputeBill(Check c) {
 		/**synchronized(checks) {
 			for(Check check : checks) {
 				if(check == c) {
@@ -105,14 +119,21 @@ public class CashierAgent extends Agent {
 		c.state = Check.CheckState.doneComputing;
 		
 		Do("Price is " + c.price);
-	
+		
+		state = AgentState.Waiting;	
 	}
 	
-	private void giveCheckToWaiter(Check check) {
-		if(check.waiter.state == WaiterAgent.AgentState.Waiting) {
-			check.waiter.msgHereIsCheck(check);
-			check.state = Check.CheckState.waitingToBePaid;
-		}
+	// private to public for testing
+	public void giveCheckToWaiter(Check check) {
+		// Deep copying check to cpCheck
+		Check cpCheck = new Check(check.choice, check.customer, check.waiter, check.tableNumber);
+		cpCheck.copyCheck(check);
+		
+		//if(check.waiter.state == WaiterAgent.AgentState.Waiting) {
+			check.state = Check.CheckState.waitingToBePaid;	
+			check.waiter.msgHereIsCheck(cpCheck);
+		//}
+		state = AgentState.Waiting;
 	}
 	
 	private void returnChange(Check c) {
@@ -145,6 +166,7 @@ public class CashierAgent extends Agent {
 		
 		checks.remove(c);
 		c.customer.msgChange(Change);		
+		state = AgentState.Waiting;
 	}
 	
 	// Accessors, etc.
@@ -158,15 +180,18 @@ public class CashierAgent extends Agent {
 	}
 	
 	public static class Check {
-		String choice;
-		CustomerAgent customer;
-		WaiterAgent waiter;
-		int tableNumber;
-		double price;		
+		// changed to public for testing
+		public String choice;
+		//CustomerAgent customer;
+		public Customer customer;
+		public Waiter waiter;
+		public int tableNumber;
+		public double price;		
 		
 		Cash cash; // from customer
-		
-		Check (String choice, CustomerAgent customer, WaiterAgent waiter, int tableNumber) {
+	
+		//Check (String choice, CustomerAgent customer, WaiterAgent waiter, int tableNumber) {
+		public Check (String choice, Customer customer, Waiter waiter, int tableNumber) {
 			this.choice = choice;
 			this.customer = customer;
 			this.waiter = waiter;
@@ -175,10 +200,26 @@ public class CashierAgent extends Agent {
 		
 		public enum CheckState
 		{nothing, computing, doneComputing, waitingToBePaid, receivedCash, paid};
-		CheckState state = CheckState.nothing;
+		public CheckState state = CheckState.nothing;
 		
 		public void setPrice(double price) {
 			this.price = price;
+		}
+		
+		public double getPrice() {
+			return price;
+		}
+		
+		public Cash getCash() {
+			return cash;
+		}
+		
+		public void copyCheck(Check check) {
+			this.price = check.price;
+			Cash c = check.cash;
+			if(c != null) {
+				this.cash = new Cash(c.twentyDollar, c.tenDollar, c.fiveDollar, c.oneDollar, c.coins);
+			}
 		}
 	}
 }

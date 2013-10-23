@@ -4,6 +4,8 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+import restaurant.test.mock.EventLog;
+
 /**
  * Base class for simple agents
  */
@@ -15,7 +17,10 @@ public abstract class Agent {
     Semaphore pause = new Semaphore(0, true);//binary semaphore, fair
     boolean pauseFlag = false;
 
+    public EventLog log;
+    
     protected Agent() {
+    	log = new EventLog();
     }
 
     /**

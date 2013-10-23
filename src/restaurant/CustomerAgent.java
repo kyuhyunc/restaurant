@@ -2,6 +2,7 @@ package restaurant;
 
 import restaurant.gui.CustomerGui;
 import restaurant.gui.FoodGui;
+import restaurant.interfaces.Customer;
 import agent.Agent;
 import restaurant.CashierAgent.Check;
 import restaurant.WaiterAgent;
@@ -18,7 +19,7 @@ import java.util.Random;
 /**
  * Restaurant customer agent.
  */
-public class CustomerAgent extends Agent {
+public class CustomerAgent extends Agent implements Customer {
 	private String name;
 	private int hungerLevel = 1;        // determines length of meal
 	Timer timer = new Timer();
@@ -417,11 +418,12 @@ public class CustomerAgent extends Agent {
 	
 	private void Payment() {
 		Cash payment;
+		//Check cpCheck = new Check(check.choice, check.customer, check.waiter, check.tableNumber);
 		
 		if(cash.totalAmount() >= check.price) {
 			payment = cash.payCash(check.price);
 			Do("Here is cash " + dFormat.format(payment.totalAmount()));
-			cashier.msgPayment(check, payment);
+			cashier.msgPayment(this, payment);
 		}
 		else {
 			Do("I am sorry, but I don't have enough money this time. Chao!");
@@ -534,7 +536,7 @@ public class CustomerAgent extends Agent {
 		int oneDollar;
 		int coins;
 		
-		Cash(int twenty, int ten, int five, int one, int coins) {
+		public Cash(int twenty, int ten, int five, int one, int coins) {
 			twentyDollar = twenty;
 			tenDollar = ten;
 			fiveDollar = five;
@@ -548,7 +550,7 @@ public class CustomerAgent extends Agent {
 			int five = 0;
 			int one = 0;
 			int coins = 0;
-			
+						
 			double sum = 0;
 				
 			while(sum < price) {
