@@ -5,6 +5,7 @@ import javax.swing.*;
 import restaurant.CookAgent;
 import restaurant.HostAgent;
 import restaurant.MarketAgent;
+import restaurant.interfaces.Cashier;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -51,6 +52,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
     public static boolean pauseFlag = false;
 
 	private CookAgent cook;
+	private Cashier cashier;
     private ImageIcon cookImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/Cook.jpg");
 	private Image cImage = cookImage.getImage();
 	
@@ -103,6 +105,7 @@ public class AnimationPanel extends JPanel implements ActionListener {
             			MarketLocationX+MarketSizeX+1, MarketLocationY + 10 + (gap*m) + (n*11));
             	n++;
         	}
+        	g2.drawString("$:" + M.getCash(), MarketLocationX, MarketLocationY + MarketSizeY + (gap*m) + 10);
         	m++;
         }
         
@@ -114,9 +117,8 @@ public class AnimationPanel extends JPanel implements ActionListener {
         	i++;
         }
         
-        
-        
         g.drawImage(cashImage, CashierLocationX, CashierLocationY, CashierSizeX, CashierSizeY, null);
+        g.drawString("$:" + cashier.getCash(), CashierLocationX + CashierSizeX, CashierLocationY + 10);
         
         synchronized (guis) {
 	        for(Gui gui : guis) {
@@ -150,5 +152,9 @@ public class AnimationPanel extends JPanel implements ActionListener {
     
     public void setCook(CookAgent cook) {
     	this.cook = cook;
+    }
+    
+    public void setCashier(Cashier cashier) {
+    	this.cashier = cashier;
     }
 }

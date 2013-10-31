@@ -24,7 +24,11 @@ public class CashierAgent extends Agent implements Cashier {
 	public List<Check> checks = Collections.synchronizedList(new ArrayList<Check>());
 	public List<Check> pendingChecks = Collections.synchronizedList(new ArrayList<Check>());
 
+	// this is for checks for markets
+	public List<Bill> bills = Collections.synchronizedList(new ArrayList<Bill>());
+	
 	private Map<String, Double> menu;
+	private double cashTotal;
 	
 	public String pattern = ".00";
 	public DecimalFormat dFormat = new DecimalFormat(pattern);
@@ -37,6 +41,8 @@ public class CashierAgent extends Agent implements Cashier {
 	public CashierAgent(String name){
 		super();
 		this.name = name;
+		
+		cashTotal = 200;
 	}
 	
 	/**
@@ -83,6 +89,13 @@ public class CashierAgent extends Agent implements Cashier {
 		stateChanged();	
 	}
 	
+	// message from market to ask for payment
+	public void msgAskForPayment(String food, int batchSize, MarketAgent market, double price) {
+		bills.add(new Bill(food, batchSize, market, price));
+		
+		stateChanged();
+	}
+	
 	/**
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
@@ -115,6 +128,22 @@ public class CashierAgent extends Agent implements Cashier {
 				}
 				pendingChecks.clear();
 				return true;
+			}
+		}
+		
+		synchronized(bills) {
+			if(!bills.isEmpty()) {
+				for(Bill b : bills) {
+					if(b.state == Bill.BillState.nothing) {
+						b.state = Bill.BillState.inProcess;
+						PayBill();
+						return true;
+					}
+					else if(b.state == Bill.BillState.done) {
+						bills.remove(b);
+						return true;
+					}
+				}
 			}
 		}
 		return false;
@@ -154,6 +183,8 @@ public class CashierAgent extends Agent implements Cashier {
 		int oneDollar = 0;
 		int coins = 0;
 		
+		cashTotal += c.price;
+		
 		double change = c.cash.totalAmount() - c.price;
 		Cash Change;
 				
@@ -174,9 +205,19 @@ public class CashierAgent extends Agent implements Cashier {
 		Change = new Cash(twentyDollar, tenDollar, fiveDollar, oneDollar, coins);
 			
 		Do("Change is " + dFormat.format(Change.totalAmount()));
+		// need to implement the changing cash algorithm properly
 		
 		checks.remove(c);
 		c.customer.msgChange(Change);
+	}
+	
+	private void PayBill() {
+		Bill b = bills.get(0);
+		cashTotal -= b.price;
+			
+		b.market.msgPayment(b.price);
+		
+		b.state = Bill.BillState.done;
 	}
 	
 	// Accessors, etc.
@@ -187,6 +228,10 @@ public class CashierAgent extends Agent implements Cashier {
 
 	public String toString() {
 		return "cook " + getName();
+	}
+	
+	public String getCash() {
+		return dFormat.format(cashTotal);
 	}
 	
 	public static class Check {
@@ -230,6 +275,27 @@ public class CashierAgent extends Agent implements Cashier {
 			if(c != null) {
 				this.cash = new Cash(c.twentyDollar, c.tenDollar, c.fiveDollar, c.oneDollar, c.coins);
 			}
+		}
+	}
+	
+	public static class Bill {
+		private String food;
+		private int batchSize;
+		private MarketAgent market;
+		private double price;
+		
+		private double totalPrice;
+		
+		public enum BillState {nothing, inProcess, done};
+		public BillState state = BillState.nothing;	
+		
+		public Bill(String food, int batchSize, MarketAgent market, double price) {
+			this.food = food;
+			this.batchSize = batchSize;
+			this.market = market;
+			this.price = price;
+			
+			totalPrice = (price/2)*batchSize;			
 		}
 	}
 }

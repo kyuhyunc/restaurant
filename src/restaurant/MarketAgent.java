@@ -2,6 +2,7 @@ package restaurant;
 
 import agent.Agent;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.concurrent.Semaphore;
 
 import restaurant.CookAgent.Food;
 import restaurant.gui.FoodGui;
+import restaurant.interfaces.Cashier;
 
 /**
  * Restaurant market agent.
@@ -26,14 +28,19 @@ public class MarketAgent extends Agent {
 	
 	private Map<String, Food> inventory = Collections.synchronizedMap(new HashMap<String, Food> ());
 	private List<String> food_list;
-	
+		
 	private CookAgent cook;
 	private HostAgent host;
+	private Cashier cashier;
 	
 	private Semaphore atCook = new Semaphore(0,true);
 	
+	private double cash = 0;	
 
 	private int deliveryTime = 4000;
+	
+	public String pattern = ".00";
+	public DecimalFormat dFormat = new DecimalFormat(pattern);
 		
 	/**
 	 * Constructor for MarketAgent class
@@ -43,6 +50,8 @@ public class MarketAgent extends Agent {
 	public MarketAgent(String name){
 		super();
 		this.name = name;
+		
+		//cash = new Cash(0,0,0,0,0); // starts with $0
 	}
 		
 	// Messages
@@ -59,6 +68,10 @@ public class MarketAgent extends Agent {
 			stateChanged();
 			return true;
 		}
+	}
+	
+	public void msgPayment(double cash) {
+		this.cash += cash;
 	}
 	
 	// TheMarketAndCook 0: message from gui when food arrived to cook
@@ -92,6 +105,8 @@ public class MarketAgent extends Agent {
 	// Actions
 	private void DeliverOrder(Procure procure) {
 		print("Start Delivering");
+			
+		cashier.msgAskForPayment(procure.food, procure.batchSize, this, inventory.get(procure.food).price);
 		
 		DoDeliver(procure);
 	}
@@ -144,18 +159,25 @@ public class MarketAgent extends Agent {
 		this.cook = cook; 
 	}	
 	
+	public void setCashier(CashierAgent cashier) {
+		this.cashier = cashier;
+	}
+	
 	public void setHost(HostAgent host) {
 		this.host = host; 
 	}	
 	
 	public void setMenuList(List<String> menu_list) {
-		food_list = menu_list;
+		//food_list = menu_list;
+		food_list = new ArrayList<String> ();
+		food_list.addAll(menu_list);
 		
 		// setting up the inventory and stock level
 		for(String s : food_list) {
 			inventory.put(s, new Food(s));
 			inventory.get(s).setAmount(2);
-			inventory.get(s).setBatchSize(2);			
+			inventory.get(s).setBatchSize(2);
+			inventory.get(s).price /= 2; // setting price for market
 		}	
 	}
 	
@@ -169,6 +191,14 @@ public class MarketAgent extends Agent {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public int getMarketNumber() {
+		return marketNumber;
+	}
+	
+	public String getCash() {
+		return dFormat.format(cash);
 	}
 	
 	public boolean chkProcureInProcess(String food) {

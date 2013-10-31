@@ -31,6 +31,7 @@ public class CookAgent extends Agent {
 	private List<MarketAgent> markets = Collections.synchronizedList(new ArrayList<MarketAgent> ());
 	
 	private HostAgent host;
+	private CashierAgent cashier;
 	
 	/**
 	 * If I need to change foods list, all places I need to modify is here
@@ -214,6 +215,10 @@ public class CookAgent extends Agent {
 		this.host = host;
 	}
 	
+	public void setCashier(CashierAgent cashier) {
+		this.cashier = cashier;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -240,6 +245,7 @@ public class CookAgent extends Agent {
 			m.setCook(this);
 			m.setHost(host);
 			m.setMenuList(menu_list); // this will set up the initial inventory level of the market
+			m.setCashier(cashier);
 			m.setMarketNumber(i+1);
 			markets.add(m);
 			m.startThread();	
@@ -252,6 +258,7 @@ public class CookAgent extends Agent {
 		m.setHost(host);
 		m.setMenuList(menu_list); // this will set up the initial inventory level of the market
 		m.setMarketNumber(NMARKETS);
+		m.setCashier(cashier);
 		markets.add(m);
 		m.startThread();
 	}
