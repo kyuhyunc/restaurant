@@ -49,8 +49,8 @@ public class WaiterAgent extends Agent implements Waiter{
 	private Semaphore atHost = new Semaphore(0,true);
 	private Semaphore atCashier = new Semaphore(0,true);
 		
-	private List<String> menu_list = new ArrayList<String> ();
-	private Map<String, Double> menu = new HashMap<String, Double> ();
+	private List<String> menu_list = Collections.synchronizedList(new ArrayList<String> ());
+	private Map<String, Double> menu = Collections.synchronizedMap(new HashMap<String, Double> ());
 	
 	/**
 	 * Constructor for WaiterAgent class

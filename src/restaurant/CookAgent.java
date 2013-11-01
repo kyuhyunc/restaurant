@@ -30,6 +30,8 @@ public class CookAgent extends Agent {
 
 	private List<MarketAgent> markets = Collections.synchronizedList(new ArrayList<MarketAgent> ());
 	
+	private List<ProcureContract> contracts = Collections.synchronizedList(new ArrayList<ProcureContract> ());
+	
 	private HostAgent host;
 	private CashierAgent cashier;
 	
@@ -55,7 +57,7 @@ public class CookAgent extends Agent {
 		// setting up the menu
 		for(String s : menu_list) {
 			foods.put(s, new Food(s));
-			foods.get(s).setBatchSize(2);
+			foods.get(s).setBatchSize(5);
 			foods.get(s).setAmount(2);
 		}		
 	}
@@ -85,7 +87,26 @@ public class CookAgent extends Agent {
 	// TheMarketAndCook 3: OrderFulfillment
 	public void msgOrderFulfillment(Procure procure) {
 		// better to make another method to do this
-		foods.get(procure.getFood()).amount += foods.get(procure.getFood()).batchSize; 
+		foods.get(procure.getFood()).amount += procure.orderedSize; 
+	}
+	
+	public void msgTellOrderSize(MarketAgent m, String food, int orderedSize) {
+		synchronized(contracts) {
+			for(ProcureContract cp : contracts) {
+				if(cp.food == food) {
+					cp.orderedSize += orderedSize;
+					cp.orders.put(m, orderedSize);
+					if(cp.orderSize == cp.orderedSize) {
+						cp.state = ProcureContract.ContractState.Complete;
+					}
+					else {
+						cp.state = ProcureContract.ContractState.Pending;
+					}
+					break;
+				}
+			}
+		}
+		stateChanged();
 	}
 	
 	/**
@@ -121,6 +142,22 @@ public class CookAgent extends Agent {
 				return true;
 			}
 		}
+		
+		synchronized (contracts) {
+			if(!contracts.isEmpty()) {
+				for(ProcureContract cp : contracts) {
+					if(cp.state == ProcureContract.ContractState.Pending) {
+						OrderFood(cp);
+						return true;
+					}
+					else if (cp.state == ProcureContract.ContractState.Complete) {
+						contracts.remove(cp);
+						return true;						
+					}
+				}
+			}
+		}
+		
 		return false;
 	}
 
@@ -179,37 +216,46 @@ public class CookAgent extends Agent {
 	}
 	
 	void BuyFood(String food, int batchSize) {
-		boolean marketAvailable = false;
+		
 		boolean alreadyOrdered = false;
 		
-		synchronized(markets) {
-			for(MarketAgent m : markets) {
-				// return true if the food has already been ordered to the market
-				if(m.chkProcureInProcess(food)) {
+		synchronized(contracts) {
+			for(ProcureContract pc : contracts) {
+				if(pc.food == food) {
 					alreadyOrdered = true;
-					break;
 				}
 			}
-
-			if(!alreadyOrdered) {
-				for(MarketAgent m : markets) {
-					// msgBuyFood will return true if the market has a stock for the choice
-					if(m.msgBuyFood(new Procure(food, batchSize))) {
-						marketAvailable = true;
-						Do("Ordered " + food + " to " + m.getName());
-						break;
-					}
-				}
-				if(!marketAvailable) {
-					Do("There is no market that has a stock for " + food);
-				}
-			}	
-			else {
-				Do(food + " has been ordered already");
-			}
+		}
+		
+		if(!alreadyOrdered) {
+			contracts.add(new ProcureContract(food, batchSize));	
+		}
+		else {
+			Do(food + " has been ordered already");
 		}
 	}
 	
+	public void OrderFood(ProcureContract pc) {
+		boolean alreadyOrderedToAllMarkets = true;
+		pc.state = ProcureContract.ContractState.Ordering;
+		
+		synchronized(markets) {
+			for(MarketAgent m : markets) {
+				if(!pc.orders.containsKey(m)) {
+					Do("Order " + pc.food +"(" + (pc.orderSize-pc.orderedSize) + ")"+ " to " + m.getName());
+					m.msgBuyFood(pc.food, pc.orderSize-pc.orderedSize);
+					alreadyOrderedToAllMarkets = false;
+					break;
+				}
+			}
+		}	
+		
+		if(alreadyOrderedToAllMarkets == true) {
+			Do("Cannot order " + (pc.orderSize-pc.orderedSize) + " number of " + pc.food + " (No Stock)");
+			contracts.remove(pc);
+		}
+	}
+
 	// Accessors, etc.
 	public void setHost(HostAgent host) {
 		this.host = host;
@@ -281,6 +327,26 @@ public class CookAgent extends Agent {
 		public enum OrderState
 		{Pending, Cooking, Cooked, outOfStock};
 		OrderState state = OrderState.Pending;
+	}
+	
+	public static class ProcureContract {
+		String food;
+		int orderSize;
+		int orderedSize;
+		
+		//List<MarketAgent> subContractors = Collections.synchronizedList(new ArrayList<MarketAgent>());
+	
+		public Map<MarketAgent, Integer> orders = Collections.synchronizedMap(new HashMap<MarketAgent, Integer> ());  
+		
+		public enum ContractState
+		{Pending, Ordering, Complete};
+		ContractState state = ContractState.Pending;
+		
+		ProcureContract(String food, int orderSize) {
+			this.food = food;
+			this.orderSize = orderSize;
+			orderedSize = 0;
+		}
 	}
 	
 	public static class Food {

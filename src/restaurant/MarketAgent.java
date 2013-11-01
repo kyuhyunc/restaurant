@@ -50,24 +50,28 @@ public class MarketAgent extends Agent {
 	public MarketAgent(String name){
 		super();
 		this.name = name;
-		
-		//cash = new Cash(0,0,0,0,0); // starts with $0
 	}
 		
 	// Messages
 	// TheMarketAndCook 2: BuyFood()
-	public boolean msgBuyFood(Procure procure) {
+	//public boolean msgBuyFood(Procure procure) {
+	public void msgBuyFood(String food, int orderedSize) {
 		// check availability for the procure order
-		if(inventory.get(procure.food).amount < procure.batchSize) {
-			return false;
+		Do("received an procure order for " + food + " from cook ");
+		
+		if(inventory.get(food).amount < orderedSize) {
+			procures.add(new Procure(food, inventory.get(food).amount));
+			if(inventory.get(food).amount == 0) {
+				Do("Not enough stock of " + food + " for the order");
+			}
+			inventory.get(food).amount = 0; // minus stock level in advance
 		}
-		else {
-			print("received an procure order for " + procure.food + " from cook ");
-			procures.add(procure);
-			inventory.get(procure.food).amount -= procure.batchSize; // minus stock level in advance
-			stateChanged();
-			return true;
+		else { 
+			procures.add(new Procure(food, orderedSize));
+			inventory.get(food).amount -= orderedSize; // minus stock level in advance
 		}
+			
+		stateChanged();
 	}
 	
 	public void msgPayment(double cash) {
@@ -106,14 +110,16 @@ public class MarketAgent extends Agent {
 	private void DeliverOrder(Procure procure) {
 		print("Start Delivering");
 			
-		cashier.msgAskForPayment(procure.food, procure.batchSize, this, inventory.get(procure.food).price);
-		
-		DoDeliver(procure);
+		cashier.msgAskForPayment(procure.food, procure.orderedSize, this, inventory.get(procure.food).price);
+		cook.msgTellOrderSize(this, procure.food, procure.orderedSize);
+		if(procure.orderedSize > 0) {
+			DoDeliver(procure);
+		}
 	}
 	
 	private void DoDeliver(Procure procure) {
 		Timer timer = new Timer();
-		FoodGui deliveryFood = new FoodGui(marketNumber, inventory.get(procure.food));
+		FoodGui deliveryFood = new FoodGui(marketNumber, inventory.get(procure.food), procure.orderedSize);
 		host.gui.animationPanel.addGui(deliveryFood);
 		
 		class MyTimerTask extends TimerTask {
@@ -218,11 +224,11 @@ public class MarketAgent extends Agent {
 	
 	public static class Procure {
 		private String food;
-		int batchSize;
+		int orderedSize;
 		
-		Procure (String food, int batchSize) {
+		Procure (String food, int orderedSize) {
 			this.food = food;
-			this.batchSize = batchSize;
+			this.orderedSize = orderedSize;
 		}
 		
 		public enum ProcureState

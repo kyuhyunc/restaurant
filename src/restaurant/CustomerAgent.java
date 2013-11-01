@@ -373,7 +373,7 @@ public class CustomerAgent extends Agent implements Customer {
 	private void HereIsMyChoice(String choice) {
 		Do("Here Is My Choice : " + choice);
 		
-		foodGui = new FoodGui(tableNumber, wait.getFood(choice));
+		foodGui = new FoodGui(tableNumber, wait.getFood(choice), 1);
 		host.gui.animationPanel.addGui(foodGui);
 		foodGui.state = FoodGui.State.waiting;
 		

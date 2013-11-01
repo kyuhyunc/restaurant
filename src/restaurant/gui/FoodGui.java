@@ -24,6 +24,7 @@ public class FoodGui implements Gui{
 
 	Food choice;
 	String price;
+	int orderedSize;
 	
 	private ImageIcon questionMark = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/question.jpg");
 	private ImageIcon checkImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/check.jpg");
@@ -37,10 +38,11 @@ public class FoodGui implements Gui{
 	String pattern = ".##";
 	DecimalFormat dFormat = new DecimalFormat(pattern);
 	
-	public FoodGui(int t, Food choice){ //HostAgent m) {
+	public FoodGui(int t, Food choice, int orderedSize){ //HostAgent m) {
 			
 		tableNumber = t;
 		this.choice = choice;
+		this.orderedSize = orderedSize;
 		
 		fImage = choice.getImageIcon().getImage();
 		

@@ -213,9 +213,9 @@ public class CashierAgent extends Agent implements Cashier {
 	
 	private void PayBill() {
 		Bill b = bills.get(0);
-		cashTotal -= b.price;
+		cashTotal -= b.price*b.batchSize;
 			
-		b.market.msgPayment(b.price);
+		b.market.msgPayment(b.price*b.batchSize);
 		
 		b.state = Bill.BillState.done;
 	}
