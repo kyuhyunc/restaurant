@@ -20,7 +20,8 @@ public class CashierTest2 extends TestCase
 {
 	//these are instantiated for each test separately via the setUp() method.
 	CashierAgent cashier;
-	MockMarket market;
+	MockMarket market1;
+	MockMarket market2;
 	MockCook cook;
 	
 	private Map<String, Double> menu = new HashMap<String, Double> ();
@@ -32,7 +33,8 @@ public class CashierTest2 extends TestCase
 	public void setUp() throws Exception{
 		super.setUp(); // Q
 		cashier = new CashierAgent("cashier");		
-		market = new MockMarket("mockMarket");
+		market1 = new MockMarket("mockMarket1");
+		market2 = new MockMarket("mockMarket2");
 		cook = new MockCook("mockCook");
 		
 		menu.put("Pizza", 8.99);
@@ -44,10 +46,14 @@ public class CashierTest2 extends TestCase
 	{
 		//setUp() runs first before this test!
 		
-		market.cashier = cashier;	
-		market.inventory.put("Pizza", new Food("Pizza"));
-		market.inventory.get("Pizza").price = 4;
+		market1.cashier = cashier;	
+		market1.inventory.put("Pizza", new Food("Pizza"));
+		market1.inventory.get("Pizza").price = 4;
 		
+		market2.cashier = cashier;	
+		market2.inventory.put("Pizza", new Food("Pizza"));
+		market2.inventory.get("Pizza").price = 4;
+				
 		//check preconditions
 		assertEquals("Cashier should have 0 bills in it, that needs to be paid to market. It doesn't.",cashier.bills.size(), 0);		
 		assertEquals("CashierAgent should have an empty event log before the Cashier's askForPayment is called from the market. Instead, the Cashier's event log reads: "
@@ -55,37 +61,54 @@ public class CashierTest2 extends TestCase
 				
 		//step 1 of the test : cashier receives bill from the market
 		//void msgAskForPayment(String food, int orderedSize, Market market, double price)
-		cashier.msgAskForPayment("Pizza", 2, market, 4);//send the message from a market to cashier to make the cashier to pay bill
-		
+		cashier.msgAskForPayment("Pizza", 2, market1, 4);//send the message from a market to cashier to make the cashier to pay bill
+		cashier.msgAskForPayment("Pizza", 1, market2, 4);//send the message from a market to cashier to make the cashier to pay bill
+				
 		//check postconditions for step 1 and preconditions for step 2
-		assertTrue("Cashier should have logged \"Received msgAskForPaymen\" but didn't. His log reads instead: " 
-				+ cashier.log.getLastLoggedEvent().toString(), cashier.log.containsString("Received msgAskForPaymen"));
+		assertTrue("Cashier should have logged \"Received msgAskForPayment\" but didn't. His log reads instead: " 
+				+ cashier.log.getLastLoggedEvent().toString(), cashier.log.containsString("Received msgAskForPayment"));
 		
 		assertEquals("MockMarket should have an empty event log before the Cashier's scheduler is called. Instead, the MockWaiter's event log reads: "
-						+ market.log.toString(), 0, market.log.size());
+						+ market1.log.toString(), 0, market1.log.size());
+		assertEquals("MockMarket should have an empty event log before the Cashier's scheduler is called. Instead, the MockWaiter's event log reads: "
+						+ market2.log.toString(), 0, market2.log.size());
+
+		assertEquals("Cashier should have 2 bill in it. It doesn't.", cashier.bills.size(), 2);
+		
+		// step 2 - 1
+		assertTrue("Cashier's scheduler should have returned true (no actions to do on a bill from a market), but didn't.", cashier.pickAndExecuteAnAction());
+
+		assertTrue(
+				"MockMarket should have logged \"Received msgPayment\". Instead, the MockMarket's event log reads: "
+						+ market1.log.getLastLoggedEvent().toString(), market1.log.containsString("Received msgPayment"));
+		
+		assertTrue("CashierBill should contain a bill with state == done. It doesn't. Instead: "
+				+ cashier.bills.get(0).state.toString(), cashier.bills.get(0).state == Bill.BillState.done);
+		
+		assertTrue("Cashier's scheduler should have returned true (no actions to do on a bill from a market), but didn't.", cashier.pickAndExecuteAnAction());
+		
+		assertTrue("Market1 should have cash = $8. It contains something else instead: $" 
+				+ market1.cash, market1.cash == 8);
 		
 		assertEquals("Cashier should have 1 bill in it. It doesn't.", cashier.bills.size(), 1);
 		
+		// step 2 - 2
 		assertTrue("Cashier's scheduler should have returned true (no actions to do on a bill from a market), but didn't.", cashier.pickAndExecuteAnAction());
 		
 		assertTrue(
-				"MockMarket should have logged \"Received msgPayment\". Instead, the MockCustomer's event log reads: "
-						+ market.log.getLastLoggedEvent().toString(), market.log.containsString("Received msgPayment"));
+				"MockMarket should have logged \"Received msgPayment\". Instead, the MockMarket's event log reads: "
+						+ market2.log.getLastLoggedEvent().toString(), market2.log.containsString("Received msgPayment"));
 		
-		// step 2 : payment has been made from cashier to market 
-		assertTrue("Market should have cash = $8. It contains something else instead: $" 
-				+ market.cash, market.cash == 8);
-		
-		// step 3 : cashier should have a bill that state == done, and will be erased 
-		assertEquals("Cashier should have 1 bill in it. It doesn't.", cashier.bills.size(), 1);
-	
 		assertTrue("CashierBill should contain a bill with state == done. It doesn't. Instead: "
 				+ cashier.bills.get(0).state.toString(), cashier.bills.get(0).state == Bill.BillState.done);
-			
+		
 		assertTrue("Cashier's scheduler should have returned true (no actions to do on a bill from a market), but didn't.", cashier.pickAndExecuteAnAction());
+
+		assertTrue("Market2 should have cash = $4. It contains something else instead: $" 
+				+ market2.cash, market2.cash == 4);
 		
 		assertEquals("Cashier should have 0 bill in it. It doesn't.", cashier.bills.size(), 0);
-		
+				
 		// step 4
 		assertFalse("Cashier's scheduler should have returned false (no actions left to do), but didn't.", 
 				cashier.pickAndExecuteAnAction());

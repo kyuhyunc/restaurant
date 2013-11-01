@@ -144,7 +144,7 @@ public class CashierAgent extends Agent implements Cashier {
 				for (Bill b : bills) {
 					if (b.state == Bill.BillState.nothing) {
 						b.state = Bill.BillState.inProcess;
-						PayBill();
+						PayBill(b);
 						return true;
 					} else if (b.state == Bill.BillState.done) {
 						bills.remove(b);
@@ -211,8 +211,8 @@ public class CashierAgent extends Agent implements Cashier {
 		c.customer.msgChange(Change);
 	}
 
-	private void PayBill() {
-		Bill b = bills.get(0);
+	private void PayBill(Bill b) {
+		//Bill b = bills.get(0);
 		cashTotal -= b.price * b.orderedSize;
 
 		b.market.msgPayment(b.price * b.orderedSize);
