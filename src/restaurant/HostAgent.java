@@ -17,7 +17,7 @@ public class HostAgent extends Agent {
 	public AgentState state = AgentState.Waiting;//The start state
 	
 	private List<WaiterAgent> waiters = Collections.synchronizedList(new ArrayList<WaiterAgent>());
-	private List<CustomerAgent> waitingCustomers	= Collections.synchronizedList(new ArrayList<CustomerAgent>());
+	private List<CustomerAgent> waitingCustomers = Collections.synchronizedList(new ArrayList<CustomerAgent>());
 	private CookAgent cook;
 	
 	private int numberOfWaiters = 0;

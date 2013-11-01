@@ -9,6 +9,7 @@ import restaurant.WaiterAgent;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +34,8 @@ public class CustomerAgent extends Agent implements Customer {
 	private int tableNumber;
 	
 	//Map<String, Food> menu;
-	private List<String> menu_list = new ArrayList<String> ();
-	private Map<String, Double> menu = new HashMap<String, Double> ();
+	private List<String> menu_list = Collections.synchronizedList(new ArrayList<String> ());
+	private Map<String, Double> menu = Collections.synchronizedMap(new HashMap<String, Double> ());
 	private String choice;
 	private Check check;
 	private Cash cash;
