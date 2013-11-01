@@ -15,11 +15,13 @@ import java.util.concurrent.Semaphore;
 import restaurant.CookAgent.Food;
 import restaurant.gui.FoodGui;
 import restaurant.interfaces.Cashier;
+import restaurant.interfaces.Market;
+import restaurant.test.mock.LoggedEvent;
 
 /**
  * Restaurant market agent.
  */
-public class MarketAgent extends Agent {	
+public class MarketAgent extends Agent implements Market {	
 	private String name;
 	private int marketNumber;
 	Timer timer = new Timer();
@@ -76,6 +78,8 @@ public class MarketAgent extends Agent {
 	
 	public void msgPayment(double cash) {
 		this.cash += cash;
+		
+		log.add(new LoggedEvent("Received msgPayment"));
 	}
 	
 	// TheMarketAndCook 0: message from gui when food arrived to cook

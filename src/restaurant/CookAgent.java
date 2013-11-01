@@ -14,11 +14,13 @@ import java.util.TimerTask;
 import javax.swing.ImageIcon;
 
 import restaurant.MarketAgent.Procure;
+import restaurant.interfaces.Cook;
+
 
 /**
  * Restaurant cook agent.
  */
-public class CookAgent extends Agent {
+public class CookAgent extends Agent implements Cook {
 	static public int NMARKETS = 3;//a global for the number of markets
 	
 	private String name;
@@ -43,6 +45,8 @@ public class CookAgent extends Agent {
 	private Map<String, Food> foods = new HashMap<String, Food> ();
 	private List<String> menu_list = new ArrayList<String> ();
 	
+	private int defaultBatchSize = 3;
+	
 	/**
 	 * Constructor for CookrAgent class
 	 *
@@ -57,7 +61,7 @@ public class CookAgent extends Agent {
 		// setting up the menu
 		for(String s : menu_list) {
 			foods.put(s, new Food(s));
-			foods.get(s).setBatchSize(5);
+			foods.get(s).setBatchSize(defaultBatchSize);
 			foods.get(s).setAmount(2);
 		}		
 	}
@@ -350,20 +354,20 @@ public class CookAgent extends Agent {
 	}
 	
 	public static class Food {
-		String name;
+		public String name;
 		
-		int amount; // stock level
-		int batchSize; // amount of order
+		public int amount; // stock level
+		public int batchSize; // amount of order
 		
-		int time; // for setting timer differently	
-		double price;
+		public int time; // for setting timer differently	
+		public double price;
 		
 		double cookingTimeMultiplier = 7;
 		double eatingTimeMultiplier = 5;
 		
 		private ImageIcon foodImage;
 		
-		Food(String name) {
+		public Food(String name) {
 			this.name = name;
 			//amount = 3; // can set initial amount  depending on foods later
 			
