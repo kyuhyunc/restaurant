@@ -38,7 +38,7 @@ public class MarketAgent extends Agent implements Market {
 	
 	private Semaphore atCook = new Semaphore(0,true);
 	
-	private double cash = 0;	
+	public double cash = 0;	
 
 	private int deliveryTime = 4000;
 	
@@ -252,7 +252,7 @@ public class MarketAgent extends Agent implements Market {
 	}
 	
 	public String toString() {
-		return "cook " + getName();
+		return getName();
 	}
 	
 	public static class Procure {

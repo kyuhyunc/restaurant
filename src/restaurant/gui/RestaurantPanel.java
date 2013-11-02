@@ -4,6 +4,7 @@ import restaurant.CashierAgent;
 import restaurant.CookAgent;
 import restaurant.CustomerAgent;
 import restaurant.HostAgent;
+import restaurant.MarketAgent;
 import restaurant.WaiterAgent;
 
 import javax.swing.*;
@@ -146,7 +147,7 @@ public class RestaurantPanel extends JPanel {
     		customerPanel.updateInfoPanel(c);
     	}
     	else if (type.equals("Waiters")) {
-    		if(waiters.size() < 5){
+    		if(waiters.size() < HostAgent.NWAITERS){
 	    		WaiterAgent w = new WaiterAgent(name);
 	    		WaiterGui w_g = new WaiterGui(w, gui);
 	    		
@@ -156,6 +157,7 @@ public class RestaurantPanel extends JPanel {
 	    		w.setCashier(cashier);
 	    		w.setGui(w_g);
 	    		waiters.add(w);
+	    		w.waiterNumber = waiters.size();
 	    		w.startThread();
 	    		
 	    		host.msgAddWaiterByGui(w);
@@ -266,5 +268,17 @@ public class RestaurantPanel extends JPanel {
     
     public ListPanel getWaiterPanel() {
     	return waiterPanel;
+    }
+    
+    public void hackResetCashier() {
+    	cashier.cashTotal = 0;
+    }
+    
+    public void hackResetMarket() {
+    	synchronized(cook.getMarkets()) {
+	    	for(MarketAgent m : cook.getMarkets()) {
+	    		m.cash = 0;
+	    	}
+    	}
     }
 }

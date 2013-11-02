@@ -155,6 +155,7 @@ public class CookAgent extends Agent implements Cook {
 		order.foodGui.state = FoodGui.State.noCommand;
 		//orders.remove(order);
 		order.state = Order.OrderState.done;
+		stateChanged();
 	}
 	
 	/**

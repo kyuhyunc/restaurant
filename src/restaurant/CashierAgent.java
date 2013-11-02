@@ -32,7 +32,7 @@ public class CashierAgent extends Agent implements Cashier {
 			.synchronizedList(new ArrayList<Bill>());
 	
 	private Map<String, Double> menu;
-	private double cashTotal = 30;
+	public double cashTotal = 30;
 
 	public String pattern = ".00";
 	public DecimalFormat dFormat = new DecimalFormat(pattern);
@@ -209,11 +209,16 @@ public class CashierAgent extends Agent implements Cashier {
 		c.customer.msgChange(Change);
 		
 		// check bills if cashier earns money
+		double sum = 0;
 		for(Bill b : bills) {
 			if(b.state == Bill.BillState.unPaid) {
-				if(cashTotal >= b.price) {
-					Do("I can now pay to the market for the order [extra creidt]");
+				sum += (b.price*b.orderedSize);
+				if(cashTotal >= sum) {
+					Do("I can now pay to the " + b.market + " for the order " + b.food + " [extra creidt]");
 					b.state = Bill.BillState.nothing;
+				}
+				else {
+					break;
 				}
 			}
 		}
@@ -230,7 +235,7 @@ public class CashierAgent extends Agent implements Cashier {
 			b.state = Bill.BillState.done;
 		}
 		else {
-			Do("I don't have enough money to pay to the market for the order");
+			Do("I don't have enough money to pay to the " + b.market + " for the order " + b.food + " [extra creidt]");
 			b.state = Bill.BillState.unPaid;
 		}
 	}

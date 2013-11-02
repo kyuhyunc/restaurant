@@ -126,8 +126,8 @@ public class CustomerGui implements Gui{
 	}
 	
 	public void DoGoToLine(int waitingNumber) {
-		xDestination = AnimationPanel.WaitingAreaLocationX + customerSize*2*(waitingNumber-1);
-		yDestination = AnimationPanel.WaitingAreaLocationY - 10*(waitingNumber-1);
+		xDestination = AnimationPanel.WaitingAreaLocationX + (customerSize+2)*2*(waitingNumber-1);
+		yDestination = AnimationPanel.WaitingAreaLocationY - 13*(waitingNumber-1);
 		command = Command.GoToLine;
 	}
 }

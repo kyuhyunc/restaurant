@@ -23,6 +23,7 @@ import java.util.concurrent.Semaphore;
  */
 public class WaiterAgent extends Agent implements Waiter{
 	private String name;
+	public int waiterNumber;
 	
 	// agent correspondents
 	private HostAgent host;
@@ -30,7 +31,7 @@ public class WaiterAgent extends Agent implements Waiter{
 	private CashierAgent cashier;
 	
 	public enum AgentState
-	{Waiting, Serving};
+	{GoToHome, Waiting, Serving};
 	public AgentState state = AgentState.Waiting;//The start state
 	
 	public enum AgentBreak
@@ -49,6 +50,7 @@ public class WaiterAgent extends Agent implements Waiter{
 	private Semaphore atHost = new Semaphore(0,true);
 	private Semaphore atCashier = new Semaphore(0,true);
 	private Semaphore atLine = new Semaphore(0,true);
+	private Semaphore atHome = new Semaphore(0,true);
 		
 	private List<String> menu_list = Collections.synchronizedList(new ArrayList<String> ());
 	private Map<String, Double> menu = Collections.synchronizedMap(new HashMap<String, Double> ());
@@ -64,6 +66,10 @@ public class WaiterAgent extends Agent implements Waiter{
 	}
 
 	// Messages
+	public void msgCommutToRestaurant() {
+		state = AgentState.GoToHome;
+		stateChanged();
+	}	
 	
 	// 2: SitAtTable(customer, table)
 	public void msgSitAtTable(CustomerAgent customer, Table table) {
@@ -241,12 +247,21 @@ public class WaiterAgent extends Agent implements Waiter{
 		
 		stateChanged();
 	}
+	
+	public void msgAtHome() {
+		atHome.release();	
+	}
 
 	/**
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
 	protected boolean pickAndExecuteAnAction() {
 		//	WaiterAgent is a finite state machine
+		if(state == AgentState.GoToHome) {
+			state = AgentState.Waiting;
+			GoToHomePosition();
+			return true;
+		}		
 		synchronized (MyCustomers) {
 			if (state == AgentState.Waiting) {
 				for (MyCustomer customer : MyCustomers) {
@@ -308,15 +323,25 @@ public class WaiterAgent extends Agent implements Waiter{
 	}
 
 	// Actions
+	void GoToHomePosition() {
+		waiterGui.DoGoToHome();
+		try {
+			atHome.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	void SitAtTable(MyCustomer customer) {
 		// set up the initial position to the host
-		waiterGui.DoGoBackToHost();
+		/**waiterGui.DoGoBackToHost();
 		try {
 			atHost.acquire(); // 
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}	
+		}*/
 		
 		waiterGui.DoGoToLine();
 		try {
@@ -350,7 +375,8 @@ public class WaiterAgent extends Agent implements Waiter{
 		customer.state = MyCustomer.CustState.seated;
 		
 		state = AgentState.Waiting;
-		waiterGui.DoGoBackToHost2();
+		//waiterGui.DoGoBackToHost2();
+		waiterGui.DoGoToHome2();
 	}
 	
 	void DoSeatCustomer(MyCustomer customer) {
@@ -384,7 +410,8 @@ public class WaiterAgent extends Agent implements Waiter{
 		customer.state = MyCustomer.CustState.waitingFood2;
 		
 		state = AgentState.Waiting;
-		waiterGui.DoGoBackToHost2();
+		//waiterGui.DoGoBackToHost2();
+		waiterGui.DoGoToHome2();
 		
 		Do("Here is an order " + customer.choice + " from " + customer.c);
 		cook.msgHereIsAnOrder(new Order(this, customer.c, customer.choice));
@@ -408,7 +435,8 @@ public class WaiterAgent extends Agent implements Waiter{
 		customer.state = MyCustomer.CustState.reOrdering;
 		
 		state = AgentState.Waiting;
-		waiterGui.DoGoBackToHost2();
+		//waiterGui.DoGoBackToHost2();
+		waiterGui.DoGoToHome2();
 		
 		// update the menu of customer;
 		customer.c.msgAskForOrderAgain(menu_list);
@@ -444,7 +472,8 @@ public class WaiterAgent extends Agent implements Waiter{
 		
 		//orderToPick.remove(customer.order);
 		state = AgentState.Waiting;
-		waiterGui.DoGoBackToHost2();
+		//waiterGui.DoGoBackToHost2();
+		waiterGui.DoGoToHome2();
 		
 		Do("Here is an order " + customer.choice + " for you, " + customer.c);
 		customer.c.msgHereIsYourOrder();
@@ -474,7 +503,8 @@ public class WaiterAgent extends Agent implements Waiter{
 		cashier.msgComputeBill(c.choice, c.c, this, c.t.tableNumber, menu);		
 		
 		state = AgentState.Waiting;
-		waiterGui.DoGoBackToHost2();
+		//waiterGui.DoGoBackToHost2();
+		waiterGui.DoGoToHome2();
 	}
 	
 
@@ -509,7 +539,8 @@ public class WaiterAgent extends Agent implements Waiter{
 		//checkToPick.remove(c.check);
 		
 		state = AgentState.Waiting;
-		waiterGui.DoGoBackToHost2();
+		//waiterGui.DoGoBackToHost2();
+		waiterGui.DoGoToHome2();
 	}
 	
 	void TableIsCleared(MyCustomer customer) {

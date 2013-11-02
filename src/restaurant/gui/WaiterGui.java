@@ -15,10 +15,10 @@ public class WaiterGui implements Gui {
     
     private int gap = AnimationPanel.gap;
     
-    private int xPos = -20, yPos = -20;//default waiter position
+    private int xPos = 300, yPos = -20;//default waiter position
     private int xDestination = -20, yDestination = -20;//default start position
     private int WaiterSize = 20;
-    private enum Command {noCommand, GoToLine, GoToTable, GoToCook, GoToHost, GoToHost2, GoToCashier};
+    private enum Command {noCommand, GoToLine, GoToTable, GoToCook, GoToHome, GoToHome2, GoToHost, GoToHost2, GoToCashier};
 	private Command command=Command.noCommand;
 	
     RestaurantGui gui;
@@ -53,6 +53,9 @@ public class WaiterGui implements Gui {
         	//else if (xPos == -20 && yPos == -20) {
         		//agent.msgReadyToServe();
         		agent.msgAtHost();
+        	}
+        	else if (command == Command.GoToHome) {
+        		agent.msgAtHome();
         	}
         	else if (command == Command.GoToLine) {
         		agent.msgAtLine();
@@ -97,6 +100,20 @@ public class WaiterGui implements Gui {
     
     // DoGoBackToHost is to make waiter go back to Host strictly
     // DoGoBackToHost2 is to make waiter go back to Host, but can be interrupted if the customer calls him
+    public void DoGoToHome() {
+    	xDestination = AnimationPanel.WaiterAreaLocationX + (WaiterSize+10)*(agent.waiterNumber-1);
+    	yDestination = AnimationPanel.WaitingAreaLocationY + WaiterSize;
+    	
+    	command = Command.GoToHome;
+    }
+    
+    public void DoGoToHome2() {
+    	xDestination = AnimationPanel.WaiterAreaLocationX + (WaiterSize+10)*(agent.waiterNumber-1);
+    	yDestination = AnimationPanel.WaitingAreaLocationY + WaiterSize;
+    	
+    	command = Command.GoToHome2;
+    }
+    
     public void DoGoBackToHost() {
         xDestination = -20;
         yDestination = -20;

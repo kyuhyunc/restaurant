@@ -11,6 +11,7 @@ import java.util.*;
  */
 public class HostAgent extends Agent {
 	static public int NTABLES = 3;//a global for the number of tables.
+	static public int NWAITERS = 5;//a global for the number of tables.
 	
 	public enum AgentState
 	{Waiting, Serving};
@@ -52,6 +53,7 @@ public class HostAgent extends Agent {
 		Do("New waiter " + waiter.getName() + " is added");				
 		numberOfWaiters ++;
 		waiters.add(waiter);
+		waiter.msgCommutToRestaurant();
 		stateChanged();
 	}
 	

@@ -46,6 +46,11 @@ public class AnimationPanel extends JPanel implements ActionListener {
     protected static int WaitingPointSizeX = 20;
     protected static int WaitingPointSizeY = 20;    
     
+    protected static int WaiterAreaLocationX = 300;
+    protected static int WaiterAreaLocationY = 80;
+    protected static int WaiterPointSizeX = 20;
+    protected static int WaiterPointSizeY = 20;
+    
     private List<Gui> guis = Collections.synchronizedList(new ArrayList<Gui>());
        
     //static variables to replace magic numbers
@@ -132,7 +137,8 @@ public class AnimationPanel extends JPanel implements ActionListener {
         g2.fillRect(RefrigLocationX, RefrigLocationY, RefrigSizeX, RefrigSizeY);
         
         g2.setColor(Color.lightGray);
-        g2.fillRect(WaitingAreaLocationX, WaitingAreaLocationY, WaitingPointSizeX, WaitingPointSizeY);
+        //g2.fillRect(WaitingAreaLocationX, WaitingAreaLocationY, WaitingPointSizeX, WaitingPointSizeY);
+        //g2.fillRect(WaiterAreaLocationX, WaiterAreaLocationY, WaiterPointSizeX, WaiterPointSizeY);
         
         
         int m=0;
