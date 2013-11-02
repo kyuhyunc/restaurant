@@ -30,9 +30,9 @@ public class CashierAgent extends Agent implements Cashier {
 	// this is for checks for markets
 	public List<Bill> bills = Collections
 			.synchronizedList(new ArrayList<Bill>());
-
+	
 	private Map<String, Double> menu;
-	private double cashTotal;
+	private double cashTotal = 30;
 
 	public String pattern = ".00";
 	public DecimalFormat dFormat = new DecimalFormat(pattern);
@@ -46,8 +46,6 @@ public class CashierAgent extends Agent implements Cashier {
 	public CashierAgent(String name) {
 		super();
 		this.name = name;
-
-		cashTotal = 200;
 	}
 
 	/**
@@ -209,15 +207,32 @@ public class CashierAgent extends Agent implements Cashier {
 
 		checks.remove(c);
 		c.customer.msgChange(Change);
+		
+		// check bills if cashier earns money
+		for(Bill b : bills) {
+			if(b.state == Bill.BillState.unPaid) {
+				if(cashTotal >= b.price) {
+					Do("I can now pay to the market for the order [extra creidt]");
+					b.state = Bill.BillState.nothing;
+				}
+			}
+		}
+		
 	}
 
 	private void PayBill(Bill b) {
 		//Bill b = bills.get(0);
-		cashTotal -= b.price * b.orderedSize;
+		if(cashTotal >= (b.price*b.orderedSize)) {
+			cashTotal -= b.price * b.orderedSize;
 
-		b.market.msgPayment(b.price * b.orderedSize);
+			b.market.msgPayment(b.price * b.orderedSize);
 
-		b.state = Bill.BillState.done;
+			b.state = Bill.BillState.done;
+		}
+		else {
+			Do("I don't have enough money to pay to the market for the order");
+			b.state = Bill.BillState.unPaid;
+		}
 	}
 
 	// Accessors, etc.
@@ -292,7 +307,7 @@ public class CashierAgent extends Agent implements Cashier {
 		//private double totalPrice;
 
 		public enum BillState {
-			nothing, inProcess, done
+			nothing, inProcess, unPaid, done
 		};
 
 		public BillState state = BillState.nothing;

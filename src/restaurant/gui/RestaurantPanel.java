@@ -53,8 +53,12 @@ public class RestaurantPanel extends JPanel {
         cook.setHost(host);
         cook.setCashier(cashier);
         cook.setDefaultMarkets();
+        cook.setDefaultPlatsAndGrills();
+        CookGui cookGui = new CookGui(cook);
+		gui.animationPanel.addGui(cookGui);
+		cook.setGui(cookGui);
         cook.startThread();
-        
+		
         cashier.startThread();
         
         gui.animationPanel.setCook(cook);

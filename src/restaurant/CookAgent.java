@@ -10,18 +10,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Semaphore;
 
 import javax.swing.ImageIcon;
 
 import restaurant.MarketAgent.Procure;
+import restaurant.WaiterAgent.MyCustomer;
+import restaurant.gui.CookGui;
+import restaurant.gui.FoodGui;
 import restaurant.interfaces.Cook;
-
 
 /**
  * Restaurant cook agent.
  */
 public class CookAgent extends Agent implements Cook {
 	static public int NMARKETS = 3;//a global for the number of markets
+	static public int NPLAT = 5;
+	static public int NGRILL = 5;
 	
 	private String name;
 	Timer timer = new Timer();
@@ -32,20 +37,29 @@ public class CookAgent extends Agent implements Cook {
 
 	private List<MarketAgent> markets = Collections.synchronizedList(new ArrayList<MarketAgent> ());
 	
-	private List<ProcureContract> contracts = Collections.synchronizedList(new ArrayList<ProcureContract> ());
+	private List<Grill> grills = Collections.synchronizedList(new ArrayList<Grill> ());
+	private List<Plat> plats = Collections.synchronizedList(new ArrayList<Plat> ());
 	
+	private List<ProcureContract> contracts = Collections.synchronizedList(new ArrayList<ProcureContract> ());
+		
 	private HostAgent host;
 	private CashierAgent cashier;
+	
+	private CookGui cookGui;
 	
 	/**
 	 * If I need to change foods list, all places I need to modify is here
 	 * food (foods) in cook is current food information for cook
 	 * food (inventory) in market is current food information for markets
 	 */
-	private Map<String, Food> foods = new HashMap<String, Food> ();
-	private List<String> menu_list = new ArrayList<String> ();
+	private Map<String, Food> foods = Collections.synchronizedMap(new HashMap<String, Food> ());
+	private List<String> menu_list = Collections.synchronizedList(new ArrayList<String> ());
 	
 	private int defaultBatchSize = 3;
+	
+	private Semaphore atGrill = new Semaphore(0,true);
+	private Semaphore atPlat = new Semaphore(0,true);
+	private Semaphore atRefrig = new Semaphore(0,true);
 	
 	/**
 	 * Constructor for CookrAgent class
@@ -95,7 +109,7 @@ public class CookAgent extends Agent implements Cook {
 	}
 	
 	public void msgTellOrderSize(MarketAgent m, String food, int orderedSize) {
-		synchronized(contracts) {
+		//synchronized(contracts) {
 			for(ProcureContract cp : contracts) {
 				if(cp.food == food) {
 					cp.orderedSize += orderedSize;
@@ -109,8 +123,38 @@ public class CookAgent extends Agent implements Cook {
 					break;
 				}
 			}
-		}
+		//}
 		stateChanged();
+	}
+	
+	public void msgAtRefrig() {
+		atRefrig.release();
+	}
+	
+	public void msgAtGrill() {
+		atGrill.release();
+	}
+	
+	public void msgAtPlat() {
+		atPlat.release();
+	}
+	
+	public void msgArrivedToPick(MyCustomer customer) {
+	//public void msgArrivedToPick(CustomerAgent customer) {
+		/**synchronized (orders) {
+			for(Order o : orders) {
+				if( o.customer == customer ) {
+					o.foodGui.state = FoodGui.State.noCommand;
+					o.plat.setUnoccupied();
+					orders.remove(o);
+					break;
+				}
+			}
+		}*/
+		//customer.c.foodGui.state = FoodGui.State.noCommand;
+		customer.order.plat.setUnoccupied();
+		customer.order.foodGui.state = FoodGui.State.noCommand;
+		orders.remove(customer.order);
 	}
 	
 	/**
@@ -126,6 +170,7 @@ public class CookAgent extends Agent implements Cook {
 						return true;
 					}
 					else if(orders.get(i).state == Order.OrderState.Cooked) {
+						orders.get(i).state = Order.OrderState.done;
 						OrderIsReady(orders.get(i));
 						return true;
 					}
@@ -167,10 +212,19 @@ public class CookAgent extends Agent implements Cook {
 
 	// Actions
 	private void CookOrder(Order order) {
+
+		cookGui.DoGoToRefrig();
+		try {
+			atRefrig.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		
 		if(foods.get(order.choice).amount > 0) {
-			Do("Start cooking");
-			DoCooking(order);
+			Do("Go to grill to Start cooking");
 			foods.get(order.choice).amount --;
+			DoCooking(order);
 			if (foods.get(order.choice).amount == 1 || foods.get(order.choice).amount == 0) {
 				Do("There is only " + foods.get(order.choice).amount + " stock left for the food " + order.choice);
 				// BuyFood
@@ -187,6 +241,35 @@ public class CookAgent extends Agent implements Cook {
 	}
 	
 	private void DoCooking(Order order) {
+		Do("aaaaaaaaaaaaaaaaaaaa");
+		synchronized(grills) {
+			for(Grill g : grills) {
+				if(!g.isOccupied()) {
+					Do("bbbbbbbbbbbbbbbbb");
+					order.setGrill(g);
+					g.setOccupied();
+					FoodGui ingredient = new FoodGui(g.grillNumber, foods.get(order.choice), 1);
+					ingredient.setCook(this);
+					order.foodGui = ingredient;
+					host.gui.animationPanel.addGui(ingredient);
+					break;
+				}
+			}
+		}
+		Do("ccccccccccccccc");
+		
+		order.foodGui.state = FoodGui.State.refrigToGill;
+		order.foodGui.DoGoToGrill(order.grill.grillNumber);
+		
+		cookGui.DoGoToGrill();
+		try {
+			atGrill.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		Do("dddddddddddddddddddddd");
+		
 		Timer timer = new Timer();
 		
 		class MyTimerTask extends TimerTask {
@@ -203,14 +286,46 @@ public class CookAgent extends Agent implements Cook {
 			}
 		}
 		
-		timer.schedule(new MyTimerTask(order), (int) (foods.get(order.choice).getCookingTime()));	
+		timer.schedule(new MyTimerTask(order), (int) (foods.get(order.choice).getCookingTime()));
+		
+		cookGui.DoGoToDefault();		
 	}
 	
 	
 	private void OrderIsReady(Order order) {
+		
+		cookGui.DoGoToGrill();
+		try {
+			atGrill.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+		
+		for(Plat p : plats) {
+			if(!p.isOccupied()) {
+				order.setPlat(p);
+				order.grill.setUnoccupied();
+				p.setOccupied();
+				order.foodGui.tableNumber = p.platNumber;
+				break;
+			}
+		}
+		
+		order.foodGui.state = FoodGui.State.grillToPlat;
+		order.foodGui.DoGoToPlat(order.plat.platNumber);
+		
+		cookGui.DoGoToPlat(order.plat.platNumber);
+		try {
+			atPlat.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+				
 		Do("Order for " + order.customer + " is ready : " + order.choice);
 		order.waiter.msgOrderIsReady(order);
-		orders.remove(order);
+
 	}
 	
 	private void OrderIsOutOfStock(Order order) {
@@ -232,7 +347,8 @@ public class CookAgent extends Agent implements Cook {
 		}
 		
 		if(!alreadyOrdered) {
-			contracts.add(new ProcureContract(food, batchSize));	
+			contracts.add(new ProcureContract(food, batchSize));
+			Do("eeeeeeeeeeeeeeeeeeee");
 		}
 		else {
 			Do(food + " has been ordered already");
@@ -243,11 +359,13 @@ public class CookAgent extends Agent implements Cook {
 		boolean alreadyOrderedToAllMarkets = true;
 		pc.state = ProcureContract.ContractState.Ordering;
 		
+		MarketAgent market = null;
+		
 		synchronized(markets) {
 			for(MarketAgent m : markets) {
 				if(!pc.orders.containsKey(m)) {
-					Do("Order " + pc.food +"(" + (pc.orderSize-pc.orderedSize) + ")"+ " to " + m.getName());
-					m.msgBuyFood(pc.food, pc.orderSize-pc.orderedSize);
+					market = m;
+					//m.msgBuyFood(pc.food, pc.orderSize-pc.orderedSize);
 					alreadyOrderedToAllMarkets = false;
 					break;
 				}
@@ -258,6 +376,10 @@ public class CookAgent extends Agent implements Cook {
 			Do("Cannot order " + (pc.orderSize-pc.orderedSize) + " number of " + pc.food + " (No Stock)");
 			contracts.remove(pc);
 		}
+		else if(market != null) {
+			market.msgBuyFood(pc.food, pc.orderSize-pc.orderedSize);
+			Do("Order " + pc.food +"(" + (pc.orderSize-pc.orderedSize) + ")"+ " to " + market.getName());
+		}
 	}
 
 	// Accessors, etc.
@@ -267,6 +389,10 @@ public class CookAgent extends Agent implements Cook {
 	
 	public void setCashier(CashierAgent cashier) {
 		this.cashier = cashier;
+	}
+	
+	public void setGui(CookGui cookGui) {
+		this.cookGui = cookGui;
 	}
 	
 	public String getName() {
@@ -302,6 +428,17 @@ public class CookAgent extends Agent implements Cook {
 		}
 	}
 	
+	public void setDefaultPlatsAndGrills() {
+		for(int i=0;i<NPLAT;i++){
+			Plat p = new Plat(i+1);
+			plats.add(p);				
+		}
+		for(int i=0;i<NGRILL;i++){
+			Grill g = new Grill(i+1);
+			grills.add(g);				
+		}
+	}
+	
 	public void addMarketByGui() {
 		MarketAgent m = new MarketAgent("Market #" + NMARKETS);
 		m.setCook(this);
@@ -313,6 +450,7 @@ public class CookAgent extends Agent implements Cook {
 		m.startThread();
 	}
 	
+	
 	public List<MarketAgent> getMarkets() {
 		return markets;
 	}
@@ -321,6 +459,10 @@ public class CookAgent extends Agent implements Cook {
 		WaiterAgent waiter;
 		CustomerAgent customer;
 		String choice;
+		FoodGui foodGui;
+		
+		Grill grill;
+		Plat plat;
 		
 		Order (WaiterAgent waiter, CustomerAgent customer, String choice) {
 			this.waiter = waiter;
@@ -329,8 +471,28 @@ public class CookAgent extends Agent implements Cook {
 		}
 		
 		public enum OrderState
-		{Pending, Cooking, Cooked, outOfStock};
+		{Pending, Cooking, Cooked, outOfStock, done};
 		OrderState state = OrderState.Pending;
+		
+		public void setFoodGui(int platingNumber, Food food, int cookSize) {
+			foodGui = new FoodGui(platingNumber, food, cookSize);
+		}
+		
+		public void setGrill(Grill grill) {
+			this.grill = grill;
+		}
+		
+		public void setPlat(Plat plat) {
+			this.plat = plat;
+		}
+		
+		public Grill getGrill() {
+			return grill;
+		}
+		
+		public Plat getPlat() {
+			return plat;
+		}
 	}
 	
 	public static class ProcureContract {
@@ -429,5 +591,58 @@ public class CookAgent extends Agent implements Cook {
 			return amount;
 		}
 	}
+	
+	public class Plat {
+		boolean occupied;
+		int platNumber;
+
+		Plat(int platNumber) {
+			this.platNumber = platNumber;
+			occupied = false;
+		}
+
+		void setOccupied() {
+			occupied = true;
+		}
+
+		void setUnoccupied() {
+			occupied = false;
+		}
+
+		boolean isOccupied() {
+			return occupied;
+		}
+
+		public String toString() {
+			return "table " + platNumber;
+		}
+	}
+	
+	public class Grill {
+		boolean occupied;
+		int grillNumber;
+
+		Grill(int grillNumber) {
+			this.grillNumber = grillNumber;
+			occupied = false;
+		}
+
+		void setOccupied() {
+			occupied = true;
+		}
+
+		void setUnoccupied() {
+			occupied = false;
+		}
+
+		boolean isOccupied() {
+			return occupied;
+		}
+
+		public String toString() {
+			return "table " + grillNumber;
+		}
+	}
+	
 }
 

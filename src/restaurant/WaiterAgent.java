@@ -142,6 +142,11 @@ public class WaiterAgent extends Agent implements Waiter{
 		synchronized (MyCustomers) {
 			for(MyCustomer cust : MyCustomers) {
 				if(cust.c == order.customer) {
+					//int tableNumber = cust.c.foodGui.tableNumber; 
+					//cust.c.foodGui.state = FoodGui.State.noCommand;
+					cust.fg = order.foodGui;
+					//cust.c.foodGui = order.foodGui;
+					//cust.c.foodGui.tableNumber = tableNumber;
 					cust.state = MyCustomer.CustState.foodIsReady;
 					cust.order = order;
 					//orderToPick.add(order);
@@ -403,6 +408,14 @@ public class WaiterAgent extends Agent implements Waiter{
 			e.printStackTrace();
 		}
 		
+		//cook.msgArrivedToPick(customer.c);
+		cook.msgArrivedToPick(customer);
+	
+		/**customer.c.foodGui.state = FoodGui.State.noCommand;
+		customer.c.foodGui = customer.fg;
+		customer.c.foodGui.tableNumber = customer.t.tableNumber;
+		*/
+		
 		customer.c.getFoodGui().state = FoodGui.State.delivering;
 		customer.c.getFoodGui().DoGoToTable();
 				
@@ -555,6 +568,7 @@ public class WaiterAgent extends Agent implements Waiter{
 		String choice;
 		Check check;
 		Order order;
+		FoodGui fg;
 
 		public enum CustState
 		{Waiting, seated, readyToOrder, askedForOrder, waitingFood1, waitingFood2, foodIsReady, 

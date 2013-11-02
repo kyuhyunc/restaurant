@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
 import restaurant.CookAgent.Food;
+import restaurant.CookAgent.Order;
 import restaurant.gui.FoodGui;
 import restaurant.interfaces.Cashier;
 import restaurant.interfaces.Market;
@@ -27,6 +28,7 @@ public class MarketAgent extends Agent implements Market {
 	Timer timer = new Timer();
 
 	private List<Procure> procures = Collections.synchronizedList(new ArrayList<Procure>());
+	private List<Procure> pendingProcures = Collections.synchronizedList(new ArrayList<Procure>());
 	
 	private Map<String, Food> inventory = Collections.synchronizedMap(new HashMap<String, Food> ());
 	private List<String> food_list;
@@ -61,15 +63,32 @@ public class MarketAgent extends Agent implements Market {
 		// check availability for the procure order
 		Do("received an procure order for " + food + " from cook ");
 		
+		boolean deliveringOrder = false;
+		
+		for(Procure p : procures){
+			if(p.state != Procure.ProcureState.Pending) {
+				deliveringOrder = true;
+			}
+		}
+				
 		if(inventory.get(food).amount < orderedSize) {
-			procures.add(new Procure(food, inventory.get(food).amount));
-			if(inventory.get(food).amount == 0) {
-				Do("Not enough stock of " + food + " for the order");
+			Do("Not enough stock of " + food + " for the order");
+			if(deliveringOrder == true) {
+				procures.add(new Procure(food, inventory.get(food).amount));
+			}
+			else {
+				pendingProcures.add(new Procure(food, inventory.get(food).amount));
 			}
 			inventory.get(food).amount = 0; // minus stock level in advance
 		}
-		else { 
-			procures.add(new Procure(food, orderedSize));
+		else {
+			if(deliveringOrder == true) {
+				procures.add(new Procure(food, orderedSize));
+			}
+			else {
+				pendingProcures.add(new Procure(food, orderedSize));
+			}
+				
 			inventory.get(food).amount -= orderedSize; // minus stock level in advance
 		}
 			
@@ -107,6 +126,17 @@ public class MarketAgent extends Agent implements Market {
 				//return true; // return true when state is Delivering, so that market can wait
 			}
 		}
+		
+		synchronized (pendingProcures) {
+			if(!pendingProcures.isEmpty()) {
+				for(Procure p : pendingProcures) {
+					procures.add(p);
+				}		
+				pendingProcures.clear();
+				return true;
+			}
+		}
+		
 		return false; // return false when there is no procure orders
 	}
 
@@ -115,7 +145,9 @@ public class MarketAgent extends Agent implements Market {
 		print("Start Delivering");
 			
 		cashier.msgAskForPayment(procure.food, procure.orderedSize, this, inventory.get(procure.food).price);
+		Do("aaaaaaaaaaaaaaaaaaaaa");
 		cook.msgTellOrderSize(this, procure.food, procure.orderedSize);
+		Do("bbbbbbbbbbbbbbbbbbbbb");
 		if(procure.orderedSize > 0) {
 			DoDeliver(procure);
 		}

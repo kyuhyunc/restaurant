@@ -25,7 +25,7 @@ public class CustomerAgent extends Agent implements Customer {
 	private int hungerLevel = 1;        // determines length of meal
 	Timer timer = new Timer();
 	private CustomerGui customerGui;
-	private FoodGui foodGui;
+	public FoodGui foodGui;
 
 	// agent correspondents
 	private HostAgent host;

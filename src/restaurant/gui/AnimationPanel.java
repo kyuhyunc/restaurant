@@ -16,25 +16,40 @@ import java.util.ArrayList;
 
 public class AnimationPanel extends JPanel implements ActionListener {
 
-    private final int WINDOWX = 720;
+    private final int WINDOWX = 870;
     private final int WINDOWY = 380;
     //private Image bufferImage;
     //private Dimension bufferSize;
+    
+    protected static int RefrigLocationX = 590;
+    protected static int RefrigLocationY = 100;
+    protected static int RefrigSizeX = 80;
+    protected static int RefrigSizeY = 50;
 
+    protected static int PlatingAreaLocationX = 460;
+    protected static int PlatingAreaLocationY = 50;
+    protected static int PlatingAreaSizeX = 25;
+    protected static int PlatingAreaSizeY = 250;
+    
+    protected static int CookingAreaLocationX = 490;
+    protected static int CookingAreaLocationY = 50;
+    protected static int CookingAreaSizeX = 100;
+    protected static int CookingAreaSizeY = 50;
+        
     private List<Gui> guis = Collections.synchronizedList(new ArrayList<Gui>());
        
     //static variables to replace magic numbers
-    protected static int TableLocationX = 50;
+    protected static int TableLocationX = 30;
     protected static int TableLocationY = 250;
     protected static int TableSizeX = 50;
     protected static int TableSizeY = 50;
     
-    protected static int CookLocationX = 450;
-    protected static int CookLocationY = 130;
+    protected static int CookLocationX = 500;
+    protected static int CookLocationY = 160;
     protected static int CookSizeX = 30;
     protected static int CookSizeY = 30;
     
-    protected static int MarketLocationX = 550;
+    protected static int MarketLocationX = 730;
     protected static int MarketLocationY = 50;
     protected static int MarketSizeX = 50;
     protected static int MarketSizeY = 50;
@@ -94,7 +109,16 @@ public class AnimationPanel extends JPanel implements ActionListener {
         for(int i=0 ; i < CookAgent.NMARKETS ; i++) {
 	        g2.drawImage(mImage, MarketLocationX, MarketLocationY + (gap*i), MarketSizeX, MarketSizeY, null);
         }
+                
+        g2.setColor(Color.lightGray);
+        g2.fillRect(PlatingAreaLocationX, PlatingAreaLocationY, PlatingAreaSizeX, PlatingAreaSizeY);
         
+        g2.setColor(Color.black);
+        g2.fillRect(CookingAreaLocationX, CookingAreaLocationY, CookingAreaSizeX, CookingAreaSizeY);
+        
+        g2.setColor(Color.white);
+        g2.fillRect(RefrigLocationX, RefrigLocationY, RefrigSizeX, RefrigSizeY);
+                
         int m=0;
         int n=0;
         for(MarketAgent M : cook.getMarkets()) {
@@ -110,10 +134,11 @@ public class AnimationPanel extends JPanel implements ActionListener {
         }
         
         int i=0;
-        g.drawImage(cImage, CookLocationX, CookLocationY, CookSizeX, CookSizeY, null);
+        //g.drawImage(cImage, CookLocationX, CookLocationY, CookSizeX, CookSizeY, null);
         for(String food : cook.getMenuList()) {
         	g2.setColor(Color.black);
-        	g2.drawString(food + ": " + cook.getFoods().get(food).getStock(), CookLocationX, CookLocationY+CookSizeY+11+i*11);
+        	//g2.drawString(food + ": " + cook.getFoods().get(food).getStock(), CookLocationX, CookLocationY+CookSizeY+11+i*11);
+        	g2.drawString(food + ": " + cook.getFoods().get(food).getStock(), RefrigLocationX + 2, RefrigLocationY+12+i*11);
         	i++;
         }
         
@@ -147,6 +172,10 @@ public class AnimationPanel extends JPanel implements ActionListener {
     }
     
     public void addGui(FoodGui gui) {
+        guis.add(gui);
+    }
+    
+    public void addGui(CookGui gui) {
         guis.add(gui);
     }
     

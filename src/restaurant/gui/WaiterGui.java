@@ -17,6 +17,7 @@ public class WaiterGui implements Gui {
     
     private int xPos = -20, yPos = -20;//default waiter position
     private int xDestination = -20, yDestination = -20;//default start position
+    private int WaiterSize = 20;
     private enum Command {noCommand, GoToTable, GoToCook, GoToHost, GoToHost2, GoToCashier};
 	private Command command=Command.noCommand;
 	
@@ -65,7 +66,7 @@ public class WaiterGui implements Gui {
 
     public void draw(Graphics2D g) {
     	g.setColor(Color.black);
-    	g.drawImage(image, xPos, yPos, 20, 20, null);
+    	g.drawImage(image, xPos, yPos, WaiterSize, WaiterSize, null);
         g.drawString(agent.getName(), xPos, yPos);
     }
 
@@ -81,8 +82,12 @@ public class WaiterGui implements Gui {
     }
 
     public void GoToCook() {
-    	xDestination = AnimationPanel.CookLocationX - 20;
+    	//xDestination = AnimationPanel.CookLocationX - 20;
+    	xDestination = AnimationPanel.PlatingAreaLocationX - WaiterSize;
     	yDestination = AnimationPanel.CookLocationY;
+    	//xDestination = x - WaiterSize;
+    	//yDestination = y;
+    	
     	
         command = Command.GoToCook;
     }

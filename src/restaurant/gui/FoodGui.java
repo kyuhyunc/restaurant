@@ -1,5 +1,6 @@
 package restaurant.gui;
 
+import restaurant.CookAgent;
 import restaurant.CookAgent.Food;
 import restaurant.MarketAgent;
 
@@ -10,16 +11,18 @@ import javax.swing.ImageIcon;
 
 public class FoodGui implements Gui{
 
-	private int xPos, yPos;
+	public int xPos, yPos;
 	private int xDestination, yDestination;
 	private boolean isPresent = false;
 	
 	private int gap = AnimationPanel.gap;
 	
 	MarketAgent market;
+	CookAgent cook;
 	
 	public static enum State {noCommand, waiting, delivering, delivered, doneEating,
-		waitingCheck, deliveringCheck, goToCashier, reOrdering, done, procurement};
+		waitingCheck, deliveringCheck, goToCashier, reOrdering, done, procurement,
+		refrigToGill, cooking, grillToPlat, waitingToBePicked};
 	public State state=State.noCommand;
 
 	Food choice;
@@ -33,7 +36,7 @@ public class FoodGui implements Gui{
 	private Image cImage = checkImage.getImage();
 	private Image fImage;
 	
-	int tableNumber; // for market ant table
+	public int tableNumber; // for market ant table
 	
 	String pattern = ".##";
 	DecimalFormat dFormat = new DecimalFormat(pattern);
@@ -50,7 +53,8 @@ public class FoodGui implements Gui{
 	}
 
 	public void updatePosition() {
-		if( state == State.delivering || state == State.deliveringCheck || state == State.goToCashier || state == State.procurement) {
+		if( state == State.delivering || state == State.deliveringCheck || state == State.goToCashier || state == State.procurement ||
+				state == State.refrigToGill || state == State.grillToPlat ) {
 			if (xPos < xDestination)
 				xPos++;
 			else if (xPos > xDestination)
@@ -72,11 +76,25 @@ public class FoodGui implements Gui{
 					state = State.done;
 					market.msgDeliveredToCook();
 				}
+				else if(state == State.refrigToGill) {
+					if(tableNumber < 4) {
+						xPos = AnimationPanel.CookingAreaLocationX + 8 + 25*(tableNumber-1);
+						yPos = AnimationPanel.CookingAreaLocationY + 27;
+					}
+					else {
+						xPos = AnimationPanel.CookingAreaLocationX + 15 + 25*(tableNumber%2);
+						yPos = AnimationPanel.CookingAreaLocationY + 2;
+					}
+					state = State.cooking;
+				}
+				else if(state == State.grillToPlat) {
+					state = State.waitingToBePicked;
+				}				
 				else {
 					state = State.noCommand;
 				}
 			}
-		}
+		}		
 	}
 
 	public void draw(Graphics2D g) {
@@ -110,8 +128,13 @@ public class FoodGui implements Gui{
 		
 		// followings are for food gui from market to cook
 		if ( state == State.procurement) {
-			String batchSize = Integer.toString(choice.getBatchSize());
+			String batchSize = Integer.toString(orderedSize);
 			g.drawString(batchSize, xPos, yPos);
+			g.drawImage(fImage, xPos, yPos, 20, 20, null);
+		}
+		
+		// following the cook
+		if(state == State.grillToPlat || state == State.refrigToGill || state == State.cooking || state == State.waitingToBePicked) {
 			g.drawImage(fImage, xPos, yPos, 20, 20, null);
 		}
 
@@ -120,8 +143,11 @@ public class FoodGui implements Gui{
 	// from either cook or cashier to table
 	public void DoGoToTable () {//later you will map seat number to table coordinates.
 		if (state == State.delivering) { // delivering food to Table
-			xPos = AnimationPanel.CookLocationX;
-			yPos = AnimationPanel.CookLocationY;
+			//xPos = AnimationPanel.CookLocationX;
+			//yPos = AnimationPanel.CookLocationY;
+			
+			xPos = AnimationPanel.PlatingAreaLocationX;
+	    	yPos = AnimationPanel.CookLocationY;
 			
 			xDestination = AnimationPanel.TableLocationX + gap*(tableNumber-1) + 20;
 			yDestination = AnimationPanel.TableLocationY;
@@ -153,8 +179,28 @@ public class FoodGui implements Gui{
 		xPos = AnimationPanel.MarketLocationX;
 		yPos = AnimationPanel.MarketLocationY + gap*(tableNumber-1);
 		
-		xDestination = AnimationPanel.CookLocationX + AnimationPanel.CookSizeX;
-		yDestination = AnimationPanel.CookLocationY;
+		//xDestination = AnimationPanel.CookLocationX + AnimationPanel.CookSizeX;
+		//yDestination = AnimationPanel.CookLocationY;
+		
+		xDestination = AnimationPanel.RefrigLocationX + AnimationPanel.RefrigSizeX;
+		yDestination = AnimationPanel.RefrigLocationY;
+	}
+	
+	// from refrig to gill
+	public void DoGoToGrill (int grillNumber) {
+		tableNumber = grillNumber;
+		xPos = AnimationPanel.RefrigLocationX;
+		yPos = AnimationPanel.RefrigLocationY;
+		
+		xDestination = AnimationPanel.CookingAreaLocationX;
+		yDestination = AnimationPanel.CookingAreaLocationY;
+	}
+
+	// from grill to plat
+	public void DoGoToPlat (int platNumber) {
+		tableNumber = platNumber;
+		xDestination = AnimationPanel.PlatingAreaLocationX;
+		yDestination = AnimationPanel.PlatingAreaLocationY + 55 + 25 * platNumber;
 	}
 
 	@Override
@@ -169,6 +215,10 @@ public class FoodGui implements Gui{
 	
 	public void setPrice(double price) {
 		this.price = dFormat.format(price);
+	}
+	
+	public void setCook(CookAgent cook) {
+		this.cook = cook;
 	}
 	
 }

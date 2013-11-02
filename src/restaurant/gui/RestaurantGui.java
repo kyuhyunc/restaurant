@@ -31,7 +31,7 @@ public class RestaurantGui extends JFrame{
      * Sets up all the gui components.
      */
     public RestaurantGui() {
-        int WINDOWX = 700;
+        int WINDOWX = 850;
         int WINDOWY = 730;
 
     	setBounds(400, 40, WINDOWX, WINDOWY);
