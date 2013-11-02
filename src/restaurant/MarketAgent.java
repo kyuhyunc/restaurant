@@ -13,7 +13,6 @@ import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 
 import restaurant.CookAgent.Food;
-import restaurant.CookAgent.Order;
 import restaurant.gui.FoodGui;
 import restaurant.interfaces.Cashier;
 import restaurant.interfaces.Market;
@@ -145,9 +144,7 @@ public class MarketAgent extends Agent implements Market {
 		print("Start Delivering");
 			
 		cashier.msgAskForPayment(procure.food, procure.orderedSize, this, inventory.get(procure.food).price);
-		Do("aaaaaaaaaaaaaaaaaaaaa");
 		cook.msgTellOrderSize(this, procure.food, procure.orderedSize);
-		Do("bbbbbbbbbbbbbbbbbbbbb");
 		if(procure.orderedSize > 0) {
 			DoDeliver(procure);
 		}

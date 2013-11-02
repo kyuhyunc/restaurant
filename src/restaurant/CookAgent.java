@@ -15,7 +15,6 @@ import java.util.concurrent.Semaphore;
 import javax.swing.ImageIcon;
 
 import restaurant.MarketAgent.Procure;
-import restaurant.WaiterAgent.MyCustomer;
 import restaurant.gui.CookGui;
 import restaurant.gui.FoodGui;
 import restaurant.interfaces.Cook;
@@ -139,7 +138,7 @@ public class CookAgent extends Agent implements Cook {
 		atPlat.release();
 	}
 	
-	public void msgArrivedToPick(MyCustomer customer) {
+	public void msgArrivedToPick(Order order) {
 	//public void msgArrivedToPick(CustomerAgent customer) {
 		/**synchronized (orders) {
 			for(Order o : orders) {
@@ -152,9 +151,10 @@ public class CookAgent extends Agent implements Cook {
 			}
 		}*/
 		//customer.c.foodGui.state = FoodGui.State.noCommand;
-		customer.order.plat.setUnoccupied();
-		customer.order.foodGui.state = FoodGui.State.noCommand;
-		orders.remove(customer.order);
+		order.plat.setUnoccupied();
+		order.foodGui.state = FoodGui.State.noCommand;
+		//orders.remove(order);
+		order.state = Order.OrderState.done;
 	}
 	
 	/**
@@ -170,9 +170,12 @@ public class CookAgent extends Agent implements Cook {
 						return true;
 					}
 					else if(orders.get(i).state == Order.OrderState.Cooked) {
-						orders.get(i).state = Order.OrderState.done;
+						orders.get(i).state = Order.OrderState.waitingToBePicked;
 						OrderIsReady(orders.get(i));
 						return true;
+					}
+					else if(orders.get(i).state == Order.OrderState.done) {
+						orders.remove(orders.get(i));
 					}
 					else if(orders.get(i).state == Order.OrderState.outOfStock) {
 						OrderIsOutOfStock(orders.get(i));
@@ -241,11 +244,9 @@ public class CookAgent extends Agent implements Cook {
 	}
 	
 	private void DoCooking(Order order) {
-		Do("aaaaaaaaaaaaaaaaaaaa");
 		synchronized(grills) {
 			for(Grill g : grills) {
 				if(!g.isOccupied()) {
-					Do("bbbbbbbbbbbbbbbbb");
 					order.setGrill(g);
 					g.setOccupied();
 					FoodGui ingredient = new FoodGui(g.grillNumber, foods.get(order.choice), 1);
@@ -256,7 +257,6 @@ public class CookAgent extends Agent implements Cook {
 				}
 			}
 		}
-		Do("ccccccccccccccc");
 		
 		order.foodGui.state = FoodGui.State.refrigToGill;
 		order.foodGui.DoGoToGrill(order.grill.grillNumber);
@@ -268,7 +268,6 @@ public class CookAgent extends Agent implements Cook {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
-		Do("dddddddddddddddddddddd");
 		
 		Timer timer = new Timer();
 		
@@ -348,7 +347,6 @@ public class CookAgent extends Agent implements Cook {
 		
 		if(!alreadyOrdered) {
 			contracts.add(new ProcureContract(food, batchSize));
-			Do("eeeeeeeeeeeeeeeeeeee");
 		}
 		else {
 			Do(food + " has been ordered already");
@@ -471,7 +469,7 @@ public class CookAgent extends Agent implements Cook {
 		}
 		
 		public enum OrderState
-		{Pending, Cooking, Cooked, outOfStock, done};
+		{Pending, Cooking, Cooked, waitingToBePicked, outOfStock, done};
 		OrderState state = OrderState.Pending;
 		
 		public void setFoodGui(int platingNumber, Food food, int cookSize) {

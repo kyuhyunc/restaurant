@@ -409,7 +409,7 @@ public class WaiterAgent extends Agent implements Waiter{
 		}
 		
 		//cook.msgArrivedToPick(customer.c);
-		cook.msgArrivedToPick(customer);
+		cook.msgArrivedToPick(customer.order);
 	
 		/**customer.c.foodGui.state = FoodGui.State.noCommand;
 		customer.c.foodGui = customer.fg;

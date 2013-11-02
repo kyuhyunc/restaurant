@@ -249,6 +249,17 @@ public class CashierAgent extends Agent implements Cashier {
 		return dFormat.format(cashTotal);
 	}
 
+	public double getTotalDebt() {
+		double totalDebt = 0;
+		
+		for(Bill b : bills) {
+			totalDebt += b.price;
+		}
+		
+		return totalDebt;
+	}
+	
+	
 	public static class Check {
 		// changed to public for testing
 		public String choice;

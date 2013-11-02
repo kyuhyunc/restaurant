@@ -19,4 +19,6 @@ public interface Cashier {
 	public abstract void msgAskForPayment(String food, int batchSize, Market market, double price);
 
 	public abstract String getCash();	
+	
+	public abstract double getTotalDebt(); 
 }

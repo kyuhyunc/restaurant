@@ -143,7 +143,9 @@ public class AnimationPanel extends JPanel implements ActionListener {
         }
         
         g.drawImage(cashImage, CashierLocationX, CashierLocationY, CashierSizeX, CashierSizeY, null);
-        g.drawString("$:" + cashier.getCash(), CashierLocationX + CashierSizeX, CashierLocationY + 10);
+        g.drawString(" +$:" + cashier.getCash(), CashierLocationX + CashierSizeX, CashierLocationY + 10);
+        g.setColor(Color.red);
+        g.drawString("  -$:" + cashier.getTotalDebt(), CashierLocationX + CashierSizeX, CashierLocationY + 23);
         
         synchronized (guis) {
 	        for(Gui gui : guis) {
