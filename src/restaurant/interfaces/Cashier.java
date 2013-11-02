@@ -20,5 +20,5 @@ public interface Cashier {
 
 	public abstract String getCash();	
 	
-	public abstract double getTotalDebt(); 
+	public abstract String getTotalDebt(); 
 }

@@ -22,7 +22,7 @@ public class CustomerGui implements Gui{
 
 	private int xPos, yPos;
 	private int xDestination, yDestination;
-	private enum Command {noCommand, GoToSeat, GoToCashier, LeaveRestaurant};
+	private enum Command {noCommand, GoToLine, GoToSeat, GoToCashier, LeaveRestaurant};
 	private Command command=Command.noCommand;
 
 	//public static final int xTable = 200;
@@ -55,13 +55,18 @@ public class CustomerGui implements Gui{
 			yPos--;
 
 		if (xPos == xDestination && yPos == yDestination) {
-			if (command==Command.GoToSeat) agent.msgAnimationFinishedGoToSeat();
+			if (command==Command.GoToLine) {
+				agent.msgAnimationFinishedGoToLine();
+			}
+			else if (command==Command.GoToSeat) {
+				agent.msgAnimationFinishedGoToSeat();
+			}
 			else if (command==Command.GoToCashier) {
 				agent.msgArrivedAtCashier();
 			}
 			else if (command==Command.LeaveRestaurant) {
 				agent.msgAnimationFinishedLeaveRestaurant();
-				System.out.println("about to call gui.setCustomerEnabled(agent);");
+				System.out.println("about to call gui.setCustomerEnabled(agent)");
 				isHungry = false;
 				gui.getCustomerPanel().setCustomerEnabled(agent);
 			}
@@ -118,5 +123,11 @@ public class CustomerGui implements Gui{
 		xDestination = -40;
 		yDestination = -40;
 		command = Command.LeaveRestaurant;
+	}
+	
+	public void DoGoToLine(int waitingNumber) {
+		xDestination = AnimationPanel.WaitingAreaLocationX + customerSize*2*(waitingNumber-1);
+		yDestination = AnimationPanel.WaitingAreaLocationY - 10*(waitingNumber-1);
+		command = Command.GoToLine;
 	}
 }

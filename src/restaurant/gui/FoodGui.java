@@ -79,11 +79,11 @@ public class FoodGui implements Gui{
 				else if(state == State.refrigToGill) {
 					if(tableNumber < 4) {
 						xPos = AnimationPanel.CookingAreaLocationX + 8 + 25*(tableNumber-1);
-						yPos = AnimationPanel.CookingAreaLocationY + 27;
+						yPos = AnimationPanel.CookingAreaLocationY + 2;
 					}
 					else {
 						xPos = AnimationPanel.CookingAreaLocationX + 15 + 25*(tableNumber%2);
-						yPos = AnimationPanel.CookingAreaLocationY + 2;
+						yPos = AnimationPanel.CookingAreaLocationY + 27;
 					}
 					state = State.cooking;
 				}
@@ -200,7 +200,7 @@ public class FoodGui implements Gui{
 	public void DoGoToPlat (int platNumber) {
 		tableNumber = platNumber;
 		xDestination = AnimationPanel.PlatingAreaLocationX;
-		yDestination = AnimationPanel.PlatingAreaLocationY + 55 + 25 * platNumber;
+		yDestination = AnimationPanel.PlatingAreaLocationY + 15 + 25*platNumber;
 	}
 
 	@Override

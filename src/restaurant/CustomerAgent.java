@@ -32,6 +32,7 @@ public class CustomerAgent extends Agent implements Customer {
 	private WaiterAgent wait;
 	private CashierAgent cashier;
 	private int tableNumber;
+	public int waitingNumber;
 	
 	//Map<String, Food> menu;
 	private List<String> menu_list = Collections.synchronizedList(new ArrayList<String> ());
@@ -41,12 +42,12 @@ public class CustomerAgent extends Agent implements Customer {
 	private Cash cash;
 	
 	public enum AgentState
-	{DoingNothing, WaitingInRestaurant, TableFull, BeingSeated, Seated, 
+	{DoingNothing, WaitingInRestaurant, goingToLine, WaitingInLine, TableFull, BeingSeated, Seated, 
 		WaitingFood, Eating, DoneEating, LeavingTable, DonePayment, LeavingRestaurant};
 	private AgentState state = AgentState.DoingNothing;//The start state
 
 	public enum AgentEvent 
-	{none, gotHungry, tableFull, decidedToWait, followHost, seated, callWaiterToOrder, 
+	{none, gotHungry, tableFull, decidedToWait, goToLine, lined, followHost, seated, callWaiterToOrder, 
 	makeOrder, getFood, doneEating, askForCheck, getCheck, payment, leaveRestaurant
 	, doneLeaving, reOrder};
 	AgentEvent event = AgentEvent.none;
@@ -86,7 +87,23 @@ public class CustomerAgent extends Agent implements Customer {
 		event = AgentEvent.tableFull;
 		stateChanged();
 	}
-		
+
+	public void msgGoToLine(int waitingNumber) {
+		this.waitingNumber = waitingNumber;
+		if(waitingNumber != 0) {
+			state = AgentState.WaitingInRestaurant;
+			event = AgentEvent.goToLine;
+			stateChanged();
+		}
+	}
+	
+	public void msgAnimationFinishedGoToLine() {
+		//from animation
+		//event = AgentEvent.lined;
+		state = AgentState.WaitingInLine;
+		stateChanged();
+	}
+	
 	// 3: FollowMe(menu)
 	public void msgFollowMe(List<String> menu_list, Map<String, Double> menu, int tableNumber) {
 		this.menu_list.clear();
@@ -174,9 +191,14 @@ public class CustomerAgent extends Agent implements Customer {
 			thinkWhetherLeave();
 			return true;			
 		}		
-		else if (state == AgentState.WaitingInRestaurant && event == AgentEvent.followHost ){
+		else if (state == AgentState.WaitingInRestaurant && event == AgentEvent.goToLine ){
+			state = AgentState.goingToLine;
+			goToLine();
+			return true;
+		}
+		else if (state == AgentState.WaitingInLine && event == AgentEvent.followHost ){
 			state = AgentState.BeingSeated;
-			SitDown();
+			SitDown(); 
 			return true;
 		}
 		else if (state == AgentState.BeingSeated && event == AgentEvent.seated){
@@ -227,6 +249,7 @@ public class CustomerAgent extends Agent implements Customer {
 	private void goToRestaurant() {
 		Do("Going to restaurant");
 		host.msgIWantFood(this); //send our instance, so he can respond to us
+		//customerGui.DoGoToLine();
 	}
 
 	private void thinkWhetherLeave() {
@@ -250,6 +273,11 @@ public class CustomerAgent extends Agent implements Customer {
 			event = AgentEvent.decidedToWait;
 		}
 		host.msgDecision(this);
+	}
+	
+	private void goToLine() {
+		//Do("Going to the line for waiting");
+		customerGui.DoGoToLine(waitingNumber);
 	}
 	
 	private void SitDown() {

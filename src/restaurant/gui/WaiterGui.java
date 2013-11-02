@@ -18,7 +18,7 @@ public class WaiterGui implements Gui {
     private int xPos = -20, yPos = -20;//default waiter position
     private int xDestination = -20, yDestination = -20;//default start position
     private int WaiterSize = 20;
-    private enum Command {noCommand, GoToTable, GoToCook, GoToHost, GoToHost2, GoToCashier};
+    private enum Command {noCommand, GoToLine, GoToTable, GoToCook, GoToHost, GoToHost2, GoToCashier};
 	private Command command=Command.noCommand;
 	
     RestaurantGui gui;
@@ -53,6 +53,9 @@ public class WaiterGui implements Gui {
         	//else if (xPos == -20 && yPos == -20) {
         		//agent.msgReadyToServe();
         		agent.msgAtHost();
+        	}
+        	else if (command == Command.GoToLine) {
+        		agent.msgAtLine();
         	}
         	else if (command == Command.GoToCook) {
         		agent.msgArrivedToCook();
@@ -99,6 +102,13 @@ public class WaiterGui implements Gui {
         yDestination = -20;
                 
         command = Command.GoToHost;
+    }
+    
+    public void DoGoToLine() {
+    	xDestination = AnimationPanel.WaitingAreaLocationX + WaiterSize;
+    	yDestination = AnimationPanel.WaitingAreaLocationY + WaiterSize;
+    	
+    	command = Command.GoToLine;
     }
     
     public void DoGoBackToHost2() {

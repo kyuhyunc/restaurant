@@ -76,20 +76,20 @@ public class CookGui implements Gui{
 	
 	public void DoGoToGrill() {
 		xDestination = AnimationPanel.CookingAreaLocationX;
-		yDestination = AnimationPanel.CookingAreaLocationY + CookSizeY;
+		yDestination = AnimationPanel.CookingAreaLocationY - CookSizeY;
 		
 		command = Command.GoGrill;
 	}
 
 	public void DoGoToRefrig() {
 		xDestination = AnimationPanel.RefrigLocationX - CookSizeX;
-		yDestination = AnimationPanel.RefrigLocationY + CookSizeY;
+		yDestination = AnimationPanel.RefrigLocationY;
 		command = Command.GoRefrig;
 	}
 	
 	public void DoGoToPlat(int platNumber) {
 		xDestination = AnimationPanel.PlatingAreaLocationX + AnimationPanel.PlatingAreaSizeX;
-		yDestination = AnimationPanel.PlatingAreaLocationY + 50 + gap*platNumber;
+		yDestination = AnimationPanel.PlatingAreaLocationY + 15 + gap*platNumber;
 		command = Command.GoPlat;
 	}
 

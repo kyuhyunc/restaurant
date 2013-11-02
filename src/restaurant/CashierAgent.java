@@ -249,14 +249,14 @@ public class CashierAgent extends Agent implements Cashier {
 		return dFormat.format(cashTotal);
 	}
 
-	public double getTotalDebt() {
+	public String getTotalDebt() {
 		double totalDebt = 0;
 		
 		for(Bill b : bills) {
 			totalDebt += b.price;
 		}
 		
-		return totalDebt;
+		return dFormat.format(totalDebt);
 	}
 	
 	

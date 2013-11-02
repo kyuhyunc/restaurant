@@ -22,20 +22,30 @@ public class AnimationPanel extends JPanel implements ActionListener {
     //private Dimension bufferSize;
     
     protected static int RefrigLocationX = 590;
-    protected static int RefrigLocationY = 100;
+    protected static int RefrigLocationY = 200;
     protected static int RefrigSizeX = 80;
     protected static int RefrigSizeY = 50;
 
     protected static int PlatingAreaLocationX = 460;
-    protected static int PlatingAreaLocationY = 50;
+    protected static int PlatingAreaLocationY = 80;
     protected static int PlatingAreaSizeX = 25;
-    protected static int PlatingAreaSizeY = 250;
+    protected static int PlatingAreaSizeY = 220;
+    
+    protected static int WallLocationX = 460;
+    protected static int WallLocationY = 80;
+    protected static int WallSizeX = 150;
+    protected static int WallSizeY = 10;
     
     protected static int CookingAreaLocationX = 490;
-    protected static int CookingAreaLocationY = 50;
+    protected static int CookingAreaLocationY = 250;
     protected static int CookingAreaSizeX = 100;
     protected static int CookingAreaSizeY = 50;
-        
+    
+    protected static int WaitingAreaLocationX = 200;
+    protected static int WaitingAreaLocationY = 50;
+    protected static int WaitingPointSizeX = 20;
+    protected static int WaitingPointSizeY = 20;    
+    
     private List<Gui> guis = Collections.synchronizedList(new ArrayList<Gui>());
        
     //static variables to replace magic numbers
@@ -68,8 +78,8 @@ public class AnimationPanel extends JPanel implements ActionListener {
 
 	private CookAgent cook;
 	private Cashier cashier;
-    private ImageIcon cookImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/Cook.jpg");
-	private Image cImage = cookImage.getImage();
+    //private ImageIcon cookImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/Cook.jpg");
+	//private Image cImage = cookImage.getImage();
 	
 	private ImageIcon MarketImage = new ImageIcon("C:/Users/Kyu/Dropbox/my work/USC/2013 2_fall/csci 201/git/restaurant_kyuhyunc/img/market.jpg");
 	private Image mImage = MarketImage.getImage();
@@ -112,13 +122,19 @@ public class AnimationPanel extends JPanel implements ActionListener {
                 
         g2.setColor(Color.lightGray);
         g2.fillRect(PlatingAreaLocationX, PlatingAreaLocationY, PlatingAreaSizeX, PlatingAreaSizeY);
+        g2.fillRect(WallLocationX, WallLocationY, WallSizeX, WallSizeY);
+        
         
         g2.setColor(Color.black);
         g2.fillRect(CookingAreaLocationX, CookingAreaLocationY, CookingAreaSizeX, CookingAreaSizeY);
         
         g2.setColor(Color.white);
         g2.fillRect(RefrigLocationX, RefrigLocationY, RefrigSizeX, RefrigSizeY);
-                
+        
+        g2.setColor(Color.lightGray);
+        g2.fillRect(WaitingAreaLocationX, WaitingAreaLocationY, WaitingPointSizeX, WaitingPointSizeY);
+        
+        
         int m=0;
         int n=0;
         for(MarketAgent M : cook.getMarkets()) {

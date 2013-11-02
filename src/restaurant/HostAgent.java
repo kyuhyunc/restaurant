@@ -18,6 +18,7 @@ public class HostAgent extends Agent {
 	
 	private List<WaiterAgent> waiters = Collections.synchronizedList(new ArrayList<WaiterAgent>());
 	private List<CustomerAgent> waitingCustomers = Collections.synchronizedList(new ArrayList<CustomerAgent>());
+	private List<CustomerAgent> customersInLine = Collections.synchronizedList(new ArrayList<CustomerAgent>());
 	private CookAgent cook;
 	
 	private int numberOfWaiters = 0;
@@ -58,6 +59,10 @@ public class HostAgent extends Agent {
 	public void msgIWantFood(CustomerAgent cust) {
 
 		waitingCustomers.add(cust);
+		customersInLine.add(cust);
+		
+		//cust.waitingNumber = waitingCustomers.size();
+		
 		Do(cust + " is added to the waiting list");
 		stateChanged();
 	}
@@ -66,6 +71,7 @@ public class HostAgent extends Agent {
 	public void msgDecision(CustomerAgent customer) {
 		if(!customer.waitWhenTableFull) {
 			waitingCustomers.remove(customer);
+			customersInLine.remove(customer);
 		}
 	}
 
@@ -89,6 +95,18 @@ public class HostAgent extends Agent {
 		stateChanged();
 	}
 	
+	public void msgPickedCust(CustomerAgent c) {
+		// update waiting number for customers
+		synchronized(customersInLine) {
+			customersInLine.remove(c);
+			for(int i=0;i<customersInLine.size();i++) {
+				//waitingCustomers.get(i).msgGoToLine(i+1);
+				customersInLine.get(i).waitingNumber = i+1;
+			}
+		}
+		stateChanged();
+	}
+	
 	/**
 	 * Scheduler.  Determine what action is called for, and do it.
 	 */
@@ -101,7 +119,16 @@ public class HostAgent extends Agent {
 				}
 			}
 		}		
+		
+		synchronized(customersInLine) {
+			for(int i=0;i<customersInLine.size();i++) {
+				WaitingInLine(customersInLine.get(i), i+1);
+			}
+		}
+		
 		if (!waitingCustomers.isEmpty()) {
+			//WaitingInLine(waitingCustomers.get(waitingCustomers.size()-1), waitingCustomers.size());
+			
 			if(waiters.size() > 0) {
 				for (Table table : tables) {
 					tableAvailable = true;
@@ -138,6 +165,10 @@ public class HostAgent extends Agent {
 		}
 	}
 	
+	private void WaitingInLine(CustomerAgent cust, int waitingNumber) {
+		cust.msgGoToLine(waitingNumber);
+	}
+	
 	private void tellWaiter(CustomerAgent customer, Table table) {
 
 		WaiterAgent w;
@@ -148,10 +179,14 @@ public class HostAgent extends Agent {
 			table.setOccupant(customer);
 			w.msgSitAtTable(customer, table);
 			customer.setWaiter(w);
+			//customer.waitingNumber = 0;	
 			waitingCustomers.remove(customer);
+			
+
 		}
+
 		/**else
-			Do("No waiter available");*/
+		Do("No waiter available");*/
 	}
 	
 	public void chkIfWaiterCanBreak(WaiterAgent w) {

@@ -48,6 +48,7 @@ public class WaiterAgent extends Agent implements Waiter{
 	private Semaphore atCook = new Semaphore(0,true);
 	private Semaphore atHost = new Semaphore(0,true);
 	private Semaphore atCashier = new Semaphore(0,true);
+	private Semaphore atLine = new Semaphore(0,true);
 		
 	private List<String> menu_list = Collections.synchronizedList(new ArrayList<String> ());
 	private Map<String, Double> menu = Collections.synchronizedMap(new HashMap<String, Double> ());
@@ -80,6 +81,10 @@ public class WaiterAgent extends Agent implements Waiter{
 	// msg from gui
 	public void msgAtHost() {
 		atHost.release();
+	}
+	
+	public void msgAtLine() {
+		atLine.release();
 	}
 	
 	// 4: ReadyToOrder(customer); 
@@ -312,6 +317,16 @@ public class WaiterAgent extends Agent implements Waiter{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}	
+		
+		waiterGui.DoGoToLine();
+		try {
+			atLine.acquire(); // 
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		host.msgPickedCust(customer.c);
 		
 		// initializing menu list
 		menu_list.clear();
