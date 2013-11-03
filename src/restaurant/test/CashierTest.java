@@ -35,7 +35,7 @@ public class CashierTest extends TestCase
 		cashier = new CashierAgent("cashier");		
 		customer = new MockCustomer("mockcustomer");		
 		waiter = new MockWaiter("mockwaiter");
-		
+
 		menu.put("Pizza", 8.99);
 	}	
 	/**

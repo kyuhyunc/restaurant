@@ -281,4 +281,12 @@ public class RestaurantPanel extends JPanel {
 	    	}
     	}
     }
+    
+    public void hackBatchSizeToTwo() {
+    	cook.defaultBatchSize = 2;
+    }
+    
+    public void hackBatchSizeToThree() {
+    	cook.defaultBatchSize = 3;
+    }
 }

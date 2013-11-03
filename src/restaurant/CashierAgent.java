@@ -214,6 +214,7 @@ public class CashierAgent extends Agent implements Cashier {
 			if(b.state == Bill.BillState.unPaid) {
 				sum += (b.price*b.orderedSize);
 				if(cashTotal >= sum) {
+					log.add(new LoggedEvent("Now have enough money to pay"));
 					Do("I can now pay to the " + b.market + " for the order " + b.food + " [extra creidt]");
 					b.state = Bill.BillState.nothing;
 				}
@@ -235,6 +236,7 @@ public class CashierAgent extends Agent implements Cashier {
 			b.state = Bill.BillState.done;
 		}
 		else {
+			log.add(new LoggedEvent("Don't have enough money to pay"));
 			Do("I don't have enough money to pay to the " + b.market + " for the order " + b.food + " [extra creidt]");
 			b.state = Bill.BillState.unPaid;
 		}

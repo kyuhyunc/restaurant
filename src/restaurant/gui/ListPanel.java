@@ -114,7 +114,13 @@ public class ListPanel extends JPanel implements ActionListener {
     				}
     				else if(Name.getText().contains("resetCashier")) {
     					restPanel.hackResetCashier();
-    				}   
+    				}  
+    				else if(Name.getText().contains("batchSizeToTwo")) {
+    					restPanel.hackBatchSizeToTwo();
+    				}
+    				else if(Name.getText().contains("batchSizeToThree")) {
+    					restPanel.hackBatchSizeToThree();
+    				}
     				else {
     					System.out.println("There is no matching hack code");
     				}

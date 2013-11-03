@@ -54,7 +54,7 @@ public class CookAgent extends Agent implements Cook {
 	private Map<String, Food> foods = Collections.synchronizedMap(new HashMap<String, Food> ());
 	private List<String> menu_list = Collections.synchronizedList(new ArrayList<String> ());
 	
-	private int defaultBatchSize = 3;
+	public int defaultBatchSize = 3;
 	
 	private Semaphore atGrill = new Semaphore(0,true);
 	private Semaphore atPlat = new Semaphore(0,true);
