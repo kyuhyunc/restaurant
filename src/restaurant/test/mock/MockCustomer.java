@@ -31,7 +31,6 @@ public class MockCustomer extends Mock implements Customer {
 		this.name = name;
 		
 		// hack if you want to change budget of customer
-		cash = new Cash(0,1,0,0,0);
 	}
 
 	@Override
@@ -41,20 +40,20 @@ public class MockCustomer extends Mock implements Customer {
 		//Check cpCheck = new Check(check.choice, check.customer, check.waiter, check.tableNumber);
 		
 		log.add(new LoggedEvent("Received HereIsYourCheck from waiter. Total = "+ total));
-		
-		payment = cash.payCash(total);
 			
 		if(this.name.toLowerCase().contains("thief")){
 			//test the non-normative scenario where the customer has no money if their name contains the string "theif"
 			//cashier.IAmShort(this, 0);
+			cashier.msgPayment(this, new Cash(0,0,0,0,0));
 		}
-		else if (this.name.toLowerCase().contains("rich")){
-			//test the non-normative scenario where the customer overpays if their name contains the string "rich"
-			//cashier.msgPayment(this, Math.ceil(total));
-
+		else if(this.name.toLowerCase().contains("poor")){
+			//test the non-normative scenario where the customer has no money if their name contains the string "theif"
+			//cashier.IAmShort(this, 0);
+			cashier.msgPayment(this, new Cash(0,0,1,0,0));
 		}
-		else{
+		else {
 			//test the normative scenario
+			payment = cash.payCash(total);
 			cashier.msgPayment(this, payment);
 		}
 	}

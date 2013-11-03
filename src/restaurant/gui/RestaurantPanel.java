@@ -6,6 +6,7 @@ import restaurant.CustomerAgent;
 import restaurant.HostAgent;
 import restaurant.MarketAgent;
 import restaurant.WaiterAgent;
+import restaurant.CookAgent.Food;
 
 import javax.swing.*;
 
@@ -274,19 +275,38 @@ public class RestaurantPanel extends JPanel {
     	cashier.cashTotal = 0;
     }
     
-    public void hackResetMarket() {
+    public void hackResetMoneyMarket() {
     	synchronized(cook.getMarkets()) {
 	    	for(MarketAgent m : cook.getMarkets()) {
 	    		m.cash = 0;
 	    	}
     	}
     }
+    public void hackResetStockMarket() {
+    	synchronized(cook.getMarkets()) {
+	    	for(MarketAgent m : cook.getMarkets()) {
+	    		for(String food : m.food_list) {
+	    			m.inventory.get(food).amount = 0;
+	    		}
+	    	}
+    	}
+    }
     
     public void hackBatchSizeToTwo() {
     	cook.defaultBatchSize = 2;
+    	
+    	// setting up the menu
+		for(String s : cook.menu_list) {
+			cook.foods.get(s).setBatchSize(cook.defaultBatchSize);
+		}	
     }
     
     public void hackBatchSizeToThree() {
     	cook.defaultBatchSize = 3;
+    	
+    	// setting up the menu
+		for(String s : cook.menu_list) {
+			cook.foods.get(s).setBatchSize(cook.defaultBatchSize);
+		}	
     }
 }

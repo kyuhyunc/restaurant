@@ -455,8 +455,12 @@ public class CustomerAgent extends Agent implements Customer {
 			cashier.msgPayment(this, payment);
 		}
 		else {
-			Do("I am sorry, but I don't have enough money this time. Chao!");
+			Do("I am sorry, but I don't have enough money this time!");
 			state = AgentState.DoingNothing;
+			// paying all the money that a customer has
+			payment = cash.payCash(cash.totalAmount());
+			//cashier.msgPayment(this, new Cash(cash.twentyDollar, cash.tenDollar, cash.fiveDollar, cash.oneDollar, cash.coins));
+			cashier.msgPayment(this, payment);
 			exitRestaurant();			
 		}
 		

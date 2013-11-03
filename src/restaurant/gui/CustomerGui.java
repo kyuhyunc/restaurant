@@ -36,7 +36,7 @@ public class CustomerGui implements Gui{
 
 	public CustomerGui(CustomerAgent c, RestaurantGui gui){ //HostAgent m) {
 		agent = c;
-		xPos = -40;
+		xPos = 250;
 		yPos = -40;
 		xDestination = -40;
 		yDestination = -40;
@@ -69,6 +69,9 @@ public class CustomerGui implements Gui{
 				System.out.println("about to call gui.setCustomerEnabled(agent)");
 				isHungry = false;
 				gui.getCustomerPanel().setCustomerEnabled(agent);
+				xPos = 250;
+				yPos = -40;
+				xDestination = 250;
 			}
 			command=Command.noCommand;
 		}
@@ -82,6 +85,9 @@ public class CustomerGui implements Gui{
 		g.drawString("name:"+agent.getName(), xPos, yPos - 21);
 		if(agent.getWaiter() != null) {
 			g.drawString("waiter:"+agent.getWaiter().getName(), xPos, yPos-11);
+		}
+		else {
+			g.drawString("waiter:", xPos, yPos-11);
 		}
 		g.drawString("$:"+agent.getCurrentCash(), xPos, yPos-1);
 	}

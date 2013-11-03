@@ -52,7 +52,7 @@ public class CashierAgent extends Agent implements Cashier {
 	 * hack to establish connection to Host agent.
 	 */
 
-	// Messages
+	// Messages	
 	// Cashier 1a: ComputeBill
 	// public void msgComputeBill(String choice, CustomerAgent c, WaiterAgent w,
 	// int tableNumber, Map<String, Double> menu) {
@@ -86,14 +86,22 @@ public class CashierAgent extends Agent implements Cashier {
 					c.cash = new Cash(cash.twentyDollar, cash.tenDollar,
 							cash.fiveDollar, cash.oneDollar, cash.coins);
 					c.state = Check.CheckState.receivedCash;
-					log.add(new LoggedEvent("Received msgPayment"));
+					if(cash.totalAmount() >= c.price) {
+						log.add(new LoggedEvent("Received msgPayment - earn full"));
+					}
+					else if(cash.totalAmount() == 0) {
+						log.add(new LoggedEvent("Received msgPayment - earn 0"));
+					}
+					else {
+						log.add(new LoggedEvent("Received msgPayment - earn partial"));	
+					}
 					break;
 				}
 			}
 		}
 		stateChanged();
 	}
-
+	
 	// message from market to ask for payment
 	public void msgAskForPayment(String food, int orderedSize, Market market, double price) {
 		bills.add(new Bill(food, orderedSize, market, price));
@@ -181,32 +189,37 @@ public class CashierAgent extends Agent implements Cashier {
 		int oneDollar = 0;
 		int coins = 0;
 
-		cashTotal += c.price;
+		if(c.cash.totalAmount() >= c.price) {
+			cashTotal += c.price;
 
-		double change = c.cash.totalAmount() - c.price;
-		Cash Change;
+			double change = c.cash.totalAmount() - c.price;
+			Cash Change;
+	
+			twentyDollar = (int) change / 20;
+			change -= 20 * twentyDollar;
+	
+			tenDollar = (int) change / 10;
+			change -= 10 * tenDollar;
+	
+			fiveDollar = (int) change / 5;
+			change -= 5 * fiveDollar;
+	
+			oneDollar = (int) change / 1;
+			change -= 1 * oneDollar;
+	
+			coins = (int) (100 * ((double) (change) + 0.0001));
+	
+			Change = new Cash(twentyDollar, tenDollar, fiveDollar, oneDollar, coins);
+	
+			Do("Change is " + dFormat.format(Change.totalAmount()));
 
-		twentyDollar = (int) change / 20;
-		change -= 20 * twentyDollar;
-
-		tenDollar = (int) change / 10;
-		change -= 10 * tenDollar;
-
-		fiveDollar = (int) change / 5;
-		change -= 5 * fiveDollar;
-
-		oneDollar = (int) change / 1;
-		change -= 1 * oneDollar;
-
-		coins = (int) (100 * ((double) (change) + 0.0001));
-
-		Change = new Cash(twentyDollar, tenDollar, fiveDollar, oneDollar, coins);
-
-		Do("Change is " + dFormat.format(Change.totalAmount()));
-		// need to implement the changing cash algorithm properly
-
+			c.customer.msgChange(Change);
+		}
+		else {
+			cashTotal += c.cash.totalAmount();
+		}
+			
 		checks.remove(c);
-		c.customer.msgChange(Change);
 		
 		// check bills if cashier earns money
 		double sum = 0;

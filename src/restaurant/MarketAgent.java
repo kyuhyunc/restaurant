@@ -29,8 +29,8 @@ public class MarketAgent extends Agent implements Market {
 	private List<Procure> procures = Collections.synchronizedList(new ArrayList<Procure>());
 	private List<Procure> pendingProcures = Collections.synchronizedList(new ArrayList<Procure>());
 	
-	private Map<String, Food> inventory = Collections.synchronizedMap(new HashMap<String, Food> ());
-	private List<String> food_list;
+	public Map<String, Food> inventory = Collections.synchronizedMap(new HashMap<String, Food> ());
+	public List<String> food_list;
 		
 	private CookAgent cook;
 	private HostAgent host;

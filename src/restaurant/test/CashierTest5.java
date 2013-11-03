@@ -5,19 +5,19 @@ import java.util.Map;
 
 import restaurant.CashierAgent;
 import restaurant.CashierAgent.Check;
+import restaurant.CustomerAgent.Cash;
 import restaurant.test.mock.MockCustomer;
 import restaurant.test.mock.MockWaiter;
 import junit.framework.*;
 
 /**
  * 
- * This class is a JUnit test class to unit test the CashierAgent's basic interaction
- * with waiters, customers, and the host.
- * It is provided as an example to students in CS201 for their unit testing lab.
+ * This class is a JUnit test class to unit test the CashierAgent's one of non-norm scenario
+ * with waiters, customers, and the host: customer doesn't have $0, but order the food
  *
- * @author Monroe Ekilah
+ * @author kyu
  */
-public class CashierTest extends TestCase
+public class CashierTest5 extends TestCase
 {
 	//these are instantiated for each test separately via the setUp() method.
 	CashierAgent cashier;
@@ -33,7 +33,7 @@ public class CashierTest extends TestCase
 	public void setUp() throws Exception{
 		super.setUp(); // Q
 		cashier = new CashierAgent("cashier");		
-		customer = new MockCustomer("mockcustomer");		
+		customer = new MockCustomer("mockcustomer.poor");		
 		waiter = new MockWaiter("mockwaiter");
 
 		menu.put("Pizza", 8.99);
@@ -45,7 +45,8 @@ public class CashierTest extends TestCase
 	{
 		//setUp() runs first before this test!
 		
-		customer.cashier = cashier;//You can do almost anything in a unit test.			
+		customer.cashier = cashier;//You can do almost anything in a unit test.
+		customer.cash = new Cash(0,0,0,0,0);
 		
 		//check preconditions
 		assertEquals("Cashier should have 0 bills in it. It doesn't.",cashier.checks.size(), 0);		
@@ -80,6 +81,7 @@ public class CashierTest extends TestCase
 		
 		assertTrue("Cashier's scheduler should have returned true (no actions to do on a bill from a waiter), but didn't.", cashier.pickAndExecuteAnAction());
 		
+		
 		//step 3 of the test : check has been given back to waiter, and in turn, to customer
 		//check postconditions for step 3
 		assertTrue(
@@ -88,17 +90,14 @@ public class CashierTest extends TestCase
 		
 		assertTrue("MockCustomer should have logged \"Received HereIsYourCheck from waiter\" but didn't. His log reads instead: " 
 				+ customer.log.getLastLoggedEvent().toString(), customer.log.containsString("Received HereIsYourCheck"));
-		
-		//assertTrue("CashierBill should contain a check with state == waitingToBePaid. It doesn't. Instead: "
-		//		+ cashier.checks.get(0).state.toString(), cashier.checks.get(0).state == Check.CheckState.waitingToBePaid);
-		
+				
 		assertTrue("CashierBill should contain a bill with the right customer in it. It doesn't.", 
 					cashier.checks.get(0).customer == customer);
 		
-		//step 4 : cashier receives msgPayment from customer and will return change to the customer
+		//step 4 : cashier receives msgPayment from customer
 		//check preconditions for step 4 
-		assertTrue("Cashier should have logged \"Received msgPayment\" but didn't. His log reads instead: " 
-				+ cashier.log.getLastLoggedEvent().toString(), cashier.log.containsString("Received msgPayment"));
+		assertTrue("Cashier should have logged \"Received msgPayment - earn partial\" but didn't. His log reads instead: " 
+				+ cashier.log.getLastLoggedEvent().toString(), cashier.log.containsString("Received msgPayment - earn partial"));
 	
 		assertTrue("CashierBill should contain a check with state == receivedCash. It doesn't. Instead: "
 				+ cashier.checks.get(0).state.toString(), cashier.checks.get(0).state == Check.CheckState.receivedCash);
@@ -106,20 +105,13 @@ public class CashierTest extends TestCase
 		//check postconditions for step 4
 		assertTrue("Cashier's scheduler should have returned true (needs to react to customer's msgPayment), but didn't.", 
 				cashier.pickAndExecuteAnAction());
-		
-		assertTrue("MockCustomer should have logged an event for receiving \"HereIsChange\" with the correct balance, but his last event logged reads instead: " 
-				+ customer.log.getLastLoggedEvent().toString(), customer.log.containsString("Received HereIsYourChange from cashier"));
-			
-		assertTrue(
-				"MockCustomer should have change = $1.01. Instead, the MockCustomer has change: "
-						+ customer.change.totalAmount(), customer.change.totalAmount() == 1.01);
-		
+					
 		assertEquals("Cashier should have 0 bills in it. It doesn't.",cashier.checks.size(), 0);
 		
 		//step 5: 
 		assertFalse("Cashier's scheduler should have returned false (no actions left to do), but didn't.", 
 				cashier.pickAndExecuteAnAction());
-	
+		
 	}//end one normal customer scenario
 	
 	

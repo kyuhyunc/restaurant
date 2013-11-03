@@ -51,8 +51,8 @@ public class CookAgent extends Agent implements Cook {
 	 * food (foods) in cook is current food information for cook
 	 * food (inventory) in market is current food information for markets
 	 */
-	private Map<String, Food> foods = Collections.synchronizedMap(new HashMap<String, Food> ());
-	private List<String> menu_list = Collections.synchronizedList(new ArrayList<String> ());
+	public Map<String, Food> foods = Collections.synchronizedMap(new HashMap<String, Food> ());
+	public List<String> menu_list = Collections.synchronizedList(new ArrayList<String> ());
 	
 	public int defaultBatchSize = 3;
 	

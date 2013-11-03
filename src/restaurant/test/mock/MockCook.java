@@ -1,7 +1,6 @@
 package restaurant.test.mock;
 
 
-import restaurant.CashierAgent;
 import restaurant.interfaces.Cook;
 
 /**

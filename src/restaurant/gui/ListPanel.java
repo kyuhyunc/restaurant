@@ -107,18 +107,21 @@ public class ListPanel extends JPanel implements ActionListener {
          	// Chapter 2.19 describes showInputDialog()
             //addPerson(JOptionPane.showInputDialog("Please enter a name:"));
     		if(!Name.getText().equals("")) {
-    			if(Name.getText().contains("!hack:")) {
+    			if(Name.getText().contains("!hack")) {
     				System.out.println("Hack by Q!");
-    				if(Name.getText().contains("resetMarket")) {
-    					restPanel.hackResetMarket();;
+    				if(Name.getText().contains("market-$-0")) {
+    					restPanel.hackResetMoneyMarket();;
     				}
-    				else if(Name.getText().contains("resetCashier")) {
+    				else if(Name.getText().contains("market-stock-0")) {
+    					restPanel.hackResetStockMarket();;
+    				}
+    				else if(Name.getText().contains("cashier-$-0")) {
     					restPanel.hackResetCashier();
     				}  
-    				else if(Name.getText().contains("batchSizeToTwo")) {
+    				else if(Name.getText().contains("batch-2")) {
     					restPanel.hackBatchSizeToTwo();
     				}
-    				else if(Name.getText().contains("batchSizeToThree")) {
+    				else if(Name.getText().contains("batch-3")) {
     					restPanel.hackBatchSizeToThree();
     				}
     				else {
