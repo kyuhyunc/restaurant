@@ -241,6 +241,7 @@ public class HostAgent extends Agent {
 		
 	public void addTableByGui() {
 		tables.add(new Table(NTABLES));//how you add to a collections
+		stateChanged();
 	}
 	
 	public WaiterAgent getTheMostFreeWaiter() {

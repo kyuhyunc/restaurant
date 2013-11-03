@@ -13,7 +13,7 @@ import junit.framework.*;
 /**
  * 
  * This class is a JUnit test class to unit test the CashierAgent's one of non-norm scenario
- * with waiters, customers, and the host: customer doesn't have $0, but order the food
+ * with waiters, customers, and the host: customer doesn't have enough money to order, but order the food
  *
  * @author kyu
  */
