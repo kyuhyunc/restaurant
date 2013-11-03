@@ -10,10 +10,10 @@
 ###Grading Guideline
 + Comments for grading v2: "I implemented everything on the web site's requirements"
 + Comments for grading v2.1: 
- I implemented everything on the web site's requirements, including all extra credit requirements <br/>
+ I implemented everything on the web site's requirements. <br/> 
  To order specific food, enter the name of food as a customer's name.
 + Comments for grading v2.2:
- I implemented all requirements on the rubric of v2.2. <br/>
+ I implemented all requirements on the rubric of v2.2, including all extra credit requirements <br/>
  There are several hacks that I implemented to help grading. <br/>
  1. Selecting food: If you type certain name of food as name of a customer, the customer will be going to order the food with that name. If there is no stock available for the food, when a waiter asks the customer, the customer will order one of other items. <br/>
  2. Changing batch size per order to market: If you enter "!hack batch-#," the default batch size per order will change. # can be either 2 or 3. <br/>
